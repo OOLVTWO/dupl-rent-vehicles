@@ -627,16 +627,35 @@ export default function SharpSquareBusinessWebsitePage() {
         </div>
       </section>
 
-      {/* ── BRANDS WE CARRY — trust strip ── */}
-      <section style={{ padding: '28px 24px', background: 'var(--sharp-surface)', borderBottom: '1px solid var(--sharp-line)' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
+      {/* ── BRANDS WE CARRY — looping trust strip ── */}
+      <section style={{ padding: '28px 0', background: 'var(--sharp-surface)', borderBottom: '1px solid var(--sharp-line)', overflow: 'hidden', position: 'relative' }}>
+        <div style={{ textAlign: 'center', marginBottom: '14px' }}>
           <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sharp-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
             Brands We Carry
           </span>
-          {['Honda', 'Yamaha', 'Suzuki', 'Kawasaki', 'Vespa'].map((brand) => (
-            <span key={brand} style={{ fontSize: '17px', fontWeight: 800, color: 'var(--sharp-ink-soft)', letterSpacing: '-0.3px', opacity: 0.75 }}>
-              {brand}
-            </span>
+        </div>
+
+        <div style={{ position: 'absolute', left: 0, top: '32px', bottom: 0, width: '80px', background: 'linear-gradient(to right, var(--sharp-surface), transparent)', zIndex: 2, pointerEvents: 'none' }}></div>
+        <div style={{ position: 'absolute', right: 0, top: '32px', bottom: 0, width: '80px', background: 'linear-gradient(to left, var(--sharp-surface), transparent)', zIndex: 2, pointerEvents: 'none' }}></div>
+
+        <div className="marquee-track" style={{ alignItems: 'center' }}>
+          {[...Array(2)].flatMap(() => [
+            { name: 'Honda', available: true },
+            { name: 'Yamaha', available: true },
+            { name: 'Suzuki', available: false },
+            { name: 'Kawasaki', available: false },
+            { name: 'Vespa', available: false },
+          ]).map((brand, idx) => (
+            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 32px', flexShrink: 0 }}>
+              <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--sharp-ink-soft)', letterSpacing: '-0.3px', opacity: brand.available ? 0.85 : 0.4, whiteSpace: 'nowrap' }}>
+                {brand.name}
+              </span>
+              {!brand.available && (
+                <span style={{ fontSize: '9px', fontWeight: 800, color: 'var(--sharp-muted)', background: 'var(--sharp-surface-2)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-full)', padding: '2px 8px', textTransform: 'uppercase', letterSpacing: '0.4px', whiteSpace: 'nowrap' }}>
+                  Coming Soon
+                </span>
+              )}
+            </div>
           ))}
         </div>
       </section>
@@ -1253,8 +1272,8 @@ export default function SharpSquareBusinessWebsitePage() {
                 <a href={`https://wa.me/${biz.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F1F5F9', fontSize: '15px' }}>
                   <i className="fa-brands fa-whatsapp"></i>
                 </a>
-                <a href={biz.mapsUrl} target="_blank" rel="noopener noreferrer" style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F1F5F9', fontSize: '15px' }}>
-                  <i className="fa-brands fa-google"></i>
+                <a href={biz.mapsUrl} target="_blank" rel="noopener noreferrer" style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F1F5F9', fontSize: '15px' }} title="Find us on Google Maps">
+                  <i className="fa-solid fa-location-dot"></i>
                 </a>
               </div>
             </div>
