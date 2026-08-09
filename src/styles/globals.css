@@ -159,6 +159,26 @@ body {
   display: none !important;
 }
 
+/* Modals and their internal scrollable lists — hide the scrollbar
+   visually (scroll still works via wheel/trackpad/touch) so long
+   forms don't show a distracting scroll track down the side. */
+.modal,
+.modal *,
+.autofill-dropdown-list,
+.autofill-dropdown-list * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+.modal::-webkit-scrollbar,
+.modal *::-webkit-scrollbar,
+.autofill-dropdown-list::-webkit-scrollbar,
+.autofill-dropdown-list *::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  display: none !important;
+}
+
 /* =========================================
    TYPOGRAPHY
    ========================================= */
@@ -4332,6 +4352,13 @@ select.form-control {
   background-size: 18px 18px !important;
 }
 select.form-control option { background: var(--bg-surface); color: var(--text-primary); }
+
+/* Dark mode: the chevron above is a fixed dark navy stroke, which
+   disappears against the dark select background once [data-theme="dark"]
+   flips things. Re-assert with a light stroke color for dark mode. */
+[data-theme="dark"] select.form-control {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23F1F5F9'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+}
 
 /* Scrollable tabs */
 .scrollable-tabs-bar { border-bottom: 1px solid var(--bg-border) !important; }

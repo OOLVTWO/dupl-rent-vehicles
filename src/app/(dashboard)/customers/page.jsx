@@ -1,11 +1,26 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { fetchCustomers, upsertCustomer, syncTransactionsToCustomers } from '@/lib/customers';
 import { exportCustomersToExcel, formatRupiah } from '@/lib/excel';
 import { COUNTRY_CODES, getFlagImageUrl } from '@/lib/countryCodes';
 import { compressImage } from '@/lib/imageCompressor';
+
+const VALID_CUSTOMER_TABS = ['all', 'repeat', 'new'];
+
+// Reads ?tab= so the sidebar "Data Customer" dropdown links land on the
+// right filter. Split out because useSearchParams() requires a Suspense
+// boundary.
+function TabFromQuery({ onTab }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && VALID_CUSTOMER_TABS.includes(tab)) onTab(tab);
+  }, [searchParams, onTab]);
+  return null;
+}
 
 // Country Code Picker Helper for Customer Modal
 function CountryCodePicker({ value, onChange }) {
@@ -317,6 +332,10 @@ export default function CustomersPage() {
 
   return (
     <div className="dashboard-content" style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
+      <Suspense fallback={null}>
+        <TabFromQuery onTab={setActiveTab} />
+      </Suspense>
+
       {/* Toast Notification */}
       {feedbackMsg && (
         <div style={{
@@ -505,58 +524,25 @@ export default function CustomersPage() {
         flexWrap: 'wrap',
         gap: '16px'
       }}>
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            type="button"
-            onClick={() => setActiveTab('all')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '20px',
-              fontSize: '13px',
-              fontWeight: activeTab === 'all' ? 700 : 500,
-              border: activeTab === 'all' ? '1px solid var(--brand-primary)' : '1px solid var(--bg-border)',
-              background: activeTab === 'all' ? 'rgba(37, 99, 235, 0.15)' : 'transparent',
-              color: activeTab === 'all' ? 'var(--brand-primary-light)' : 'var(--text-secondary)',
-              cursor: 'pointer'
-            }}
-          >
-            Semua Customer ({totalCustomersCount})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('repeat')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '20px',
-              fontSize: '13px',
-              fontWeight: activeTab === 'repeat' ? 700 : 500,
-              border: activeTab === 'repeat' ? '1px solid #3B82F6' : '1px solid var(--bg-border)',
-              background: activeTab === 'repeat' ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-              color: activeTab === 'repeat' ? '#60A5FA' : 'var(--text-secondary)',
-              cursor: 'pointer'
-            }}
-          >
-            <i className="fa-solid fa-crown" style={{ marginRight: '6px' }}></i>
-            Repeat Customer ({repeatCustomersCount})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('new')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '20px',
-              fontSize: '13px',
-              fontWeight: activeTab === 'new' ? 700 : 500,
-              border: activeTab === 'new' ? '1px solid #A855F7' : '1px solid var(--bg-border)',
-              background: activeTab === 'new' ? 'rgba(168, 85, 247, 0.15)' : 'transparent',
-              color: activeTab === 'new' ? '#C084FC' : 'var(--text-secondary)',
-              cursor: 'pointer'
-            }}
-          >
-            Customer Baru
-          </button>
-        </div>
+        {/* Current filter indicator — filter is now chosen from the
+            sidebar "Data Customer" dropdown, this just confirms what's showing */}
+        {(() => {
+          const TABS = {
+            all: { label: `Semua Customer (${totalCustomersCount})`, icon: 'fa-solid fa-users', color: 'var(--brand-primary)' },
+            repeat: { label: `Repeat Customer (${repeatCustomersCount})`, icon: 'fa-solid fa-crown', color: '#60A5FA' },
+            new: { label: 'Customer Baru', icon: 'fa-solid fa-user-plus', color: '#C084FC' },
+          };
+          const current = TABS[activeTab] || TABS.all;
+          return (
+            <span className="badge" style={{
+              background: `${current.color}18`, color: current.color, border: `1px solid ${current.color}40`,
+              fontSize: '12.5px', padding: '6px 14px', fontWeight: 600,
+            }}>
+              <i className={current.icon} style={{ marginRight: '6px' }}></i>
+              {current.label}
+            </span>
+          );
+        })()}
 
         {/* Search Input */}
         <div style={{ position: 'relative', width: '320px', maxWidth: '100%' }}>

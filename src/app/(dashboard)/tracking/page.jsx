@@ -1,8 +1,23 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getWhatsAppShareUrl, getWaReminderTemplate } from '@/lib/countryCodes';
+
+const VALID_TRACKING_TABS = ['all', 'overdue', 'critical', 'upcoming'];
+
+// Reads ?tab= so the sidebar "Tracking Sewa" dropdown links land on the
+// right filter. Split out because useSearchParams() requires a Suspense
+// boundary.
+function TabFromQuery({ onTab }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && VALID_TRACKING_TABS.includes(tab)) onTab(tab);
+  }, [searchParams, onTab]);
+  return null;
+}
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 function formatRupiah(amount) {
@@ -513,6 +528,10 @@ export default function TrackingPage() {
 
   return (
     <div className="page-content">
+      <Suspense fallback={null}>
+        <TabFromQuery onTab={setFilter} />
+      </Suspense>
+
       {/* ── Page Header ── */}
       <div className="tracking-page-header">
         <div className="tracking-header-left">
@@ -572,24 +591,23 @@ export default function TrackingPage() {
 
       {/* ── Filters & Search ── */}
       <div className="tracking-controls">
-        <div className="tracking-filter-tabs">
-          {FILTERS.map(f => (
-            <button
-              key={f.key}
-              className={`tracking-filter-tab ${filter === f.key ? 'active' : ''}`}
-              onClick={() => setFilter(f.key)}
-              style={filter === f.key && f.color ? { borderColor: f.color, color: f.color } : {}}
-            >
-              <i className={f.icon}></i>
-              <span>{f.label}</span>
-              {f.count > 0 && (
-                <span className="filter-count" style={f.color ? { background: `${f.color}22`, color: f.color } : {}}>
-                  {f.count}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+        {/* Current filter indicator — filter is now chosen from the
+            sidebar "Tracking Sewa" dropdown, this just confirms what's showing */}
+        {(() => {
+          const current = FILTERS.find(f => f.key === filter) || FILTERS[0];
+          return (
+            <span className="badge" style={{
+              background: current.color ? `${current.color}18` : 'var(--bg-elevated)',
+              color: current.color || 'var(--brand-primary)',
+              border: `1px solid ${current.color ? `${current.color}40` : 'var(--bg-border)'}`,
+              fontSize: '12.5px', padding: '6px 14px', fontWeight: 600,
+            }}>
+              <i className={current.icon} style={{ marginRight: '6px' }}></i>
+              {current.label}
+              {current.count > 0 && <span style={{ marginLeft: '6px', opacity: 0.75 }}>({current.count})</span>}
+            </span>
+          );
+        })()}
         <div className="tracking-search-wrap">
           <i className="fa-solid fa-magnifying-glass"></i>
           <input

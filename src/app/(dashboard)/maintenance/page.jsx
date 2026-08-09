@@ -1,7 +1,22 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { analyzeVehicleHealth } from '@/lib/aiDiagnostic';
+
+const VALID_MAINT_TABS = ['diagnostics', 'history', 'reports'];
+
+// Reads ?tab= so the sidebar "AI Diagnostic" dropdown links land on the
+// right section. Split out because useSearchParams() requires a Suspense
+// boundary.
+function TabFromQuery({ onTab }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && VALID_MAINT_TABS.includes(tab)) onTab(tab);
+  }, [searchParams, onTab]);
+  return null;
+}
 
 function formatRupiah(amount) {
   return new Intl.NumberFormat('id-ID', {
@@ -533,6 +548,10 @@ export default function MaintenancePage() {
 
   return (
     <div className="fade-in">
+      <Suspense fallback={null}>
+        <TabFromQuery onTab={setActiveTab} />
+      </Suspense>
+
       {/* Page Header */}
       <div className="page-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
@@ -593,35 +612,26 @@ export default function MaintenancePage() {
         </div>
       </div>
 
-      {/* NAVIGATION TAB SWITCHER — Scrollable Chips / Pills Layout */}
-      <div className="scrollable-tabs-bar" style={{ marginBottom: '16px' }}>
-        <button
-          type="button"
-          className={`scrollable-tab-btn ${activeTab === 'diagnostics' ? 'active' : ''}`}
-          onClick={() => setActiveTab('diagnostics')}
-        >
-          <i className="fa-solid fa-robot"></i>
-          AI Diagnostics & Skor Kesehatan ({diagnostics.length})
-        </button>
-
-        <button
-          type="button"
-          className={`scrollable-tab-btn ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => setActiveTab('history')}
-        >
-          <i className="fa-solid fa-clock-rotate-left"></i>
-          Riwayat & History Servis ({serviceHistoryLogs.length})
-        </button>
-
-        <button
-          type="button"
-          className={`scrollable-tab-btn ${activeTab === 'reports' ? 'active' : ''}`}
-          onClick={() => setActiveTab('reports')}
-        >
-          <i className="fa-solid fa-clipboard-list"></i>
-          Keluhan Pelanggan ({recentReports.length})
-        </button>
-      </div>
+      {/* Current section indicator — section is now chosen from the
+          sidebar "AI Diagnostic" dropdown, this just confirms what's showing */}
+      {(() => {
+        const TABS = {
+          diagnostics: { label: `AI Diagnostics & Skor Kesehatan (${diagnostics.length})`, icon: 'fa-solid fa-robot' },
+          history: { label: `Riwayat & History Servis (${serviceHistoryLogs.length})`, icon: 'fa-solid fa-clock-rotate-left' },
+          reports: { label: `Keluhan Pelanggan (${recentReports.length})`, icon: 'fa-solid fa-clipboard-list' },
+        };
+        const current = TABS[activeTab] || TABS.diagnostics;
+        return (
+          <div style={{ marginBottom: '16px' }}>
+            <span className="badge" style={{
+              background: 'var(--bg-elevated)', color: 'var(--brand-primary)', border: '1px solid var(--bg-border)',
+              fontSize: '12.5px', padding: '6px 14px', fontWeight: 600,
+            }}>
+              <i className={current.icon} style={{ marginRight: '6px' }}></i>{current.label}
+            </span>
+          </div>
+        );
+      })()}
 
       <div className="page-actions mb-6">
         <div className="filter-bar" style={{ width: '100%' }}>

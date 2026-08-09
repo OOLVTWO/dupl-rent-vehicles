@@ -244,6 +244,17 @@ function FinanceModal({ isOpen, onClose, onSubmit, editData, defaultType = 'expe
             </div>
           )}
 
+          {!isIncome && !editData && (
+            <div className="alert alert-info" style={{ marginBottom: '16px', fontSize: '12.5px', lineHeight: 1.6 }}>
+              <i className="fa-solid fa-circle-info" style={{ marginTop: '1px' }}></i>
+              <span>
+                Gunakan form ini untuk biaya operasional usaha — servis motor, suku cadang, bahan bakar,
+                atau gaji karyawan. Untuk pengeluaran terkait motor tertentu, catat di sini agar bisa
+                muncul di riwayat perawatan motor tersebut.
+              </span>
+            </div>
+          )}
+
           <div className="form-group">
             <label className="form-label" htmlFor="fin-title">
               <i className="fa-solid fa-file-signature" style={{ marginRight: '6px' }}></i> Keterangan Transaksi <span className="required">*</span>

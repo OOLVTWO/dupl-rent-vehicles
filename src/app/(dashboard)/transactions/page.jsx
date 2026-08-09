@@ -593,11 +593,11 @@ function CustomerPickerCombobox({ onSelectCustomer }) {
         {isOpen && (
           <>
             <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setIsOpen(false)}></div>
-            <div style={{
+            <div className="autofill-dropdown-list" style={{
               position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
-              maxHeight: '220px', overflowY: 'auto', background: '#0F172A',
+              maxHeight: '220px', overflowY: 'auto', background: 'var(--bg-card)',
               border: '1.5px solid var(--brand-primary)', borderRadius: '10px',
-              zIndex: 999, boxShadow: '0 12px 35px rgba(0,0,0,0.7)', padding: '6px'
+              zIndex: 999, boxShadow: '0 12px 35px rgba(0,0,0,0.35)', padding: '6px'
             }}>
               {loading ? (
                 <div style={{ padding: '12px', textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)' }}>Memuat data customer...</div>
@@ -625,7 +625,7 @@ function CustomerPickerCombobox({ onSelectCustomer }) {
                         )}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: '13px', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {c.name}
                           {(c.total_rentals || 0) > 1 && (
                             <span style={{ fontSize: '9px', background: 'rgba(59, 130, 246, 0.2)', color: '#60A5FA', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>

@@ -13,7 +13,17 @@ const NAV_SECTIONS = [
     items: [
       { href: '/dashboard',    iconClass: 'fa-solid fa-chart-pie',           label: 'Dashboard' },
       { href: '/transactions', iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi',      badge: null },
-      { href: '/customers',    iconClass: 'fa-solid fa-users',               label: 'Data Customer' },
+      {
+        href: '/customers',
+        iconClass: 'fa-solid fa-users',
+        label: 'Data Customer',
+        isDropdown: true,
+        children: [
+          { href: '/customers?tab=all',    iconClass: 'fa-solid fa-users',      label: 'Semua Customer' },
+          { href: '/customers?tab=repeat', iconClass: 'fa-solid fa-crown',      label: 'Repeat Customer' },
+          { href: '/customers?tab=new',    iconClass: 'fa-solid fa-user-plus',  label: 'Customer Baru' },
+        ],
+      },
       {
         href: '/vehicles',
         iconClass: 'fa-solid fa-motorcycle',
@@ -26,7 +36,19 @@ const NAV_SECTIONS = [
           { href: '/vehicles?tab=investor_recap', iconClass: 'fa-solid fa-address-card',  label: 'Directory & Rekap Investor' },
         ],
       },
-      { href: '/tracking',     iconClass: 'fa-solid fa-clock-rotate-left',   label: 'Tracking Sewa', badge: 'tracking' },
+      {
+        href: '/tracking',
+        iconClass: 'fa-solid fa-clock-rotate-left',
+        label: 'Tracking Sewa',
+        badge: 'tracking',
+        isDropdown: true,
+        children: [
+          { href: '/tracking?tab=all',      iconClass: 'fa-solid fa-list',              label: 'Semua' },
+          { href: '/tracking?tab=overdue',  iconClass: 'fa-solid fa-circle-exclamation', label: 'Overdue' },
+          { href: '/tracking?tab=critical', iconClass: 'fa-solid fa-bell',               label: 'Kritis' },
+          { href: '/tracking?tab=upcoming', iconClass: 'fa-solid fa-calendar-days',      label: 'Akan Datang' },
+        ],
+      },
       {
         href: '/availability',
         iconClass: 'fa-solid fa-circle-half-stroke',
@@ -74,7 +96,17 @@ const NAV_SECTIONS = [
   {
     label: 'Tools',
     items: [
-      { href: '/maintenance', iconClass: 'fa-solid fa-robot',  label: 'AI Diagnostic' },
+      {
+        href: '/maintenance',
+        iconClass: 'fa-solid fa-robot',
+        label: 'AI Diagnostic',
+        isDropdown: true,
+        children: [
+          { href: '/maintenance?tab=diagnostics', iconClass: 'fa-solid fa-robot',              label: 'Skor Kesehatan' },
+          { href: '/maintenance?tab=history',     iconClass: 'fa-solid fa-clock-rotate-left',  label: 'Riwayat Servis' },
+          { href: '/maintenance?tab=reports',     iconClass: 'fa-solid fa-clipboard-list',     label: 'Keluhan Pelanggan' },
+        ],
+      },
       { href: '/gallery',     iconClass: 'fa-solid fa-images', label: 'Galeri Foto' },
     ],
   },
