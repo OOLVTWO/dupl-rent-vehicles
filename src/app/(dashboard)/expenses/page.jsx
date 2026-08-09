@@ -32,12 +32,26 @@ function formatRupiah(amount) {
   }).format(cleanAmount);
 }
 
+// Selectable when creating a NEW income entry. Deliberately excludes
+// rental_income: motor rental revenue is already tracked automatically
+// from the Transaksi (booking) system, so offering it here would let
+// someone double-log it and inflate the Dashboard's total revenue.
+// This is for income *outside* that flow — tips-equivalent income like
+// add-on fees, delivery charges, or a forfeited deposit.
 const INCOME_CATEGORIES = {
-  rental_income: { label: 'Pendapatan Sewa Motor', icon: 'fa-solid fa-file-invoice-dollar', color: '#22C55E' },
   deposit_forfeit: { label: 'Klaim Deposit / Denda Damage', icon: 'fa-solid fa-shield-halved', color: '#F59E0B' },
   addon_services: { label: 'Layanan Tambahan (Helm / Jas Hujan)', icon: 'fa-solid fa-headset', color: '#3B82F6' },
   delivery_fee: { label: 'Biaya Antar-Jemput Motor', icon: 'fa-solid fa-truck-ramp-box', color: '#8B5CF6' },
-  other_income: { label: 'Pemasukan Lain-lain', icon: 'fa-solid fa-sack-dollar', color: '#10B981' },
+  other_income: { label: 'Pemasukan Lain-lain (mis. Tip)', icon: 'fa-solid fa-sack-dollar', color: '#10B981' },
+};
+
+// Full set including rental_income — kept only so any pre-existing
+// historical entry with that category (from before this change) still
+// displays with a proper label and can be filtered/found, not for
+// selecting on new entries. See INCOME_CATEGORIES above for that.
+const ALL_INCOME_CATEGORIES_FOR_DISPLAY = {
+  rental_income: { label: 'Pendapatan Sewa Motor (Legacy)', icon: 'fa-solid fa-file-invoice-dollar', color: '#22C55E' },
+  ...INCOME_CATEGORIES,
 };
 
 const EXPENSE_CATEGORIES = {
@@ -63,7 +77,7 @@ const getCleanCategoryKey = (cat) => {
 const getCategoryMeta = (cat, isIncome = false) => {
   const cleanKey = getCleanCategoryKey(cat);
   if (isIncome) {
-    return INCOME_CATEGORIES[cleanKey] || { label: 'Pemasukan Lain-lain', icon: 'fa-solid fa-sack-dollar', color: '#22C55E' };
+    return ALL_INCOME_CATEGORIES_FOR_DISPLAY[cleanKey] || { label: 'Pemasukan Lain-lain', icon: 'fa-solid fa-sack-dollar', color: '#22C55E' };
   }
   return EXPENSE_CATEGORIES[cleanKey] || { label: 'Pengeluaran Lain-lain', icon: 'fa-solid fa-receipt', color: '#EF4444' };
 };
@@ -218,6 +232,17 @@ function FinanceModal({ isOpen, onClose, onSubmit, editData, defaultType = 'expe
               </button>
             </div>
           </div>
+
+          {isIncome && !editData && (
+            <div className="alert alert-info" style={{ marginBottom: '16px', fontSize: '12.5px', lineHeight: 1.6 }}>
+              <i className="fa-solid fa-circle-info" style={{ marginTop: '1px' }}></i>
+              <span>
+                Pendapatan sewa motor sudah otomatis tercatat lewat menu <strong>Transaksi</strong>. Gunakan
+                form ini hanya untuk pemasukan di luar itu — misalnya tip, biaya antar-jemput, atau klaim
+                deposit — supaya total pendapatan di Dashboard tidak terhitung dobel.
+              </span>
+            </div>
+          )}
 
           <div className="form-group">
             <label className="form-label" htmlFor="fin-title">
@@ -674,7 +699,7 @@ export default function FinancesPage() {
           >
             <option value="all">Semua Kategori</option>
             <optgroup label="Pemasukan">
-              {Object.entries(INCOME_CATEGORIES).map(([k, v]) => (
+              {Object.entries(ALL_INCOME_CATEGORIES_FOR_DISPLAY).map(([k, v]) => (
                 <option key={k} value={k}>{v.label}</option>
               ))}
             </optgroup>

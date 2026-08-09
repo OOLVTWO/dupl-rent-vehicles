@@ -862,7 +862,9 @@ function ConfirmModal({ isOpen, onClose, onConfirm, onForceDelete, onSetMaintena
         {historyError ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div className="alert alert-warning" style={{ fontSize: '13px', margin: 0 }}>
-              Motor <strong style={{ color: '#F59E0B' }}>{vehicleName}</strong> pernah disewakan dan memiliki riwayat transaksi di sistem. Menghapus motor ini secara paksa akan merusak laporan keuangan.
+              <span>
+                Motor <strong style={{ color: '#F59E0B' }}>{vehicleName}</strong> pernah disewakan dan memiliki riwayat transaksi di sistem. Menghapus motor ini secara paksa akan merusak laporan keuangan.
+              </span>
             </div>
             <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
               Pilih tindakan yang diinginkan:

@@ -1275,6 +1275,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   color: var(--status-warning);
 }
 
+.alert-info {
+  background: var(--status-info-bg);
+  border-color: rgba(37, 99, 235, 0.3);
+  color: var(--status-info);
+}
+
 /* =========================================
    LOGIN PAGE
    ========================================= */
@@ -4376,6 +4382,7 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
 .alert-success { background: var(--status-success-bg) !important; color: var(--status-success) !important; }
 .alert-danger  { background: var(--status-danger-bg) !important;  color: var(--status-danger) !important; }
 .alert-warning { background: var(--status-warning-bg) !important; color: var(--status-warning) !important; }
+.alert-info    { background: var(--status-info-bg) !important;    color: var(--status-info) !important; }
 
 /* Auth page */
 .auth-page {
