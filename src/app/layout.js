@@ -1,4 +1,14 @@
+import { Inter } from "next/font/google";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 import "@/styles/globals.css";
+
+// Self-hosted via Next.js at build time — no runtime CDN request, no CORS/font-block risk.
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata = {
   title: "Boss Rent Pererenan — Scooter Rental Bali",
@@ -16,16 +26,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="id">
-      <head>
-        {/* Font Awesome v6 — framework ikon utama seluruh desain aplikasi */}
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-          crossOrigin="anonymous"
-          referrerPolicy="no-referrer"
-        />
-      </head>
+    <html lang="id" className={inter.variable}>
       <body>{children}</body>
     </html>
   );

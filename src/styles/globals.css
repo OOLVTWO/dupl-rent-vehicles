@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* Inter font is self-hosted via next/font/google in src/app/layout.js
+   (see the --font-inter CSS variable applied to <html>) — no runtime
+   CDN request needed here anymore. */
 
 /* =========================================
    DESIGN SYSTEM — Boss Rent Pererenan
@@ -111,7 +113,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-base);
   color: var(--text-primary);
   line-height: 1.6;
@@ -634,7 +636,7 @@ a:hover {
   border: 1px solid transparent;
   text-decoration: none;
   white-space: nowrap;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-inter), 'Inter', sans-serif;
 }
 
 .btn:disabled {
@@ -740,7 +742,7 @@ a:hover {
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 13.5px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-inter), 'Inter', sans-serif;
   transition: all var(--transition-fast);
   outline: none;
   box-sizing: border-box;

@@ -1,0 +1,227 @@
+/* =========================================
+   SHARP DESIGN SYSTEM — Public Marketing Site
+   (Boss Rent Pererenan — /fleet catalog)
+
+   This is the "bold/high-contrast" brand skin used for the
+   customer-facing catalog page, kept intentionally distinct
+   from the admin dashboard's soft/rounded system in globals.css.
+   Centralizing it here (tokens + real classes) replaces the old
+   approach of ~170 one-off inline style objects with repeated
+   hardcoded hex values scattered through fleet/page.jsx.
+   ========================================= */
+
+.sharp-page {
+  --sharp-ink:        #0F172A; /* primary text / borders */
+  --sharp-ink-soft:   #334155;
+  --sharp-muted:      #64748B;
+  --sharp-accent:     #E85D04; /* brand orange */
+  --sharp-bg:         #F8FAFC;
+  --sharp-surface:    #FFFFFF;
+  --sharp-surface-2:  #F1F5F9;
+  --sharp-success:    #16A34A;
+  --sharp-success-bg: #22C55E;
+  --sharp-info:       #2563EB;
+  --sharp-warning:    #D97706;
+  --sharp-star:       #F59E0B;
+  --sharp-whatsapp:   #25D366;
+
+  --sharp-border-w:   1px;
+  --sharp-border-w-lg: 2px;
+  --sharp-shadow-sm:  2px 2px 0px var(--sharp-ink);
+  --sharp-shadow-md:  4px 4px 0px var(--sharp-ink);
+  --sharp-shadow-lg:  6px 6px 0px var(--sharp-ink);
+  --sharp-shadow-accent: 6px 6px 0px var(--sharp-accent);
+
+  background: var(--sharp-surface);
+  color: var(--sharp-ink);
+  min-height: 100vh;
+  font-family: var(--font-inter), Inter, system-ui, -apple-system, sans-serif;
+}
+
+/* Scoped reset — only affects elements inside the sharp page,
+   not the whole document (the old version used a bare `* {}`
+   selector that reached every portal/toast/dev-overlay too). */
+.sharp-page,
+.sharp-page *,
+.sharp-page *::before,
+.sharp-page *::after {
+  border-radius: 0 !important;
+}
+
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  animation: marqueeScroll 40s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* ── Card ── */
+.sharp-card {
+  background: var(--sharp-surface);
+  border: var(--sharp-border-w) solid var(--sharp-ink);
+  box-shadow: var(--sharp-shadow-md);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.sharp-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--sharp-shadow-lg);
+}
+
+/* ── Stat card (hero counters) ── */
+.sharp-stat-card {
+  padding: 20px;
+  text-align: center;
+}
+.sharp-stat-value {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.sharp-stat-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--sharp-ink);
+  margin-top: 4px;
+}
+.sharp-stat-sublabel {
+  font-size: 11px;
+  color: var(--sharp-muted);
+  margin-top: 2px;
+}
+
+/* ── Button ── */
+.sharp-btn {
+  border-radius: 0 !important;
+  border: var(--sharp-border-w) solid var(--sharp-ink);
+  box-shadow: var(--sharp-shadow-sm);
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  padding: 12px 22px;
+  font-size: 13px;
+}
+.sharp-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--sharp-shadow-md);
+}
+.sharp-btn--dark      { background: var(--sharp-ink); color: #FFFFFF; }
+.sharp-btn--accent    { background: var(--sharp-accent); color: #FFFFFF; }
+.sharp-btn--whatsapp  { background: var(--sharp-whatsapp); color: #FFFFFF; }
+.sharp-btn--outline   { background: var(--sharp-surface); color: var(--sharp-ink); }
+.sharp-btn--sm        { padding: 8px 18px; font-size: 12px; }
+.sharp-btn--lg        { padding: 14px 36px; font-size: 14px; }
+.sharp-btn--block     { width: 100%; }
+
+/* ── Badge / pill ── */
+.sharp-badge {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border: var(--sharp-border-w) solid var(--sharp-ink);
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ── Input ── */
+.sharp-input {
+  width: 100%;
+  background: var(--sharp-bg);
+  border: var(--sharp-border-w) solid var(--sharp-ink);
+  color: var(--sharp-ink);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ── Section heading ── */
+.sharp-eyebrow {
+  font-size: 11px;
+  color: var(--sharp-accent);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.sharp-section-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--sharp-ink);
+  margin: 4px 0 8px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.sharp-section-subtitle {
+  font-size: 14px;
+  color: var(--sharp-muted);
+}
+
+/* ── Bento gallery card ── */
+.bento-card-sharp {
+  position: relative;
+  overflow: hidden;
+  background: var(--sharp-surface-2);
+  border: var(--sharp-border-w) solid var(--sharp-ink);
+  box-shadow: var(--sharp-shadow-md);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.bento-card-sharp:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--sharp-shadow-accent);
+}
+.bento-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.bento-card-sharp:hover .bento-img {
+  transform: scale(1.03);
+}
+.bento-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.2) 60%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  color: #FFF;
+}
+
+/* ── Floating action button ── */
+.sharp-fab {
+  width: 54px;
+  height: 54px;
+  border-radius: 0 !important;
+  border: var(--sharp-border-w-lg) solid var(--sharp-ink);
+  box-shadow: var(--sharp-shadow-md);
+  color: #FFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  transition: all 0.15s ease;
+}
+.sharp-fab:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--sharp-shadow-lg);
+}
