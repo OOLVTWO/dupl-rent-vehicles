@@ -33,7 +33,7 @@
   --sharp-shadow-lg:  var(--shadow-lg);
   --sharp-shadow-accent: 0 12px 28px rgba(184, 112, 63, 0.18);
 
-  background: var(--sharp-bg);
+  background: var(--sharp-surface);
   color: var(--sharp-ink);
   min-height: 100vh;
   font-family: var(--font-inter), Inter, system-ui, -apple-system, sans-serif;

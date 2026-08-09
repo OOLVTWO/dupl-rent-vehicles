@@ -1,9 +1,26 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { exportFinancesToExcel } from '@/lib/excel';
 import { getLocalDateStr } from '@/lib/finance';
 import { createClient } from '@/lib/supabase/client';
+
+const VALID_TYPE_TABS = ['all', 'income', 'expense'];
+
+// Reads ?tab= so the sidebar "Keuangan" dropdown links land on the right
+// filter. Split out because useSearchParams() requires a Suspense boundary.
+function TabFromQuery({ onTab, onCategoryReset }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && VALID_TYPE_TABS.includes(tab)) {
+      onTab(tab);
+      onCategoryReset();
+    }
+  }, [searchParams, onTab, onCategoryReset]);
+  return null;
+}
 
 function formatRupiah(amount) {
   const cleanAmount = Math.round(Number(amount || 0));
@@ -535,6 +552,10 @@ export default function FinancesPage() {
 
   return (
     <div className="fade-in">
+      <Suspense fallback={null}>
+        <TabFromQuery onTab={setTypeFilter} onCategoryReset={() => setCategoryFilter('all')} />
+      </Suspense>
+
       <div className="page-header">
         <div>
           <h2><i className="fa-solid fa-wallet" style={{ marginRight: '8px' }}></i> Kelola Keuangan Usaha</h2>
@@ -596,35 +617,16 @@ export default function FinancesPage() {
       {/* Filter Tabs & Actions */}
       <div className="bento-card bento-table-card mb-6" style={{ padding: '16px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
-          {/* SCROLLABLE TABS SELECTOR (SWIPE / SCROLLABLE ON MOBILE) */}
-          <div className="scrollable-tabs-bar" style={{ marginBottom: 0, paddingBottom: 0, borderBottom: 'none', width: 'auto', maxWidth: '100%' }}>
-            <button
-              type="button"
-              className={`scrollable-tab-btn ${typeFilter === 'all' ? 'active' : ''}`}
-              onClick={() => { setTypeFilter('all'); setCategoryFilter('all'); }}
-            >
-              <i className="fa-solid fa-list-check"></i>
-              Semua Arus Kas ({records.length})
-            </button>
-            <button
-              type="button"
-              className={`scrollable-tab-btn ${typeFilter === 'income' ? 'active' : ''}`}
-              onClick={() => { setTypeFilter('income'); setCategoryFilter('all'); }}
-              style={typeFilter === 'income' ? { background: '#22C55E', borderColor: '#22C55E', color: '#fff', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.35)' } : {}}
-            >
-              <i className="fa-solid fa-circle-arrow-down" style={{ color: typeFilter === 'income' ? '#fff' : '#22C55E' }}></i>
-              Pemasukan (+)
-            </button>
-            <button
-              type="button"
-              className={`scrollable-tab-btn ${typeFilter === 'expense' ? 'active' : ''}`}
-              onClick={() => { setTypeFilter('expense'); setCategoryFilter('all'); }}
-              style={typeFilter === 'expense' ? { background: '#EF4444', borderColor: '#EF4444', color: '#fff', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.35)' } : {}}
-            >
-              <i className="fa-solid fa-circle-arrow-up" style={{ color: typeFilter === 'expense' ? '#fff' : '#EF4444' }}></i>
-              Pengeluaran (-)
-            </button>
-          </div>
+          {/* Current filter indicator — filter is now chosen from the sidebar
+              "Keuangan" dropdown, this just confirms what's showing */}
+          <span className="badge" style={{
+            background: 'var(--bg-elevated)', color: 'var(--brand-primary)', border: '1px solid var(--bg-border)',
+            fontSize: '12.5px', padding: '6px 14px', fontWeight: 600,
+          }}>
+            {typeFilter === 'all' && <><i className="fa-solid fa-list-check" style={{ marginRight: '6px' }}></i>Semua Arus Kas ({records.length})</>}
+            {typeFilter === 'income' && <><i className="fa-solid fa-circle-arrow-down" style={{ marginRight: '6px', color: '#22C55E' }}></i>Pemasukan (+)</>}
+            {typeFilter === 'expense' && <><i className="fa-solid fa-circle-arrow-up" style={{ marginRight: '6px', color: '#EF4444' }}></i>Pengeluaran (-)</>}
+          </span>
 
           {/* DUAL ACTION BUTTONS & EXPORT (2-COLUMN GRID ON MOBILE) */}
           <div className="fin-actions-wrap">

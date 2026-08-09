@@ -81,7 +81,7 @@ export default function SharpSquareBusinessWebsitePage() {
     instagramUrl: 'https://www.instagram.com/bossrentpererenan?igsh=MWFxZzE3eWI2dWlqZA==',
     instagramHandle: '@bossrentpererenan',
     mapsUrl: 'https://maps.app.goo.gl/SdqrCREMRtkanUGd6',
-    mapsEmbedUrl: 'https://www.openstreetmap.org/export/embed.html?bbox=115.1180%2C-8.6520%2C115.1270%2C-8.6430&layer=mapnik&marker=-8.6477169%2C115.1226017'
+    mapsEmbedUrl: 'https://maps.google.com/maps?q=-8.6477169,115.1226017&z=16&output=embed'
   });
 
   // FAQ Accordion State (100% English for Tourists)
@@ -445,7 +445,7 @@ export default function SharpSquareBusinessWebsitePage() {
       </header>
 
       {/* ── HERO BANNER & ANIMATED COUNTERS SECTION (Sharp Square Layout) ── */}
-      <section style={{ background: 'var(--sharp-bg)', borderBottom: '1px solid var(--bg-border)', padding: '64px 24px' }}>
+      <section style={{ background: 'var(--sharp-surface)', borderBottom: '1px solid var(--bg-border)', padding: '64px 24px' }}>
         <div style={{
           maxWidth: '1180px',
           margin: '0 auto',
@@ -649,7 +649,7 @@ export default function SharpSquareBusinessWebsitePage() {
             <div style={{ marginTop: '12px', fontSize: '14px' }}>Loading Available Scooters...</div>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="sharp-card" style={{ textAlign: 'center', padding: '60px 0', background: 'var(--sharp-bg)' }}>
+          <div className="sharp-card" style={{ textAlign: 'center', padding: '60px 0' }}>
             <i className="fa-solid fa-motorcycle" style={{ fontSize: '40px', color: 'var(--sharp-muted)', marginBottom: '12px' }}></i>
             <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--sharp-ink)' }}>No Scooters Available In This Category</div>
             <div style={{ fontSize: '12px', color: 'var(--sharp-muted)', marginTop: '4px' }}>Please select another brand category or clear search.</div>
@@ -783,7 +783,7 @@ export default function SharpSquareBusinessWebsitePage() {
       </main>
 
       {/* ── GOOGLE REVIEWS SECTION (Infinite Scroll Carousel Marquee) ── */}
-      <section style={{ background: 'var(--sharp-bg)', borderTop: '1px solid var(--bg-border)', borderBottom: '1px solid var(--bg-border)', padding: '54px 0', overflow: 'hidden', position: 'relative' }}>
+      <section style={{ background: 'var(--sharp-surface)', borderTop: '1px solid var(--bg-border)', borderBottom: '1px solid var(--bg-border)', padding: '54px 0', overflow: 'hidden', position: 'relative' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px', marginBottom: '32px' }}>
           <SectionHeading
             eyebrow="Real Google Maps Reviews"
@@ -848,7 +848,7 @@ export default function SharpSquareBusinessWebsitePage() {
       </section>
 
       {/* ── FAQ SECTION (FREQUENTLY ASKED QUESTIONS) ── */}
-      <section style={{ padding: '56px 24px', background: 'var(--sharp-bg)', borderTop: '1px solid var(--bg-border)', borderBottom: '1px solid var(--bg-border)' }}>
+      <section style={{ padding: '56px 24px', background: 'var(--sharp-surface)', borderTop: '1px solid var(--bg-border)', borderBottom: '1px solid var(--bg-border)' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <SectionHeading
             eyebrow="Frequently Asked Questions"
@@ -1031,7 +1031,7 @@ export default function SharpSquareBusinessWebsitePage() {
       </div>
 
       {/* ── FOOTER ── */}
-      <footer style={{ background: 'var(--sharp-bg)', borderTop: '1px solid var(--bg-border)', padding: '28px 24px', textAlign: 'center', fontSize: '12.5px', color: 'var(--sharp-muted)' }}>
+      <footer style={{ background: 'var(--sharp-surface)', borderTop: '1px solid var(--bg-border)', padding: '28px 24px', textAlign: 'center', fontSize: '12.5px', color: 'var(--sharp-muted)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             © {new Date().getFullYear()} <strong style={{ color: 'var(--sharp-ink)' }}>{biz.name}</strong> • Premium Scooter Rental Pererenan, Canggu, Bali.

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getPaymentMethods, savePaymentMethods, DEFAULT_PAYMENT_METHODS } from '@/lib/paymentMethods';
 import {
@@ -15,6 +16,19 @@ import {
   sendWhatsAppGateway
 } from '@/lib/countryCodes';
 import { updateFavicon } from '@/lib/favicon';
+
+const VALID_SETTINGS_TABS = ['storage', 'payment', 'wacustom', 'security', 'business'];
+
+// Reads ?tab= so the sidebar "Pengaturan" dropdown links land on the right
+// section. Split out because useSearchParams() requires a Suspense boundary.
+function TabFromQuery({ onTab }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && VALID_SETTINGS_TABS.includes(tab)) onTab(tab);
+  }, [searchParams, onTab]);
+  return null;
+}
 
 function formatRupiah(amount) {
   return new Intl.NumberFormat('id-ID', {
@@ -807,6 +821,10 @@ export default function SettingsPage() {
 
   return (
     <div className="fade-in">
+      <Suspense fallback={null}>
+        <TabFromQuery onTab={setActiveTab} />
+      </Suspense>
+
       <div className="page-header">
         <h2><i className="fa-solid fa-gear" style={{ marginRight: '8px' }}></i> Pengaturan Sistem & Operasional</h2>
         <p>Kelola koneksi database, metode pembayaran, keamanan akun, dan konfigurasi rental</p>
@@ -878,29 +896,28 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* Scrollable Tabs Chips / Horizontal Pills Bar */}
-      <div className="scrollable-tabs-bar">
-        {[
+      {/* Current section indicator — the section itself is now chosen from
+          the sidebar "Pengaturan" dropdown, this just confirms what's showing */}
+      {(() => {
+        const TABS = [
           { id: 'storage', label: 'Database & Storage', icon: 'fa-solid fa-database' },
           { id: 'payment', label: 'Metode Pembayaran', icon: 'fa-solid fa-credit-card' },
           { id: 'wacustom', label: 'Template Invoice WA', icon: 'fa-brands fa-whatsapp' },
           { id: 'security', label: 'Keamanan & Password', icon: 'fa-solid fa-shield-halved' },
           { id: 'business', label: 'Operasional Rental', icon: 'fa-solid fa-sliders' },
-        ].map(tab => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              className={`scrollable-tab-btn ${isActive ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              <i className={tab.icon}></i>
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+        ];
+        const current = TABS.find(t => t.id === activeTab) || TABS[0];
+        return (
+          <div style={{ marginBottom: '16px' }}>
+            <span className="badge" style={{
+              background: 'var(--bg-elevated)', color: 'var(--brand-primary)', border: '1px solid var(--bg-border)',
+              fontSize: '12.5px', padding: '6px 14px', fontWeight: 600,
+            }}>
+              <i className={current.icon} style={{ marginRight: '6px' }}></i>{current.label}
+            </span>
+          </div>
+        );
+      })()}
 
       {/* TAB 1: DATABASE & STORAGE */}
       {activeTab === 'storage' && (

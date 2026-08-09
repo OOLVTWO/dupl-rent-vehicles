@@ -14,7 +14,18 @@ const NAV_SECTIONS = [
       { href: '/dashboard',    iconClass: 'fa-solid fa-chart-pie',           label: 'Dashboard' },
       { href: '/transactions', iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi',      badge: null },
       { href: '/customers',    iconClass: 'fa-solid fa-users',               label: 'Data Customer' },
-      { href: '/vehicles',     iconClass: 'fa-solid fa-motorcycle',          label: 'Data Motor' },
+      {
+        href: '/vehicles',
+        iconClass: 'fa-solid fa-motorcycle',
+        label: 'Data Motor',
+        isDropdown: true,
+        children: [
+          { href: '/vehicles?tab=all',            iconClass: 'fa-solid fa-motorcycle',    label: 'Semua Unit Armada' },
+          { href: '/vehicles?tab=internal',       iconClass: 'fa-solid fa-building',      label: 'Milik Internal' },
+          { href: '/vehicles?tab=investor',       iconClass: 'fa-solid fa-crown',         label: 'Milik Investor' },
+          { href: '/vehicles?tab=investor_recap', iconClass: 'fa-solid fa-address-card',  label: 'Directory & Rekap Investor' },
+        ],
+      },
       { href: '/tracking',     iconClass: 'fa-solid fa-clock-rotate-left',   label: 'Tracking Sewa', badge: 'tracking' },
       { href: '/availability', iconClass: 'fa-solid fa-circle-half-stroke',  label: 'Ketersediaan',  badge: 'availability' },
     ],
@@ -22,7 +33,17 @@ const NAV_SECTIONS = [
   {
     label: 'Keuangan',
     items: [
-      { href: '/expenses', iconClass: 'fa-solid fa-wallet',     label: 'Keuangan' },
+      {
+        href: '/expenses',
+        iconClass: 'fa-solid fa-wallet',
+        label: 'Keuangan',
+        isDropdown: true,
+        children: [
+          { href: '/expenses?tab=all',     iconClass: 'fa-solid fa-list-check',        label: 'Semua Arus Kas' },
+          { href: '/expenses?tab=income',  iconClass: 'fa-solid fa-circle-arrow-down', label: 'Pemasukan (+)' },
+          { href: '/expenses?tab=expense', iconClass: 'fa-solid fa-circle-arrow-up',   label: 'Pengeluaran (-)' },
+        ],
+      },
       {
         href: '/reports',
         iconClass: 'fa-solid fa-chart-line',
@@ -47,8 +68,20 @@ const NAV_SECTIONS = [
   {
     label: 'Lainnya',
     items: [
-      { href: '/settings', iconClass: 'fa-solid fa-gear',  label: 'Pengaturan' },
-      { href: '/fleet',    iconClass: 'fa-solid fa-globe', label: 'Website Publik' },
+      {
+        href: '/settings',
+        iconClass: 'fa-solid fa-gear',
+        label: 'Pengaturan',
+        isDropdown: true,
+        children: [
+          { href: '/settings?tab=storage',  iconClass: 'fa-solid fa-database',       label: 'Database & Storage' },
+          { href: '/settings?tab=payment',  iconClass: 'fa-solid fa-credit-card',    label: 'Metode Pembayaran' },
+          { href: '/settings?tab=wacustom', iconClass: 'fa-brands fa-whatsapp',      label: 'Template Invoice WA' },
+          { href: '/settings?tab=security', iconClass: 'fa-solid fa-shield-halved', label: 'Keamanan & Password' },
+          { href: '/settings?tab=business', iconClass: 'fa-solid fa-sliders',        label: 'Operasional Rental' },
+        ],
+      },
+      { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'Website Publik' },
     ],
   },
 ];
@@ -65,12 +98,22 @@ export default function Sidebar({ user, mobileOpen, onClose }) {
   const pathname = usePathname();
   const router = useRouter();
   const [alertCounts, setAlertCounts] = useState({ tracking: 0, availability: 0 });
-  const [laporanOpen, setLaporanOpen] = useState(false);
+  const [openDropdowns, setOpenDropdowns] = useState({});
   const [logoUrl, setLogoUrl] = useState('/images/logoCompany.png');
 
-  // Auto-expand laporan dropdown if on /reports
+  // Auto-expand a dropdown if the current path matches one of its items
   useEffect(() => {
-    if (pathname.startsWith('/reports')) setLaporanOpen(true);
+    const match = {};
+    NAV_SECTIONS.forEach(section => {
+      section.items.forEach(item => {
+        if (item.isDropdown && pathname.startsWith(item.href)) {
+          match[item.href] = true;
+        }
+      });
+    });
+    if (Object.keys(match).length > 0) {
+      setOpenDropdowns(prev => ({ ...prev, ...match }));
+    }
   }, [pathname]);
 
   useEffect(() => {
@@ -149,14 +192,15 @@ export default function Sidebar({ user, mobileOpen, onClose }) {
                 : item.badge === 'availability' ? alertCounts.availability
                 : 0;
 
-              // Dropdown (Laporan)
+              // Dropdown (Laporan, Data Motor, Keuangan, Pengaturan)
               if (item.isDropdown) {
-                const isDropdownActive = pathname.startsWith('/reports');
+                const isDropdownActive = pathname.startsWith(item.href);
+                const isOpen = !!openDropdowns[item.href];
                 return (
                   <div key={item.href}>
                     <button
                       type="button"
-                      onClick={() => setLaporanOpen(prev => !prev)}
+                      onClick={() => setOpenDropdowns(prev => ({ ...prev, [item.href]: !prev[item.href] }))}
                       className={`sidebar-nav-item sidebar-dropdown-trigger ${isDropdownActive ? 'active' : ''}`}
                     >
                       <span className="nav-icon"><i className={item.iconClass}></i></span>
@@ -166,14 +210,14 @@ export default function Sidebar({ user, mobileOpen, onClose }) {
                         style={{
                           fontSize: '10px',
                           transition: 'transform 0.22s ease',
-                          transform: laporanOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                           opacity: 0.45,
                         }}
                       />
                     </button>
                     <div style={{
                       overflow: 'hidden',
-                      maxHeight: laporanOpen ? '240px' : '0px',
+                      maxHeight: isOpen ? `${item.children.length * 42 + 8}px` : '0px',
                       transition: 'max-height 0.28s ease',
                     }}>
                       {item.children.map((child) => (
