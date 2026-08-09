@@ -4355,9 +4355,19 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
 
 /* Dark mode: the chevron above is a fixed dark navy stroke, which
    disappears against the dark select background once [data-theme="dark"]
-   flips things. Re-assert with a light stroke color for dark mode. */
+   flips things. Re-assert with a light stroke color for dark mode.
+   Also re-assert repeat/position/size explicitly (not just the image) -
+   a later dark-mode rule sets the `background` shorthand on
+   .form-control, which resets these sub-properties to their browser
+   defaults (repeat/auto/0% 0%) for that specific property competition
+   even though this rule's specificity still wins for background-image
+   itself. Without repeating them here, the chevron visibly tiles
+   across the whole select instead of showing once. */
 [data-theme="dark"] select.form-control {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23F1F5F9'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 14px center !important;
+  background-size: 18px 18px !important;
 }
 
 /* Scrollable tabs */
