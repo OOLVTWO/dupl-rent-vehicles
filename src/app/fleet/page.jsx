@@ -627,6 +627,20 @@ export default function SharpSquareBusinessWebsitePage() {
         </div>
       </section>
 
+      {/* ── BRANDS WE CARRY — trust strip ── */}
+      <section style={{ padding: '28px 24px', background: 'var(--sharp-surface)', borderBottom: '1px solid var(--sharp-line)' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sharp-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            Brands We Carry
+          </span>
+          {['Honda', 'Yamaha', 'Suzuki', 'Kawasaki', 'Vespa'].map((brand) => (
+            <span key={brand} style={{ fontSize: '17px', fontWeight: 800, color: 'var(--sharp-ink-soft)', letterSpacing: '-0.3px', opacity: 0.75 }}>
+              {brand}
+            </span>
+          ))}
+        </div>
+      </section>
+
       {/* ── HOW IT WORKS — 3-STEP BOOKING FLOW ── */}
       <section style={{ padding: '64px 24px', background: 'var(--sharp-surface-2)', borderTop: '1px solid var(--sharp-line)', borderBottom: '1px solid var(--sharp-line)' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
