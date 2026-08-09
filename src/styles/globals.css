@@ -850,6 +850,18 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   overflow-x: auto;
   border-radius: var(--radius-lg);
   border: 1px solid var(--bg-border);
+  /* Scroll-shadow hint (pure CSS, no extra markup): a soft edge fade
+     appears on whichever side still has more columns to scroll to,
+     and disappears once you've scrolled all the way there. */
+  background:
+    linear-gradient(to right, var(--bg-surface) 30%, rgba(255,255,255,0)) 0 0,
+    linear-gradient(to right, rgba(255,255,255,0), var(--bg-surface) 70%) 100% 0,
+    linear-gradient(to right, rgba(31,42,40,0.10), rgba(255,255,255,0)) 0 0,
+    linear-gradient(to left, rgba(31,42,40,0.10), rgba(255,255,255,0)) 100% 0;
+  background-repeat: no-repeat;
+  background-color: var(--bg-surface);
+  background-size: 48px 100%, 48px 100%, 16px 100%, 16px 100%;
+  background-attachment: local, local, scroll, scroll;
 }
 
 .table {

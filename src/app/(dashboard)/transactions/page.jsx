@@ -1404,7 +1404,7 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
               )}
 
               {/* Dates & Pricing Table */}
-              <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse', marginBottom: '20px' }}>
+              <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse', marginBottom: '20px', whiteSpace: 'nowrap' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#94A3B8', textAlign: 'left' }}>
                     <th style={{ padding: '8px 0' }}>DESKRIPSI</th>
