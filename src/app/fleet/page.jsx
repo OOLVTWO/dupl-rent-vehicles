@@ -436,10 +436,10 @@ export default function SharpSquareBusinessWebsitePage() {
 
   return (
     <div className={`sharp-page ${theme === 'dark' ? 'sharp-page--dark' : ''}`}>
-      {/* ── TOP ANNOUNCEMENT BAR ── */}
-      <div style={{ background: 'var(--sharp-ink)', color: 'var(--sharp-bg)', textAlign: 'center', padding: '9px 16px', fontSize: '12px', fontWeight: 600, letterSpacing: '0.2px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+      {/* ── TOP ANNOUNCEMENT BAR — permanently dark, like the footer, regardless of page theme ── */}
+      <div style={{ background: '#0B0F19', color: '#F1F5F9', textAlign: 'center', padding: '9px 16px', fontSize: '12px', fontWeight: 600, letterSpacing: '0.2px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-          <i className="fa-solid fa-motorcycle" style={{ color: 'var(--sharp-star)' }}></i>
+          <i className="fa-solid fa-motorcycle" style={{ color: '#FBBF24' }}></i>
           {biz.tagline}
         </span>
         <a href={biz.mapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#E8C179', textDecoration: 'none', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>

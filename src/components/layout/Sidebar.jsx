@@ -27,7 +27,20 @@ const NAV_SECTIONS = [
         ],
       },
       { href: '/tracking',     iconClass: 'fa-solid fa-clock-rotate-left',   label: 'Tracking Sewa', badge: 'tracking' },
-      { href: '/availability', iconClass: 'fa-solid fa-circle-half-stroke',  label: 'Ketersediaan',  badge: 'availability' },
+      {
+        href: '/availability',
+        iconClass: 'fa-solid fa-circle-half-stroke',
+        label: 'Ketersediaan',
+        badge: 'availability',
+        isDropdown: true,
+        children: [
+          { href: '/availability?tab=all',         iconClass: 'fa-solid fa-grip',              label: 'Semua Armada' },
+          { href: '/availability?tab=available',   iconClass: 'fa-solid fa-circle-check',      label: 'Tersedia' },
+          { href: '/availability?tab=rented',      iconClass: 'fa-solid fa-key',                label: 'Disewa' },
+          { href: '/availability?tab=overdue',     iconClass: 'fa-solid fa-circle-exclamation', label: 'Overdue' },
+          { href: '/availability?tab=maintenance', iconClass: 'fa-solid fa-wrench',             label: 'Perawatan' },
+        ],
+      },
     ],
   },
   {
@@ -205,6 +218,11 @@ export default function Sidebar({ user, mobileOpen, onClose }) {
                     >
                       <span className="nav-icon"><i className={item.iconClass}></i></span>
                       <span style={{ flex: 1 }}>{item.label}</span>
+                      {badgeCount > 0 && (
+                        <span className="sidebar-alert-badge" style={{ marginRight: '4px' }}>
+                          {badgeCount > 9 ? '9+' : badgeCount}
+                        </span>
+                      )}
                       <i
                         className="fa-solid fa-chevron-down"
                         style={{
