@@ -9,38 +9,53 @@
    marquee, trust seal) built on top of those shared tokens.
    ========================================= */
 
+/* =========================================
+   DARK AUTOMOTIVE DESIGN SYSTEM — Public Marketing Site
+   (Boss Rent Pererenan — /fleet catalog)
+
+   Bold, dark, modern — a deliberately different visual language from
+   the admin dashboard (light/blue), the way a consumer-facing rental
+   brand site and an internal ops tool usually don't share a skin.
+   Structural classes (hero, bento gallery, marquee, trust seal) live
+   here on top of these dark tokens.
+   ========================================= */
+
 .sharp-page {
-  /* Local aliases onto the shared design tokens — keeps every class
-     below unchanged while pointing at the one real palette. */
-  --sharp-ink:        var(--text-primary);
-  --sharp-ink-soft:   var(--text-secondary);
-  --sharp-muted:      var(--text-muted);
-  --sharp-accent:     var(--brand-accent);   /* muted clay — restrained use */
-  --sharp-bg:         var(--bg-base);
-  --sharp-surface:    var(--bg-surface);
-  --sharp-surface-2:  var(--bg-elevated);
-  --sharp-success:    var(--status-success);
-  --sharp-success-bg: var(--status-success);
-  --sharp-info:       var(--status-info);
-  --sharp-warning:    var(--status-warning);
-  --sharp-star:       #C08A34;
+  --sharp-ink:        #F1F5F9;
+  --sharp-ink-soft:   #CBD5E1;
+  --sharp-muted:      #8B96A8;
+  --sharp-accent:     #60A5FA;  /* light blue — ties back to the admin brand color */
+  --sharp-accent-solid: #2563EB;
+  --sharp-bg:         #0B0F19;
+  --sharp-surface:    #141A26;
+  --sharp-surface-2:  #1B2332;
+  --sharp-success:    #4ADE80;
+  --sharp-success-bg: #16A34A;
+  --sharp-info:       #60A5FA;
+  --sharp-warning:    #FBBF24;
+  --sharp-star:       #FBBF24;
   --sharp-whatsapp:   #25D366;
+
+  --sharp-line:        rgba(255, 255, 255, 0.09);
+  --sharp-line-strong:  rgba(255, 255, 255, 0.16);
 
   --sharp-border-w:    1px;
   --sharp-border-w-lg: 1.5px;
-  --sharp-shadow-sm:  var(--shadow-sm);
-  --sharp-shadow-md:  var(--shadow-md);
-  --sharp-shadow-lg:  var(--shadow-lg);
-  --sharp-shadow-accent: 0 12px 28px rgba(184, 112, 63, 0.18);
+  --sharp-shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.3);
+  --sharp-shadow-md:  0 8px 24px rgba(0, 0, 0, 0.45);
+  --sharp-shadow-lg:  0 20px 50px rgba(0, 0, 0, 0.55);
+  --sharp-shadow-accent: 0 12px 32px rgba(96, 165, 250, 0.22);
 
-  background: var(--sharp-surface);
+  background: var(--sharp-bg);
   color: var(--sharp-ink);
   min-height: 100vh;
   font-family: var(--font-inter), Inter, system-ui, -apple-system, sans-serif;
 }
 
 .sharp-page .font-display {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-display), 'Arial Narrow', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 @keyframes marqueeScroll {
@@ -60,7 +75,7 @@
 /* ── Card ── */
 .sharp-card {
   background: var(--sharp-surface);
-  border: var(--sharp-border-w) solid var(--bg-border);
+  border: var(--sharp-border-w) solid var(--sharp-line);
   border-radius: var(--radius-lg);
   box-shadow: var(--sharp-shadow-sm);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -83,7 +98,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-display), 'Arial Narrow', sans-serif;
 }
 .sharp-stat-label {
   font-size: 12px;
@@ -116,10 +131,10 @@
   transform: translateY(-1px);
   box-shadow: var(--sharp-shadow-md);
 }
-.sharp-btn--dark      { background: var(--sharp-ink); color: #FFFFFF; }
-.sharp-btn--accent    { background: var(--brand-primary); color: #FFFFFF; }
+.sharp-btn--dark      { background: var(--sharp-ink); color: var(--sharp-bg); }
+.sharp-btn--accent    { background: var(--sharp-accent-solid); color: #FFFFFF; }
 .sharp-btn--whatsapp  { background: var(--sharp-whatsapp); color: #FFFFFF; }
-.sharp-btn--outline   { background: var(--sharp-surface); color: var(--sharp-ink); border-color: var(--bg-border-strong); }
+.sharp-btn--outline   { background: transparent; color: var(--sharp-ink); border-color: var(--sharp-line-strong); }
 .sharp-btn--sm        { padding: 8px 18px; font-size: 12px; }
 .sharp-btn--lg        { padding: 14px 36px; font-size: 14.5px; }
 .sharp-btn--block     { width: 100%; }
@@ -143,7 +158,7 @@
 .sharp-input {
   width: 100%;
   background: var(--sharp-surface);
-  border: var(--sharp-border-w) solid var(--bg-border);
+  border: var(--sharp-border-w) solid var(--sharp-line);
   border-radius: var(--radius-md);
   color: var(--sharp-ink);
   padding: 10px 14px;
@@ -152,14 +167,14 @@
 }
 .sharp-input:focus {
   outline: none;
-  border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px rgba(20, 116, 107, 0.12);
+  border-color: var(--sharp-accent);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
 }
 
 /* ── Section heading ── */
 .sharp-eyebrow {
   font-size: 11px;
-  color: var(--brand-primary);
+  color: var(--sharp-accent);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.2px;
@@ -172,7 +187,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-display), 'Arial Narrow', sans-serif;
 }
 .sharp-section-subtitle {
   font-size: 14.5px;
@@ -185,7 +200,7 @@
   position: relative;
   overflow: hidden;
   background: var(--sharp-surface-2);
-  border: var(--sharp-border-w) solid var(--bg-border);
+  border: var(--sharp-border-w) solid var(--sharp-line);
   border-radius: var(--radius-lg);
   box-shadow: var(--sharp-shadow-sm);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -206,7 +221,7 @@
 .bento-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(31, 42, 40, 0.88) 0%, rgba(31, 42, 40, 0.15) 60%, transparent 100%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.2) 60%, transparent 100%);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;

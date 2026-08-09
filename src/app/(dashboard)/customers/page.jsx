@@ -99,7 +99,7 @@ function CountryCodePicker({ value, onChange }) {
                       padding: '8px 10px',
                       borderRadius: '6px',
                       cursor: 'pointer',
-                      background: isSelected ? 'rgba(20, 116, 107, 0.15)' : 'transparent',
+                      background: isSelected ? 'rgba(37, 99, 235, 0.15)' : 'transparent',
                       color: isSelected ? 'var(--brand-primary-light)' : 'var(--text-primary)',
                       fontSize: '12px',
                       fontWeight: isSelected ? 700 : 500
@@ -411,7 +411,7 @@ export default function CustomersPage() {
         }}>
           <div style={{
             width: '48px', height: '48px', borderRadius: '12px',
-            background: 'rgba(20, 116, 107, 0.15)', color: 'var(--brand-primary)',
+            background: 'rgba(37, 99, 235, 0.15)', color: 'var(--brand-primary)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px'
           }}>
             <i className="fa-solid fa-address-book"></i>
@@ -516,7 +516,7 @@ export default function CustomersPage() {
               fontSize: '13px',
               fontWeight: activeTab === 'all' ? 700 : 500,
               border: activeTab === 'all' ? '1px solid var(--brand-primary)' : '1px solid var(--bg-border)',
-              background: activeTab === 'all' ? 'rgba(20, 116, 107, 0.15)' : 'transparent',
+              background: activeTab === 'all' ? 'rgba(37, 99, 235, 0.15)' : 'transparent',
               color: activeTab === 'all' ? 'var(--brand-primary-light)' : 'var(--text-secondary)',
               cursor: 'pointer'
             }}

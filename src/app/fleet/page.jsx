@@ -575,7 +575,7 @@ export default function SharpSquareBusinessWebsitePage() {
             >
               <img src={photo.url} alt={photo.title} className="bento-img" onError={handleImgError} />
               <div className="bento-overlay" style={{ boxSizing: 'border-box', padding: '16px', width: '100%' }}>
-                <span style={{ fontSize: '10px', background: 'var(--sharp-ink)', color: '#FFF', padding: '4px 10px', fontWeight: 800, width: 'fit-content', marginBottom: '6px', border: '1px solid rgba(255,255,255,0.3)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ fontSize: '10px', background: 'var(--sharp-ink)', color: 'var(--sharp-bg)', padding: '4px 10px', fontWeight: 800, width: 'fit-content', marginBottom: '6px', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                   <i className={photo.icon} style={{ color: 'var(--sharp-accent)', fontSize: '11px' }}></i>
                   <span>{photo.tag}</span>
                 </span>
@@ -896,8 +896,8 @@ export default function SharpSquareBusinessWebsitePage() {
                         width: '26px',
                         height: '26px',
                         borderRadius: 'var(--radius-sm)',
-                        background: isOpen ? 'var(--brand-primary)' : 'var(--sharp-ink)',
-                        color: 'var(--sharp-surface)',
+                        background: isOpen ? 'var(--sharp-accent-solid)' : 'var(--sharp-ink)',
+                        color: isOpen ? '#FFFFFF' : 'var(--sharp-bg)',
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -943,7 +943,7 @@ export default function SharpSquareBusinessWebsitePage() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', fontSize: '13.5px', color: 'var(--sharp-ink-soft)', lineHeight: 1.6 }}>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-md)', background: 'var(--sharp-ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 900 }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-md)', background: 'var(--sharp-ink)', color: 'var(--sharp-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 900 }}>
                     <i className="fa-solid fa-location-dot" style={{ fontSize: '16px' }}></i>
                   </div>
                   <div>

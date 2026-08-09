@@ -37,7 +37,7 @@ const CustomTooltip = ({ active, payload, label }) => {
         boxShadow: '0 8px 24px rgba(0,0,0,0.6)'
       }}>
         <p style={{ color: '#9898B0', marginBottom: '4px', fontWeight: 600 }}>{label}</p>
-        <p style={{ color: '#4FA89D', fontWeight: 800, fontSize: '14px' }}>
+        <p style={{ color: '#60A5FA', fontWeight: 800, fontSize: '14px' }}>
           {formatFullRupiah(payload[0].value)}
         </p>
       </div>
@@ -140,7 +140,7 @@ export default function DashboardCharts({ transactions, vehicles, periodMode = '
                 tickFormatter={formatRupiah}
                 width={70}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(20, 116, 107,0.06)' }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(37, 99, 235,0.06)' }} />
               <Bar
                 dataKey="revenue"
                 fill="url(#barGradientFull)"
@@ -149,8 +149,8 @@ export default function DashboardCharts({ transactions, vehicles, periodMode = '
               />
               <defs>
                 <linearGradient id="barGradientFull" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#14746B" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#4FA89D" stopOpacity={0.6} />
+                  <stop offset="0%" stopColor="#2563EB" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#60A5FA" stopOpacity={0.6} />
                 </linearGradient>
               </defs>
             </BarChart>
