@@ -10,6 +10,7 @@ import StatCard from '@/components/fleet/StatCard';
 import SectionHeading from '@/components/fleet/SectionHeading';
 import SharpButton from '@/components/fleet/SharpButton';
 import TrustSeal from '@/components/fleet/TrustSeal';
+import ThemeToggle from '@/components/fleet/ThemeToggle';
 
 function formatRupiah(amount) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount || 0);
@@ -63,6 +64,32 @@ export default function SharpSquareBusinessWebsitePage() {
   // Bento gallery & fleet show more state (limit initial display to 6 cards)
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [showAllFleet, setShowAllFleet] = useState(false);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+
+  // Light/dark theme — light is the default; dark is opt-in and
+  // remembered. Starts 'light' on the server and first client render
+  // (avoids hydration mismatch), then syncs from localStorage after mount.
+  const [theme, setTheme] = useState('light');
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('boss_rent_fleet_theme');
+      // Intentional: standard pattern for reading a client-only preference
+      // (localStorage) without a server/client hydration mismatch — state
+      // can't be initialized to the saved value directly since localStorage
+      // isn't available during SSR or the first client render.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (saved === 'dark') setTheme('dark');
+    } catch {
+      // ignore
+    }
+  }, []);
+  const toggleTheme = () => {
+    setTheme(prev => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('boss_rent_fleet_theme', next); } catch { /* ignore */ }
+      return next;
+    });
+  };
 
   // Business & CMS Landing Page State (Loads dynamically from admin panel settings)
   const [biz, setBiz] = useState({
@@ -408,7 +435,7 @@ export default function SharpSquareBusinessWebsitePage() {
   });
 
   return (
-    <div className="sharp-page">
+    <div className={`sharp-page ${theme === 'dark' ? 'sharp-page--dark' : ''}`}>
       {/* ── TOP ANNOUNCEMENT BAR ── */}
       <div style={{ background: 'var(--sharp-ink)', color: 'var(--sharp-bg)', textAlign: 'center', padding: '9px 16px', fontSize: '12px', fontWeight: 600, letterSpacing: '0.2px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
@@ -422,7 +449,7 @@ export default function SharpSquareBusinessWebsitePage() {
       </div>
 
       {/* ── STICKY NAVBAR HEADER (Sharp Square Flat Header) ── */}
-      <header style={{ background: 'var(--sharp-surface)', borderBottom: '1px solid var(--bg-border)', position: 'sticky', top: 0, zIndex: 100, padding: '16px 28px' }}>
+      <header style={{ background: 'var(--sharp-surface)', borderBottom: '1px solid var(--sharp-line)', position: 'sticky', top: 0, zIndex: 100, padding: '16px 28px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <img
@@ -441,11 +468,25 @@ export default function SharpSquareBusinessWebsitePage() {
             </div>
           </div>
 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <SharpButton
+              href={`https://wa.me/${biz.phone.replace(/[^0-9]/g, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="accent"
+              size="sm"
+              icon="fa-brands fa-whatsapp"
+              className="fleet-header-cta"
+            >
+              Book Now
+            </SharpButton>
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
+          </div>
         </div>
       </header>
 
       {/* ── HERO BANNER & ANIMATED COUNTERS SECTION (Sharp Square Layout) ── */}
-      <section style={{ background: 'var(--sharp-surface)', borderBottom: '1px solid var(--bg-border)', padding: '64px 24px' }}>
+      <section style={{ background: 'var(--sharp-surface)', borderBottom: '1px solid var(--sharp-line)', padding: '64px 24px' }}>
         <div style={{
           maxWidth: '1180px',
           margin: '0 auto',
@@ -473,36 +514,28 @@ export default function SharpSquareBusinessWebsitePage() {
               Explore Pererenan &amp; Canggu with confidence — clean helmets, villa delivery, transparent daily &amp; weekly rates, and 24/7 WhatsApp support if anything comes up.
             </p>
 
-            <div style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: '28px' }}>
               <TrustSeal rating={animatedRating} />
             </div>
 
-            {/* ── DATE PICKER CARD ── */}
-            <div className="sharp-card" style={{ padding: '20px 22px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', maxWidth: '460px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px', textAlign: 'left', letterSpacing: '0.4px' }}>
-                  Pickup
-                </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={e => setStartDate(e.target.value)}
-                  className="sharp-input"
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px', textAlign: 'left', letterSpacing: '0.4px' }}>
-                  Return
-                </label>
-                <input
-                  type="date"
-                  min={startDate}
-                  value={endDate}
-                  onChange={e => setEndDate(e.target.value)}
-                  className="sharp-input"
-                />
-              </div>
+            <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+              <SharpButton
+                href={`https://wa.me/${biz.phone.replace(/[^0-9]/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                variant="accent"
+                size="lg"
+                icon="fa-brands fa-whatsapp"
+              >
+                Rent Now
+              </SharpButton>
+              <SharpButton
+                href="#fleet-grid"
+                variant="outline"
+                size="lg"
+              >
+                See Fleet
+              </SharpButton>
             </div>
           </div>
 
@@ -542,12 +575,88 @@ export default function SharpSquareBusinessWebsitePage() {
           </div>
         </div>
 
+        {/* ── FLOATING SEARCH / BOOKING BAR — overlaps the hero's bottom edge ── */}
+        <div className="sharp-card hero-search-bar" style={{
+          maxWidth: '1180px',
+          margin: '44px auto -100px auto',
+          position: 'relative',
+          zIndex: 10,
+          padding: '22px 28px',
+          boxShadow: 'var(--sharp-shadow-lg)',
+        }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px', textAlign: 'left', letterSpacing: '0.4px' }}>
+              <i className="fa-solid fa-location-dot" style={{ marginRight: '4px', color: 'var(--sharp-accent)' }}></i> Where To Pick Up
+            </label>
+            <div className="sharp-input" style={{ color: 'var(--sharp-ink-soft)' }}>Pererenan, Canggu</div>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px', textAlign: 'left', letterSpacing: '0.4px' }}>
+              Pickup Date
+            </label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={e => setStartDate(e.target.value)}
+              className="sharp-input"
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px', textAlign: 'left', letterSpacing: '0.4px' }}>
+              Return Date
+            </label>
+            <input
+              type="date"
+              min={startDate}
+              value={endDate}
+              onChange={e => setEndDate(e.target.value)}
+              className="sharp-input"
+            />
+          </div>
+          <SharpButton href="#fleet-grid" variant="accent" size="md" icon="fa-solid fa-magnifying-glass">
+            Search
+          </SharpButton>
+        </div>
+
         {/* ── STAT ROW ── */}
-        <div style={{ maxWidth: '1180px', margin: '48px auto 0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+        <div style={{ maxWidth: '1180px', margin: '148px auto 0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
           <StatCard value={animatedRating} valueColor="var(--sharp-accent)" icon="fa-solid fa-star" iconColor="var(--sharp-star)" label="Google Rating" sublabel="5-Star Verified Score" />
           <StatCard value={animatedReviews} valueColor="var(--sharp-success)" label="Google Reviews" sublabel="Real Happy Customers" />
           <StatCard value={`${animatedSatisfaction}%`} valueColor="var(--sharp-info)" label="Customer Satisfaction" sublabel="Best Service Guarantee" />
           <StatCard value={`${animatedFleet}+`} valueColor="var(--sharp-warning)" label="Clean Scooters" sublabel="Regularly Serviced" />
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS — 3-STEP BOOKING FLOW ── */}
+      <section style={{ padding: '64px 24px', background: 'var(--sharp-surface-2)', borderTop: '1px solid var(--sharp-line)', borderBottom: '1px solid var(--sharp-line)' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          <SectionHeading
+            eyebrow="How It Works"
+            title="Booking In 3 Simple Steps"
+            icon="fa-solid fa-route"
+            style={{ marginBottom: '40px' }}
+          />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+            {[
+              { icon: 'fa-solid fa-motorcycle', title: 'Choose Your Scooter', desc: 'Browse our clean, well-maintained fleet and pick the model that fits your trip.' },
+              { icon: 'fa-solid fa-calendar-check', title: 'Pick Your Dates', desc: 'Select pickup and return dates — daily, weekly, and monthly rates auto-calculated.' },
+              { icon: 'fa-brands fa-whatsapp', title: 'Book Via WhatsApp', desc: 'Confirm instantly over WhatsApp. Pay on pickup, no deposit surprises.' },
+            ].map((step, idx) => (
+              <div key={idx} className="sharp-card" style={{ padding: '32px 24px', textAlign: 'center' }}>
+                <div style={{
+                  width: '64px', height: '64px', borderRadius: 'var(--radius-full)',
+                  background: 'var(--sharp-surface)', border: '1px solid var(--sharp-line-strong)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 18px auto', fontSize: '24px', color: 'var(--sharp-accent)',
+                }}>
+                  <i className={step.icon}></i>
+                </div>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sharp-accent)', marginBottom: '6px' }}>STEP {idx + 1}</div>
+                <div style={{ fontSize: '17px', fontWeight: 700, color: 'var(--sharp-ink)', marginBottom: '8px' }}>{step.title}</div>
+                <div style={{ fontSize: '13.5px', color: 'var(--sharp-muted)', lineHeight: 1.6 }}>{step.desc}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -600,7 +709,7 @@ export default function SharpSquareBusinessWebsitePage() {
       </section>
 
       {/* ── SHARP SCOOTER CATALOG GRID ── */}
-      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px 24px 60px 24px' }}>
+      <main id="fleet-grid" style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px 24px 60px 24px', scrollMarginTop: '90px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
           <div>
             <h2 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--sharp-ink)', margin: 0, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
@@ -664,7 +773,7 @@ export default function SharpSquareBusinessWebsitePage() {
               return (
                 <div key={vehicle.id} className="sharp-card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
                   {/* Image */}
-                  <div style={{ height: '180px', width: '100%', background: 'var(--sharp-surface-2)', position: 'relative', overflow: 'hidden', borderBottom: '1px solid var(--bg-border)' }}>
+                  <div style={{ height: '180px', width: '100%', background: 'var(--sharp-surface-2)', position: 'relative', overflow: 'hidden', borderBottom: '1px solid var(--sharp-line)' }}>
                     {vehicle.image_url ? (
                       <img src={vehicle.image_url} alt={vehicle.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={handleImgError} />
                     ) : (
@@ -712,8 +821,32 @@ export default function SharpSquareBusinessWebsitePage() {
                       {vehicle.name}
                     </div>
 
+                    {/* Spec row — real vehicle data, not placeholders */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 14px', marginBottom: '14px', fontSize: '12px', color: 'var(--sharp-ink-soft)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                        <i className="fa-solid fa-gears" style={{ color: 'var(--sharp-muted)', width: '14px' }}></i>
+                        {vehicle.category === 'vespa' ? 'Automatic' : 'Matic'}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                        <i className="fa-solid fa-helmet-safety" style={{ color: 'var(--sharp-muted)', width: '14px' }}></i>
+                        2 Helmets
+                      </div>
+                      {vehicle.color && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <i className="fa-solid fa-palette" style={{ color: 'var(--sharp-muted)', width: '14px' }}></i>
+                          {vehicle.color}
+                        </div>
+                      )}
+                      {vehicle.plate_number && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <i className="fa-solid fa-id-card" style={{ color: 'var(--sharp-muted)', width: '14px' }}></i>
+                          {vehicle.plate_number}
+                        </div>
+                      )}
+                    </div>
+
                     {/* Rate Tiers */}
-                    <div style={{ background: 'var(--sharp-bg)', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '14px', border: '1px solid var(--bg-border)', borderRadius: 'var(--radius-md)' }}>
+                    <div style={{ background: 'var(--sharp-bg)', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '14px', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-md)' }}>
                       <div>
                         <span style={{ color: 'var(--sharp-muted)' }}>Daily:</span>
                         <div style={{ fontWeight: 800, color: 'var(--sharp-ink)' }}>{formatRupiah(vehicle.rate_per_day)}</div>
@@ -782,8 +915,64 @@ export default function SharpSquareBusinessWebsitePage() {
         )}
       </main>
 
+      {/* ── FEATURED TESTIMONIAL — large single review with photo ── */}
+      <section style={{ padding: '64px 24px', background: 'var(--sharp-surface-2)', borderTop: '1px solid var(--sharp-line)', borderBottom: '1px solid var(--sharp-line)' }}>
+        <div style={{
+          maxWidth: '1100px', margin: '0 auto',
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(420px, 100%), 1fr))',
+          gap: '48px', alignItems: 'center',
+        }}>
+          <div>
+            <div className="sharp-eyebrow">What Riders Say</div>
+            <h2 className="font-display" style={{ fontSize: '30px', fontWeight: 600, color: 'var(--sharp-ink)', margin: '6px 0 20px 0' }}>
+              Real Reviews From Real Riders
+            </h2>
+            <div style={{ color: 'var(--sharp-star)', fontSize: '16px', display: 'flex', gap: '3px', marginBottom: '16px' }}>
+              {[...Array(reviews[activeTestimonial]?.rating || 5)].map((_, i) => (
+                <i key={i} className="fa-solid fa-star"></i>
+              ))}
+            </div>
+            <p style={{ fontSize: '19px', color: 'var(--sharp-ink)', lineHeight: 1.55, fontWeight: 500, marginBottom: '24px', minHeight: '84px' }}>
+              &quot;{reviews[activeTestimonial]?.comment}&quot;
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: '15px', color: 'var(--sharp-ink)' }}>{reviews[activeTestimonial]?.name}</div>
+                <div style={{ fontSize: '12.5px', color: 'var(--sharp-muted)' }}>{reviews[activeTestimonial]?.badge}</div>
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setActiveTestimonial(prev => (prev - 1 + reviews.length) % reviews.length)}
+                  className="icon-btn-round"
+                  aria-label="Previous review"
+                >
+                  <i className="fa-solid fa-arrow-left"></i>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTestimonial(prev => (prev + 1) % reviews.length)}
+                  className="icon-btn-round"
+                  aria-label="Next review"
+                >
+                  <i className="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ borderRadius: 'var(--radius-xl)', overflow: 'hidden', boxShadow: 'var(--sharp-shadow-lg)', aspectRatio: '4/3.4' }}>
+            <img
+              src="/images/boss_rent_customer_bali.png"
+              alt="Happy Boss Rent customers in Bali"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </div>
+        </div>
+      </section>
+
       {/* ── GOOGLE REVIEWS SECTION (Infinite Scroll Carousel Marquee) ── */}
-      <section style={{ background: 'var(--sharp-surface)', borderTop: '1px solid var(--bg-border)', borderBottom: '1px solid var(--bg-border)', padding: '54px 0', overflow: 'hidden', position: 'relative' }}>
+      <section id="reviews" style={{ background: 'var(--sharp-surface)', borderTop: '1px solid var(--sharp-line)', borderBottom: '1px solid var(--sharp-line)', padding: '54px 0', overflow: 'hidden', position: 'relative', scrollMarginTop: '90px' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px', marginBottom: '32px' }}>
           <SectionHeading
             eyebrow="Real Google Maps Reviews"
@@ -819,14 +1008,14 @@ export default function SharpSquareBusinessWebsitePage() {
                       <i key={sIdx} className="fa-solid fa-star"></i>
                     ))}
                   </div>
-                  <span style={{ fontSize: '10px', color: 'var(--sharp-ink)', background: 'var(--sharp-surface-2)', border: '1px solid var(--bg-border)', borderRadius: 'var(--radius-sm)', padding: '2px 8px', fontWeight: 700 }}>
+                  <span style={{ fontSize: '10px', color: 'var(--sharp-ink)', background: 'var(--sharp-surface-2)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-sm)', padding: '2px 8px', fontWeight: 700 }}>
                     {rev.badge}
                   </span>
                 </div>
                 <p style={{ fontSize: '13px', color: 'var(--sharp-ink-soft)', lineHeight: 1.5, margin: 0, fontStyle: 'italic' }}>
                   &quot;{rev.comment}&quot;
                 </p>
-                <div style={{ marginTop: 'auto', borderTop: '1px solid var(--bg-border)', paddingTop: '10px', fontWeight: 900, fontSize: '12px', color: 'var(--sharp-ink)' }}>
+                <div style={{ marginTop: 'auto', borderTop: '1px solid var(--sharp-line)', paddingTop: '10px', fontWeight: 900, fontSize: '12px', color: 'var(--sharp-ink)' }}>
                   {rev.name}
                 </div>
               </div>
@@ -848,7 +1037,7 @@ export default function SharpSquareBusinessWebsitePage() {
       </section>
 
       {/* ── FAQ SECTION (FREQUENTLY ASKED QUESTIONS) ── */}
-      <section style={{ padding: '56px 24px', background: 'var(--sharp-surface)', borderTop: '1px solid var(--bg-border)', borderBottom: '1px solid var(--bg-border)' }}>
+      <section id="faq" style={{ padding: '56px 24px', background: 'var(--sharp-surface)', borderTop: '1px solid var(--sharp-line)', borderBottom: '1px solid var(--sharp-line)', scrollMarginTop: '90px' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <SectionHeading
             eyebrow="Frequently Asked Questions"
@@ -867,7 +1056,7 @@ export default function SharpSquareBusinessWebsitePage() {
                   className="sharp-card"
                   style={{
                     overflow: 'hidden',
-                    borderColor: isOpen ? 'var(--brand-primary)' : 'var(--bg-border)',
+                    borderColor: isOpen ? 'var(--sharp-accent-solid)' : 'var(--sharp-line)',
                     boxShadow: isOpen ? 'var(--shadow-md)' : 'var(--shadow-sm)',
                     transition: 'all 0.2s ease'
                   }}
@@ -925,7 +1114,7 @@ export default function SharpSquareBusinessWebsitePage() {
       </section>
 
       {/* ── EMBEDDED INTERACTIVE LIVE GOOGLE MAPS SECTION ("Find Boss Rent Pererenan") ── */}
-      <section style={{ padding: '56px 24px', background: 'var(--sharp-surface)' }}>
+      <section id="location" style={{ padding: '56px 24px', background: 'var(--sharp-surface)', scrollMarginTop: '90px' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <SectionHeading
             eyebrow="Interactive Google Maps Location"
@@ -1031,14 +1220,72 @@ export default function SharpSquareBusinessWebsitePage() {
       </div>
 
       {/* ── FOOTER ── */}
-      <footer style={{ background: 'var(--sharp-surface)', borderTop: '1px solid var(--bg-border)', padding: '28px 24px', textAlign: 'center', fontSize: '12.5px', color: 'var(--sharp-muted)' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-          <div>
-            © {new Date().getFullYear()} <strong style={{ color: 'var(--sharp-ink)' }}>{biz.name}</strong> • Premium Scooter Rental Pererenan, Canggu, Bali.
+      <footer style={{ background: '#0B0F19', padding: '56px 24px 0 24px', color: '#94A3B8' }}>
+        <div style={{ maxWidth: '1180px', margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '36px', paddingBottom: '40px' }}>
+            {/* Brand column */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                <img src={biz.logoUrl || "/images/logoCompany.png"} alt={biz.name} style={{ height: '34px', width: 'auto', objectFit: 'contain' }} />
+                <span style={{ fontSize: '16px', fontWeight: 800, color: '#F1F5F9' }}>{biz.name}</span>
+              </div>
+              <p style={{ fontSize: '13px', lineHeight: 1.7, marginBottom: '14px' }}>
+                Clean, reliable scooter rental in Pererenan &amp; Canggu, Bali — daily, weekly, and monthly rates with villa delivery.
+              </p>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <a href={biz.instagramUrl} target="_blank" rel="noopener noreferrer" style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F1F5F9', fontSize: '15px' }}>
+                  <i className="fa-brands fa-instagram"></i>
+                </a>
+                <a href={`https://wa.me/${biz.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F1F5F9', fontSize: '15px' }}>
+                  <i className="fa-brands fa-whatsapp"></i>
+                </a>
+                <a href={biz.mapsUrl} target="_blank" rel="noopener noreferrer" style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F1F5F9', fontSize: '15px' }}>
+                  <i className="fa-brands fa-google"></i>
+                </a>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#F1F5F9', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Quick Links</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '11px', fontSize: '13.5px' }}>
+                <a href="#fleet-grid" style={{ color: '#94A3B8', textDecoration: 'none' }}>Fleet &amp; Pricing</a>
+                <a href="#faq" style={{ color: '#94A3B8', textDecoration: 'none' }}>FAQ</a>
+                <a href="#reviews" style={{ color: '#94A3B8', textDecoration: 'none' }}>Reviews</a>
+                <a href="#location" style={{ color: '#94A3B8', textDecoration: 'none' }}>Location</a>
+              </div>
+            </div>
+
+            {/* Support */}
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#F1F5F9', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Support</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '11px', fontSize: '13.5px' }}>
+                <a href={`https://wa.me/${biz.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: '#94A3B8', textDecoration: 'none' }}>WhatsApp Us</a>
+                <a href={biz.mapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#94A3B8', textDecoration: 'none' }}>Get Directions</a>
+                <span>{biz.hours}</span>
+                <span>{biz.phone}</span>
+              </div>
+            </div>
+
+            {/* Address */}
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#F1F5F9', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Visit Us</div>
+              <div style={{ fontSize: '13.5px', lineHeight: 1.7 }}>{biz.address}</div>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <a href={biz.mapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--sharp-muted)', textDecoration: 'none', fontWeight: 700 }}>Google Maps Profile</a>
-            <a href={`https://wa.me/${biz.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--sharp-whatsapp)', textDecoration: 'none', fontWeight: 800 }}>WhatsApp Us</a>
+
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.08)',
+            padding: '20px 0',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '12px',
+            fontSize: '12px',
+          }}>
+            <div>© {new Date().getFullYear()} <strong style={{ color: '#F1F5F9' }}>{biz.name}</strong>. All rights reserved.</div>
+            <div>Premium Scooter Rental — Pererenan, Canggu, Bali</div>
           </div>
         </div>
       </footer>

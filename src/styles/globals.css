@@ -562,7 +562,7 @@ a:hover {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--brand-primary), var(--brand-accent));
+  background: linear-gradient(90deg, var(--brand-primary-light), var(--brand-primary));
   opacity: 0;
   transition: opacity var(--transition-base);
 }
@@ -1309,7 +1309,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .auth-logo-icon {
   width: 64px;
   height: 64px;
-  background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-dark));
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
@@ -1545,7 +1545,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .tracking-header-icon {
   width: 52px;
   height: 52px;
-  background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-dark));
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
@@ -3303,7 +3303,7 @@ textarea {
 }
 
 .scrollable-tab-btn.active {
-  background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+  background: var(--brand-primary);
   color: #ffffff;
   border-color: var(--brand-primary);
   box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
@@ -4783,7 +4783,7 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-dark));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4899,9 +4899,9 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
   transition: all var(--transition-fast);
 }
 .dash-ptab.active {
-  background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+  background: var(--brand-primary);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(232,93,4,0.3);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 .dash-period-select {
   font-size: 12px;
