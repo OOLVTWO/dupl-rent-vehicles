@@ -420,7 +420,7 @@ export default function ReportsPage() {
                             <strong style={{ fontSize: '13.5px', color: 'var(--text-primary)', lineHeight: 1.35 }}>{tx.vehicles?.name || '-'}</strong>
                             {tx.vehicles?.plate_number && (
                               <div>
-                                <span className="tx-info-pill" style={{ color: 'var(--brand-primary-light)', borderColor: 'rgba(108, 92, 231, 0.35)', background: 'rgba(108, 92, 231, 0.12)', padding: '4px 10px' }}>
+                                <span className="tx-info-pill" style={{ color: 'var(--brand-primary-light)', borderColor: 'rgba(20, 116, 107, 0.35)', background: 'rgba(20, 116, 107, 0.12)', padding: '4px 10px' }}>
                                   <i className="fa-solid fa-motorcycle" style={{ fontSize: '11px', marginRight: '6px' }}></i>
                                   {tx.vehicles.plate_number}
                                 </span>

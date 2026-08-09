@@ -9,6 +9,7 @@ import '@/styles/sharp-system.css';
 import StatCard from '@/components/fleet/StatCard';
 import SectionHeading from '@/components/fleet/SectionHeading';
 import SharpButton from '@/components/fleet/SharpButton';
+import TrustSeal from '@/components/fleet/TrustSeal';
 
 function formatRupiah(amount) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount || 0);
@@ -408,20 +409,20 @@ export default function SharpSquareBusinessWebsitePage() {
 
   return (
     <div className="sharp-page">
-      {/* ── TOP ANNOUNCEMENT BAR (Sharp Square Style) ── */}
-      <div style={{ background: 'var(--sharp-ink)', color: 'var(--sharp-bg)', textAlign: 'center', padding: '10px 16px', fontSize: '12px', fontWeight: 800, letterSpacing: '0.3px', borderBottom: '2px solid var(--sharp-accent)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+      {/* ── TOP ANNOUNCEMENT BAR ── */}
+      <div style={{ background: 'var(--sharp-ink)', color: 'var(--sharp-bg)', textAlign: 'center', padding: '9px 16px', fontSize: '12px', fontWeight: 600, letterSpacing: '0.2px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-          <i className="fa-solid fa-motorcycle" style={{ color: 'var(--sharp-accent)' }}></i>
+          <i className="fa-solid fa-motorcycle" style={{ color: 'var(--sharp-star)' }}></i>
           {biz.tagline}
         </span>
-        <a href={biz.mapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#FFD700', textDecoration: 'underline', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-          <i className="fa-solid fa-star" style={{ color: '#FFD700' }}></i>
+        <a href={biz.mapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#E8C179', textDecoration: 'none', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <i className="fa-solid fa-star" style={{ color: '#E8C179' }}></i>
           {animatedRating} Google Rating ({animatedReviews} Reviews)
         </a>
       </div>
 
       {/* ── STICKY NAVBAR HEADER (Sharp Square Flat Header) ── */}
-      <header style={{ background: 'var(--sharp-surface)', borderBottom: '2px solid var(--sharp-ink)', position: 'sticky', top: 0, zIndex: 100, padding: '16px 28px' }}>
+      <header style={{ background: 'var(--sharp-surface)', borderBottom: '1px solid var(--bg-border)', position: 'sticky', top: 0, zIndex: 100, padding: '16px 28px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <img
@@ -433,7 +434,7 @@ export default function SharpSquareBusinessWebsitePage() {
               <div style={{ fontSize: '21px', fontWeight: 900, color: 'var(--sharp-ink)', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '-0.5px' }}>
                 {biz.name}
               </div>
-              <div style={{ fontSize: '11px', color: '#475569', marginTop: '2px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--sharp-muted)', marginTop: '2px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <i className="fa-solid fa-location-dot" style={{ color: 'var(--sharp-accent)' }}></i>
                 {biz.address}
               </div>
@@ -444,62 +445,109 @@ export default function SharpSquareBusinessWebsitePage() {
       </header>
 
       {/* ── HERO BANNER & ANIMATED COUNTERS SECTION (Sharp Square Layout) ── */}
-      <section style={{ background: 'var(--sharp-bg)', borderBottom: '2px solid var(--sharp-ink)', padding: '52px 24px 36px 24px', textAlign: 'center' }}>
-        <div style={{ maxWidth: '940px', margin: '0 auto' }}>
-          {/* Clean, Symmetrical & High-Contrast Rating Badge */}
-          <div className="google-verified-badge">
-            <span className="star-rating-chip">
-              <i className="fa-solid fa-star"></i>
-              <span>{animatedRating}</span>
-            </span>
-            <span className="badge-bullet">•</span>
-            <span>Google Verified Business ({animatedReviews} Google Reviews)</span>
-          </div>
-
-          <h1 style={{ fontSize: '40px', fontWeight: 900, marginBottom: '14px', color: 'var(--sharp-ink)', lineHeight: 1.15, letterSpacing: '-0.8px' }}>
-            {biz.heroTitle}
-            <i className="fa-solid fa-location-dot" style={{ color: 'var(--sharp-accent)', marginLeft: '10px' }}></i>
-          </h1>
-
-          <p style={{ fontSize: '15px', color: 'var(--sharp-ink-soft)', lineHeight: 1.6, marginBottom: '36px', maxWidth: '740px', margin: '0 auto 36px auto', fontWeight: 500 }}>
-            {biz.heroSubtitle}
-          </p>
-
-          {/* ── ANIMATED COUNTER GRID (Sharp Square Stat Cards) ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '36px' }}>
-            <StatCard value={animatedRating} valueColor="var(--sharp-accent)" icon="fa-solid fa-star" iconColor="var(--sharp-star)" label="Google Rating" sublabel="5-Star Verified Score" />
-            <StatCard value={animatedReviews} valueColor="var(--sharp-success)" label="Google Reviews" sublabel="Real Happy Customers" />
-            <StatCard value={`${animatedSatisfaction}%`} valueColor="var(--sharp-info)" label="Customer Satisfaction" sublabel="Best Service Guarantee" />
-            <StatCard value={`${animatedFleet}+`} valueColor="var(--sharp-warning)" label="Clean Scooters" sublabel="Regularly Serviced" />
-          </div>
-
-          {/* ── SHARP SQUARE DATE PICKER BAR ── */}
-          <div className="sharp-card" style={{ padding: '20px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 900, color: 'var(--sharp-ink)', marginBottom: '6px', textAlign: 'left' }}>
-                <i className="fa-solid fa-calendar-plus" style={{ marginRight: '4px', color: 'var(--sharp-accent)' }}></i> Pickup Date
-              </label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={e => setStartDate(e.target.value)}
-                className="sharp-input"
-              />
+      <section style={{ background: 'var(--sharp-bg)', borderBottom: '1px solid var(--bg-border)', padding: '64px 24px' }}>
+        <div style={{
+          maxWidth: '1180px',
+          margin: '0 auto',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(400px, 100%), 1fr))',
+          gap: '56px',
+          alignItems: 'center',
+        }}>
+          {/* ── LEFT: headline, trust, CTA ── */}
+          <div>
+            <div className="google-verified-badge">
+              <span className="star-rating-chip">
+                <i className="fa-solid fa-star"></i>
+                <span>{animatedRating}</span>
+              </span>
+              <span className="badge-bullet">•</span>
+              <span>Google Verified Business ({animatedReviews} Google Reviews)</span>
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 900, color: 'var(--sharp-ink)', marginBottom: '6px', textAlign: 'left' }}>
-                <i className="fa-solid fa-calendar-check" style={{ marginRight: '4px', color: 'var(--sharp-accent)' }}></i> Return Date
-              </label>
-              <input
-                type="date"
-                min={startDate}
-                value={endDate}
-                onChange={e => setEndDate(e.target.value)}
-                className="sharp-input"
-              />
+            <h1 className="font-display" style={{ fontSize: '44px', fontWeight: 600, margin: '18px 0 16px 0', color: 'var(--sharp-ink)', lineHeight: 1.12, letterSpacing: '-0.5px' }}>
+              Clean &amp; reliable scooters,<br />ridden with an easy mind.
+            </h1>
+
+            <p style={{ fontSize: '16px', color: 'var(--sharp-ink-soft)', lineHeight: 1.65, marginBottom: '24px', maxWidth: '460px', fontWeight: 400 }}>
+              Explore Pererenan &amp; Canggu with confidence — clean helmets, villa delivery, transparent daily &amp; weekly rates, and 24/7 WhatsApp support if anything comes up.
+            </p>
+
+            <div style={{ marginBottom: '32px' }}>
+              <TrustSeal rating={animatedRating} />
+            </div>
+
+            {/* ── DATE PICKER CARD ── */}
+            <div className="sharp-card" style={{ padding: '20px 22px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', maxWidth: '460px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px', textAlign: 'left', letterSpacing: '0.4px' }}>
+                  Pickup
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={e => setStartDate(e.target.value)}
+                  className="sharp-input"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px', textAlign: 'left', letterSpacing: '0.4px' }}>
+                  Return
+                </label>
+                <input
+                  type="date"
+                  min={startDate}
+                  value={endDate}
+                  onChange={e => setEndDate(e.target.value)}
+                  className="sharp-input"
+                />
+              </div>
             </div>
           </div>
+
+          {/* ── RIGHT: real photo, softly rounded ── */}
+          <div style={{ position: 'relative' }}>
+            <div style={{
+              borderRadius: 'var(--radius-xl)',
+              overflow: 'hidden',
+              boxShadow: 'var(--shadow-lg)',
+              aspectRatio: '4 / 4.6',
+              position: 'relative',
+            }}>
+              <img
+                src="/images/boss_rent_customer_bali.png"
+                alt="Happy customers riding a Boss Rent scooter through Pererenan, Bali"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
+            <div className="sharp-card" style={{
+              position: 'absolute',
+              left: '16px',
+              bottom: '24px',
+              padding: '14px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              boxShadow: 'var(--shadow-lg)',
+            }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: 'var(--radius-full)', background: 'var(--status-success-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <i className="fa-solid fa-shield-heart" style={{ color: 'var(--status-success)', fontSize: '16px' }}></i>
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--sharp-ink)' }}>Deposit protected</div>
+                <div style={{ fontSize: '11.5px', color: 'var(--sharp-muted)' }}>Clear terms, no surprises</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── STAT ROW ── */}
+        <div style={{ maxWidth: '1180px', margin: '48px auto 0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+          <StatCard value={animatedRating} valueColor="var(--sharp-accent)" icon="fa-solid fa-star" iconColor="var(--sharp-star)" label="Google Rating" sublabel="5-Star Verified Score" />
+          <StatCard value={animatedReviews} valueColor="var(--sharp-success)" label="Google Reviews" sublabel="Real Happy Customers" />
+          <StatCard value={`${animatedSatisfaction}%`} valueColor="var(--sharp-info)" label="Customer Satisfaction" sublabel="Best Service Guarantee" />
+          <StatCard value={`${animatedFleet}+`} valueColor="var(--sharp-warning)" label="Clean Scooters" sublabel="Regularly Serviced" />
         </div>
       </section>
 
@@ -602,7 +650,7 @@ export default function SharpSquareBusinessWebsitePage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="sharp-card" style={{ textAlign: 'center', padding: '60px 0', background: 'var(--sharp-bg)' }}>
-            <i className="fa-solid fa-motorcycle" style={{ fontSize: '40px', color: '#94A3B8', marginBottom: '12px' }}></i>
+            <i className="fa-solid fa-motorcycle" style={{ fontSize: '40px', color: 'var(--sharp-muted)', marginBottom: '12px' }}></i>
             <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--sharp-ink)' }}>No Scooters Available In This Category</div>
             <div style={{ fontSize: '12px', color: 'var(--sharp-muted)', marginTop: '4px' }}>Please select another brand category or clear search.</div>
           </div>
@@ -616,11 +664,11 @@ export default function SharpSquareBusinessWebsitePage() {
               return (
                 <div key={vehicle.id} className="sharp-card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
                   {/* Image */}
-                  <div style={{ height: '180px', width: '100%', background: 'var(--sharp-surface-2)', position: 'relative', overflow: 'hidden', borderBottom: '1px solid var(--sharp-ink)' }}>
+                  <div style={{ height: '180px', width: '100%', background: 'var(--sharp-surface-2)', position: 'relative', overflow: 'hidden', borderBottom: '1px solid var(--bg-border)' }}>
                     {vehicle.image_url ? (
                       <img src={vehicle.image_url} alt={vehicle.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={handleImgError} />
                     ) : (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94A3B8', fontSize: '48px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--sharp-muted)', fontSize: '48px' }}>
                         <i className="fa-solid fa-motorcycle"></i>
                       </div>
                     )}
@@ -635,7 +683,7 @@ export default function SharpSquareBusinessWebsitePage() {
                         textTransform: 'uppercase',
                         background: isAvailable ? 'var(--sharp-success-bg)' : 'var(--sharp-info)',
                         color: '#FFF',
-                        border: '1px solid var(--sharp-ink)',
+                        borderRadius: 'var(--radius-full)',
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '5px'
@@ -665,7 +713,7 @@ export default function SharpSquareBusinessWebsitePage() {
                     </div>
 
                     {/* Rate Tiers */}
-                    <div style={{ background: 'var(--sharp-bg)', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '14px', border: '1px solid var(--sharp-ink)' }}>
+                    <div style={{ background: 'var(--sharp-bg)', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '14px', border: '1px solid var(--bg-border)', borderRadius: 'var(--radius-md)' }}>
                       <div>
                         <span style={{ color: 'var(--sharp-muted)' }}>Daily:</span>
                         <div style={{ fontWeight: 800, color: 'var(--sharp-ink)' }}>{formatRupiah(vehicle.rate_per_day)}</div>
@@ -686,7 +734,7 @@ export default function SharpSquareBusinessWebsitePage() {
 
                     {/* Smart Calculation Estimate */}
                     {estimate && (
-                      <div style={{ background: 'rgba(232, 93, 4, 0.06)', border: '1px solid var(--sharp-ink)', padding: '10px 12px', marginBottom: '14px' }}>
+                      <div style={{ background: 'rgba(184, 112, 63, 0.07)', border: '1px solid rgba(184, 112, 63, 0.25)', borderRadius: 'var(--radius-md)', padding: '10px 12px', marginBottom: '14px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '11px', color: 'var(--sharp-accent)', fontWeight: 900 }}>
                             <i className="fa-solid fa-wand-magic-sparkles" style={{ marginRight: '4px' }}></i> Estimated ({estimate.durationDays} Days):
@@ -735,7 +783,7 @@ export default function SharpSquareBusinessWebsitePage() {
       </main>
 
       {/* ── GOOGLE REVIEWS SECTION (Infinite Scroll Carousel Marquee) ── */}
-      <section style={{ background: 'var(--sharp-bg)', borderTop: '2px solid var(--sharp-ink)', borderBottom: '2px solid var(--sharp-ink)', padding: '54px 0', overflow: 'hidden', position: 'relative' }}>
+      <section style={{ background: 'var(--sharp-bg)', borderTop: '1px solid var(--bg-border)', borderBottom: '1px solid var(--bg-border)', padding: '54px 0', overflow: 'hidden', position: 'relative' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px', marginBottom: '32px' }}>
           <SectionHeading
             eyebrow="Real Google Maps Reviews"
@@ -771,14 +819,14 @@ export default function SharpSquareBusinessWebsitePage() {
                       <i key={sIdx} className="fa-solid fa-star"></i>
                     ))}
                   </div>
-                  <span style={{ fontSize: '10px', color: 'var(--sharp-ink)', background: 'var(--sharp-surface-2)', border: '1px solid var(--sharp-ink)', padding: '2px 8px', fontWeight: 800 }}>
+                  <span style={{ fontSize: '10px', color: 'var(--sharp-ink)', background: 'var(--sharp-surface-2)', border: '1px solid var(--bg-border)', borderRadius: 'var(--radius-sm)', padding: '2px 8px', fontWeight: 700 }}>
                     {rev.badge}
                   </span>
                 </div>
                 <p style={{ fontSize: '13px', color: 'var(--sharp-ink-soft)', lineHeight: 1.5, margin: 0, fontStyle: 'italic' }}>
                   &quot;{rev.comment}&quot;
                 </p>
-                <div style={{ marginTop: 'auto', borderTop: '1px solid var(--sharp-ink)', paddingTop: '10px', fontWeight: 900, fontSize: '12px', color: 'var(--sharp-ink)' }}>
+                <div style={{ marginTop: 'auto', borderTop: '1px solid var(--bg-border)', paddingTop: '10px', fontWeight: 900, fontSize: '12px', color: 'var(--sharp-ink)' }}>
                   {rev.name}
                 </div>
               </div>
@@ -800,7 +848,7 @@ export default function SharpSquareBusinessWebsitePage() {
       </section>
 
       {/* ── FAQ SECTION (FREQUENTLY ASKED QUESTIONS) ── */}
-      <section style={{ padding: '56px 24px', background: 'var(--sharp-bg)', borderTop: '2px solid var(--sharp-ink)', borderBottom: '2px solid var(--sharp-ink)' }}>
+      <section style={{ padding: '56px 24px', background: 'var(--sharp-bg)', borderTop: '1px solid var(--bg-border)', borderBottom: '1px solid var(--bg-border)' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <SectionHeading
             eyebrow="Frequently Asked Questions"
@@ -819,9 +867,8 @@ export default function SharpSquareBusinessWebsitePage() {
                   className="sharp-card"
                   style={{
                     overflow: 'hidden',
-                    background: isOpen ? 'var(--sharp-surface)' : 'var(--sharp-surface)',
-                    border: `1.5px solid ${isOpen ? 'var(--sharp-accent)' : 'var(--sharp-ink)'}`,
-                    boxShadow: isOpen ? '4px 4px 0px var(--sharp-accent)' : '3px 3px 0px var(--sharp-ink)',
+                    borderColor: isOpen ? 'var(--brand-primary)' : 'var(--bg-border)',
+                    boxShadow: isOpen ? 'var(--shadow-md)' : 'var(--shadow-sm)',
                     transition: 'all 0.2s ease'
                   }}
                 >
@@ -848,7 +895,8 @@ export default function SharpSquareBusinessWebsitePage() {
                       <span style={{
                         width: '26px',
                         height: '26px',
-                        background: isOpen ? 'var(--sharp-accent)' : 'var(--sharp-ink)',
+                        borderRadius: 'var(--radius-sm)',
+                        background: isOpen ? 'var(--brand-primary)' : 'var(--sharp-ink)',
                         color: 'var(--sharp-surface)',
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -895,7 +943,7 @@ export default function SharpSquareBusinessWebsitePage() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', fontSize: '13.5px', color: 'var(--sharp-ink-soft)', lineHeight: 1.6 }}>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <div style={{ width: '36px', height: '36px', background: 'var(--sharp-ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 900 }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-md)', background: 'var(--sharp-ink)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 900 }}>
                     <i className="fa-solid fa-location-dot" style={{ fontSize: '16px' }}></i>
                   </div>
                   <div>
@@ -905,7 +953,7 @@ export default function SharpSquareBusinessWebsitePage() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  <div style={{ width: '36px', height: '36px', background: 'var(--sharp-success-bg)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 900 }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-md)', background: 'var(--sharp-success-bg)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 900 }}>
                     <i className="fa-solid fa-phone" style={{ fontSize: '16px' }}></i>
                   </div>
                   <div>
@@ -917,7 +965,7 @@ export default function SharpSquareBusinessWebsitePage() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  <div style={{ width: '36px', height: '36px', background: 'var(--sharp-info)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 900 }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-md)', background: 'var(--sharp-info)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 900 }}>
                     <i className="fa-solid fa-clock" style={{ fontSize: '16px' }}></i>
                   </div>
                   <div>
@@ -983,13 +1031,13 @@ export default function SharpSquareBusinessWebsitePage() {
       </div>
 
       {/* ── FOOTER ── */}
-      <footer style={{ background: 'var(--sharp-bg)', borderTop: '2px solid var(--sharp-ink)', padding: '28px 24px', textAlign: 'center', fontSize: '12.5px', color: 'var(--sharp-muted)' }}>
+      <footer style={{ background: 'var(--sharp-bg)', borderTop: '1px solid var(--bg-border)', padding: '28px 24px', textAlign: 'center', fontSize: '12.5px', color: 'var(--sharp-muted)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             © {new Date().getFullYear()} <strong style={{ color: 'var(--sharp-ink)' }}>{biz.name}</strong> • Premium Scooter Rental Pererenan, Canggu, Bali.
           </div>
           <div style={{ display: 'flex', gap: '16px' }}>
-            <a href={biz.mapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#475569', textDecoration: 'none', fontWeight: 700 }}>Google Maps Profile</a>
+            <a href={biz.mapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--sharp-muted)', textDecoration: 'none', fontWeight: 700 }}>Google Maps Profile</a>
             <a href={`https://wa.me/${biz.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--sharp-whatsapp)', textDecoration: 'none', fontWeight: 800 }}>WhatsApp Us</a>
           </div>
         </div>

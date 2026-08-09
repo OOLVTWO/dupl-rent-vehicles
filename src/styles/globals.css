@@ -9,56 +9,56 @@
 
 /* ── LIGHT MODE (default) ── */
 :root {
-  /* Brand */
-  --brand-primary:       #6C5CE7;
-  --brand-primary-dark:  #5A4BD1;
-  --brand-primary-light: #A29BFE;
-  --brand-accent:        #A29BFE;
-  --shadow-glow:         0 0 24px rgba(108, 92, 231, 0.3);
+  /* Brand — deep ocean teal, grounded in the coastline the shop sits on */
+  --brand-primary:       #14746B;
+  --brand-primary-dark:  #0C4F49;
+  --brand-primary-light: #4FA89D;
+  --brand-accent:        #B8703F; /* muted clay — used sparingly */
+  --shadow-glow:         0 0 32px rgba(20, 116, 107, 0.14);
 
-  /* Sidebar — always dark purple regardless of theme */
-  --sidebar-bg:    #1E1346;
+  /* Sidebar — deep teal-ink, calm and trustworthy rather than loud */
+  --sidebar-bg:    #14231F;
   --sidebar-width: 260px;
   --header-height: 64px;
 
-  /* Background */
-  --bg-base:     #F4F3FF;
+  /* Background — warm stone paper, not stark white */
+  --bg-base:     #F7F5F0;
   --bg-surface:  #FFFFFF;
-  --bg-elevated: #F0EFFE;
+  --bg-elevated: #F1EEE6;
   --bg-card:     #FFFFFF;
-  --bg-hover:    #EDE9FF;
-  --bg-border:   #E0DBFF;
-  --bg-border-strong: #C4BFEE;
+  --bg-hover:    #EAF2F0;
+  --bg-border:   #E8E3D8;
+  --bg-border-strong: #D6CFBE;
 
   /* Text */
-  --text-primary:   #1A1038;
-  --text-secondary: #4A4580;
-  --text-muted:     #9B97C8;
+  --text-primary:   #1F2A28;
+  --text-secondary: #5B6462;
+  --text-muted:     #8B8F87;
   --text-inverse:   #FFFFFF;
 
-  /* Status */
-  --status-success:    #15803D;
-  --status-success-bg: #DCFCE7;
-  --status-warning:    #B45309;
-  --status-warning-bg: #FEF3C7;
-  --status-danger:     #B91C1C;
-  --status-danger-bg:  #FEE2E2;
-  --status-info:       #1D4ED8;
-  --status-info-bg:    #DBEAFE;
+  /* Status — muted to sit calmly in the palette */
+  --status-success:    #3F7D5C;
+  --status-success-bg: #E3F1E9;
+  --status-warning:    #B07A2E;
+  --status-warning-bg: #F6EEDD;
+  --status-danger:     #B8503F;
+  --status-danger-bg:  #F6E7E2;
+  --status-info:       #2E6E8E;
+  --status-info-bg:    #E4EEF3;
 
   /* Spacing */
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
   --space-5: 20px; --space-6: 24px; --space-8: 32px;
   --space-10: 40px; --space-12: 48px;
 
-  /* Radius */
-  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
-  --radius-xl: 24px; --radius-full: 9999px;
+  /* Radius — soft, generous */
+  --radius-sm: 8px; --radius-md: 14px; --radius-lg: 20px;
+  --radius-xl: 28px; --radius-full: 9999px;
 
-  /* Shadows — lighter for light mode */
-  --shadow-sm: 0 1px 4px rgba(108, 92, 231, 0.08), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 16px rgba(108, 92, 231, 0.1), 0 1px 4px rgba(0,0,0,0.05);
-  --shadow-lg: 0 8px 32px rgba(108, 92, 231, 0.12), 0 2px 8px rgba(0,0,0,0.06);
+  /* Shadows — soft neutral diffusion instead of colored glow */
+  --shadow-sm: 0 1px 2px rgba(31, 42, 40, 0.05), 0 1px 3px rgba(31,42,40,0.04);
+  --shadow-md: 0 4px 12px rgba(31, 42, 40, 0.06), 0 2px 4px rgba(31,42,40,0.04);
+  --shadow-lg: 0 16px 40px rgba(31, 42, 40, 0.10), 0 4px 12px rgba(31,42,40,0.05);
 
   /* Transitions */
   --transition-fast: 0.15s ease;
@@ -68,32 +68,32 @@
 
 /* ── DARK MODE ── */
 [data-theme="dark"] {
-  --bg-base:     #0A0A0F;
-  --bg-surface:  #12121A;
-  --bg-elevated: #1A1A26;
-  --bg-card:     #1E1E2E;
-  --bg-hover:    #252538;
+  --bg-base:     #0D1512;
+  --bg-surface:  #131E1A;
+  --bg-elevated: #182620;
+  --bg-card:     #182620;
+  --bg-hover:    #1E2F27;
   --bg-border:   rgba(255, 255, 255, 0.08);
   --bg-border-strong: rgba(255, 255, 255, 0.14);
 
-  --text-primary:   #F0F0F5;
-  --text-secondary: #9898B0;
-  --text-muted:     #5C5C78;
-  --text-inverse:   #0A0A0F;
+  --text-primary:   #F0F4F2;
+  --text-secondary: #9BAAA4;
+  --text-muted:     #5C6E67;
+  --text-inverse:   #0D1512;
 
-  --status-success:    #22C55E;
-  --status-success-bg: rgba(34, 197, 94, 0.12);
-  --status-warning:    #F59E0B;
-  --status-warning-bg: rgba(245, 158, 11, 0.12);
-  --status-danger:     #EF4444;
-  --status-danger-bg:  rgba(239, 68, 68, 0.12);
-  --status-info:       #3B82F6;
-  --status-info-bg:    rgba(59, 130, 246, 0.12);
+  --status-success:    #5EAE84;
+  --status-success-bg: rgba(94, 174, 132, 0.14);
+  --status-warning:    #D6A44E;
+  --status-warning-bg: rgba(214, 164, 78, 0.14);
+  --status-danger:     #D97B67;
+  --status-danger-bg:  rgba(217, 123, 103, 0.14);
+  --status-info:       #5FA8C7;
+  --status-info-bg:    rgba(95, 168, 199, 0.14);
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 24px rgba(108, 92, 231, 0.35);
+  --shadow-glow: 0 0 24px rgba(20, 116, 107, 0.25);
 }
 
 
@@ -245,14 +245,14 @@ a:hover {
 /* =========================================
    SIDEBAR
    ========================================= */
-/* ── SIDEBAR — always dark purple, not affected by light/dark toggle ── */
+/* ── SIDEBAR — always deep teal-ink, not affected by light/dark toggle ── */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
   width: var(--sidebar-width);
   height: 100vh;
-  background: #1E1346;
+  background: var(--sidebar-bg);
   display: flex;
   flex-direction: column;
   z-index: 100;
@@ -272,7 +272,7 @@ a:hover {
 .sidebar-logo-icon {
   width: 36px;
   height: 36px;
-  background: #6C5CE7;
+  background: #14746B;
   border-radius: 9px;
   display: flex;
   align-items: center;
@@ -280,7 +280,7 @@ a:hover {
   font-size: 16px;
   color: #fff;
   flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(108,92,231,0.45);
+  box-shadow: 0 4px 14px rgba(20,116,107,0.45);
 }
 
 .sidebar-logo h1 {
@@ -313,7 +313,7 @@ a:hover {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #6C5CE7;
+  background: #14746B;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -321,7 +321,7 @@ a:hover {
   font-weight: 800;
   color: #fff;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(108,92,231,0.4);
+  box-shadow: 0 2px 8px rgba(20,116,107,0.4);
 }
 
 .sidebar-user-info {
@@ -341,7 +341,7 @@ a:hover {
 .sidebar-user-role {
   display: inline-block;
   margin-top: 2px;
-  background: #6C5CE7;
+  background: #14746B;
   color: #fff;
   font-size: 9px;
   font-weight: 800;
@@ -409,10 +409,10 @@ a:hover {
 }
 
 .sidebar-nav-item.active {
-  background: #6C5CE7;
+  background: #14746B;
   color: #ffffff;
   font-weight: 700;
-  box-shadow: 0 4px 14px rgba(108,92,231,0.4);
+  box-shadow: 0 4px 14px rgba(20,116,107,0.4);
   border-color: transparent;
 }
 
@@ -572,8 +572,8 @@ a:hover {
 }
 
 .stat-card:hover {
-  border-color: rgba(108, 92, 231, 0.25);
-  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.1);
+  border-color: rgba(20, 116, 107, 0.25);
+  box-shadow: 0 4px 20px rgba(20, 116, 107, 0.1);
   transform: translateY(-2px);
 }
 
@@ -750,16 +750,16 @@ a:hover {
 
 select.form-control {
   height: 44px;
-  padding-right: 38px;
+  padding-right: 40px;
   border-radius: var(--radius-md);
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
   background-color: var(--bg-elevated);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239898B0'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231F2A28'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
-  background-size: 16px 16px;
+  background-size: 18px 18px;
   cursor: pointer;
 }
 
@@ -777,7 +777,7 @@ textarea.form-control {
 
 .form-control:focus {
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+  box-shadow: 0 0 0 3px rgba(20, 116, 107, 0.15);
   background: var(--bg-card);
 }
 
@@ -820,7 +820,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .custom-file-btn:hover {
   background: var(--bg-hover);
   border-color: var(--brand-primary-light);
-  box-shadow: 0 0 12px rgba(108, 92, 231, 0.2);
+  box-shadow: 0 0 12px rgba(20, 116, 107, 0.2);
   color: var(--brand-primary-light);
 }
 
@@ -1163,7 +1163,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .vehicle-card:hover {
-  border-color: rgba(108, 92, 231, 0.3);
+  border-color: rgba(20, 116, 107, 0.3);
   box-shadow: var(--shadow-md);
   transform: translateY(-3px);
 }
@@ -1273,8 +1273,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   justify-content: center;
   padding: var(--space-6);
   background:
-    radial-gradient(ellipse at 30% 20%, rgba(108, 92, 231, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, rgba(162, 155, 254, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 20%, rgba(20, 116, 107, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(79, 168, 157, 0.1) 0%, transparent 50%),
     var(--bg-base);
 }
 
@@ -1673,11 +1673,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .total-stat {
-  border-color: rgba(108, 92, 231, 0.2);
+  border-color: rgba(20, 116, 107, 0.2);
 }
 
 .total-stat .tracking-stat-icon {
-  background: rgba(108, 92, 231, 0.12);
+  background: rgba(20, 116, 107, 0.12);
   color: var(--brand-primary);
 }
 
@@ -1736,9 +1736,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .tracking-filter-tab.active {
-  background: rgba(108, 92, 231, 0.12);
+  background: rgba(20, 116, 107, 0.12);
   color: var(--brand-primary-light);
-  border-color: rgba(108, 92, 231, 0.3);
+  border-color: rgba(20, 116, 107, 0.3);
 }
 
 .filter-count {
@@ -2790,14 +2790,14 @@ textarea {
 
 .bento-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(108, 92, 231, 0.3);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 24px rgba(108, 92, 231, 0.15);
+  border-color: rgba(20, 116, 107, 0.3);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 24px rgba(20, 116, 107, 0.15);
 }
 
 /* ── BENTO HERO CARD — v4 style (light bg, purple accent) ── */
 .bento-hero-card {
   background: var(--bg-elevated);
-  border: 1.5px solid rgba(108,92,231,0.2);
+  border: 1.5px solid rgba(20,116,107,0.2);
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -2890,14 +2890,14 @@ textarea {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #6C5CE7, #A29BFE);
+  background: linear-gradient(135deg, #14746B, #4FA89D);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 17px;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(108,92,231,0.3);
+  box-shadow: 0 4px 12px rgba(20,116,107,0.3);
 }
 
 .bento-vault-title {
@@ -2942,7 +2942,7 @@ textarea {
 
 /* Dark mode deposit items */
 [data-theme="dark"] .bento-deposit-item.held    { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.25); }
-[data-theme="dark"] .bento-deposit-item.damage  { background: rgba(108,92,231,0.08); border-color: rgba(108,92,231,0.25); }
+[data-theme="dark"] .bento-deposit-item.damage  { background: rgba(20,116,107,0.08); border-color: rgba(20,116,107,0.25); }
 [data-theme="dark"] .bento-deposit-item.returned{ background: rgba(34,197,94,0.08);  border-color: rgba(34,197,94,0.25); }
 
 .bento-deposit-item .dep-left {
@@ -2961,7 +2961,7 @@ textarea {
   gap: 5px;
 }
 .held .dep-label    { color: #B45309; }
-.damage .dep-label  { color: #5A4BD1; }
+.damage .dep-label  { color: #0C4F49; }
 .returned .dep-label{ color: #15803D; }
 
 .bento-deposit-item .dep-amount {
@@ -2969,7 +2969,7 @@ textarea {
   font-weight: 900;
 }
 .held .dep-amount    { color: #B45309; }
-.damage .dep-amount  { color: #5A4BD1; }
+.damage .dep-amount  { color: #0C4F49; }
 .returned .dep-amount{ color: #15803D; }
 
 .bento-deposit-item .dep-count {
@@ -2983,8 +2983,8 @@ textarea {
   border-color: rgba(255,255,255,0.08);
 }
 [data-theme="dark"] .bento-hero-card {
-  background: rgba(108,92,231,0.08);
-  border-color: rgba(108,92,231,0.2);
+  background: rgba(20,116,107,0.08);
+  border-color: rgba(20,116,107,0.2);
 }
 [data-theme="dark"] .bento-sub-value.positive { color: #4ADE80; }
 [data-theme="dark"] .bento-sub-value.negative { color: #F87171; }
@@ -2997,8 +2997,8 @@ textarea {
   font-size: 11px;
   font-weight: 700;
   color: var(--brand-primary-light);
-  background: rgba(108, 92, 231, 0.1);
-  border: 1.5px solid rgba(108, 92, 231, 0.25);
+  background: rgba(20, 116, 107, 0.1);
+  border: 1.5px solid rgba(20, 116, 107, 0.25);
   padding: 4px 12px;
   border-radius: var(--radius-full);
   margin-bottom: var(--space-3);
@@ -3064,8 +3064,8 @@ textarea {
   gap: 8px;
   padding: 6px 14px;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, rgba(108, 92, 231, 0.15), rgba(162, 155, 254, 0.15));
-  border: 1px solid rgba(108, 92, 231, 0.4);
+  background: linear-gradient(135deg, rgba(20, 116, 107, 0.15), rgba(79, 168, 157, 0.15));
+  border: 1px solid rgba(20, 116, 107, 0.4);
   color: var(--brand-primary-light);
   font-size: 12px;
   font-weight: 700;
@@ -3077,7 +3077,7 @@ textarea {
   background: var(--brand-primary);
   color: #ffffff;
   border-color: var(--brand-primary);
-  box-shadow: 0 0 16px rgba(108, 92, 231, 0.4);
+  box-shadow: 0 0 16px rgba(20, 116, 107, 0.4);
 }
 
 .vui-voice-btn.listening {
@@ -3133,8 +3133,8 @@ textarea {
 
 /* Bento Pill Tags & Chart Stack */
 .bento-pill-tag {
-  background: rgba(108, 92, 231, 0.12);
-  border: 1px solid rgba(108, 92, 231, 0.3);
+  background: rgba(20, 116, 107, 0.12);
+  border: 1px solid rgba(20, 116, 107, 0.3);
   padding: 6px 14px;
   border-radius: var(--radius-full);
   font-size: 12px;
@@ -3294,7 +3294,7 @@ textarea {
   background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
   color: #ffffff;
   border-color: var(--brand-primary);
-  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.3);
+  box-shadow: 0 4px 16px rgba(20, 116, 107, 0.3);
 }
 
 /* Enhanced Hero Bento Card Aesthetics */
@@ -3356,15 +3356,15 @@ textarea {
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(108, 92, 231, 0.2), rgba(162, 155, 254, 0.15));
-  border: 1px solid rgba(108, 92, 231, 0.35);
+  background: linear-gradient(135deg, rgba(20, 116, 107, 0.2), rgba(79, 168, 157, 0.15));
+  border: 1px solid rgba(20, 116, 107, 0.35);
   color: var(--brand-primary-light);
   font-size: 19px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.2);
+  box-shadow: 0 4px 16px rgba(20, 116, 107, 0.2);
 }
 
 .bento-card-subtitle {
@@ -3402,7 +3402,7 @@ textarea {
 
 .bento-deposit-box.held:hover {
   border-color: rgba(245, 158, 11, 0.5);
-  box-shadow: 0 8px 24px rgba(162, 155, 254, 0.15);
+  box-shadow: 0 8px 24px rgba(79, 168, 157, 0.15);
 }
 
 .bento-deposit-box.damage {
@@ -3990,33 +3990,35 @@ textarea {
   justify-content: center;
   flex-wrap: wrap;
   gap: 8px;
-  background: #FFFFFF;
-  border: 1px solid #0F172A;
-  color: #0F172A;
-  padding: 6px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border-strong);
+  color: var(--text-primary);
+  border-radius: var(--radius-full);
+  padding: 7px 18px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   margin-bottom: 20px;
-  box-shadow: 2px 2px 0px #0F172A;
+  box-shadow: var(--shadow-sm);
   box-sizing: border-box;
   max-width: 100%;
 }
 
 .star-rating-chip {
-  color: #D97706;
-  background: rgba(162, 155, 254, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  padding: 2px 8px;
+  color: #96631F;
+  background: rgba(192, 138, 52, 0.12);
+  border: 1px solid rgba(192, 138, 52, 0.35);
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-weight: 900;
+  font-weight: 700;
   font-size: 11.5px;
 }
 
 .badge-bullet {
-  color: #94A3B8;
-  font-weight: 900;
+  color: var(--text-muted);
+  font-weight: 700;
 }
 
 /* ============================================================
@@ -4107,10 +4109,10 @@ textarea {
 }
 
 .sidebar-dropdown-trigger.active {
-  background: #6C5CE7;
+  background: #14746B;
   color: #FFFFFF;
-  border-color: #5A4BD1;
-  box-shadow: 0 4px 14px rgba(108, 92, 231, 0.4);
+  border-color: #0C4F49;
+  box-shadow: 0 4px 14px rgba(20, 116, 107, 0.4);
 }
 
 /* ── Sidebar: Child items ── */
@@ -4158,8 +4160,8 @@ textarea {
 
 .sidebar-child-item.active {
   color: var(--brand-primary-light);
-  background: rgba(108, 92, 231, 0.08);
-  border-color: rgba(108, 92, 231, 0.2);
+  background: rgba(20, 116, 107, 0.08);
+  border-color: rgba(20, 116, 107, 0.2);
   font-weight: 600;
 }
 
@@ -4223,22 +4225,22 @@ body { background-color: var(--bg-base); color: var(--text-primary); }
   border: 1px solid var(--bg-border) !important;
   box-shadow: var(--shadow-sm) !important;
 }
-.stat-card:hover { box-shadow: var(--shadow-md) !important; border-color: rgba(108,92,231,0.25) !important; }
+.stat-card:hover { box-shadow: var(--shadow-md) !important; border-color: rgba(20,116,107,0.25) !important; }
 .stat-label { color: var(--text-muted) !important; }
 .stat-value { color: var(--text-primary) !important; }
 .stat-change { color: var(--text-muted) !important; }
 
 /* Stat card HERO (card pertama, gradient purple) */
 .stat-card-hero {
-  background: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%) !important;
+  background: linear-gradient(135deg, #14746B 0%, #4FA89D 100%) !important;
   border: none !important;
-  box-shadow: 0 8px 32px rgba(108,92,231,0.4) !important;
+  box-shadow: 0 8px 32px rgba(20,116,107,0.4) !important;
 }
 .stat-card-hero .stat-label { color: rgba(255,255,255,0.7) !important; }
 .stat-card-hero .stat-value { color: #ffffff !important; }
 .stat-card-hero .stat-change { color: rgba(255,255,255,0.65) !important; }
 .stat-card-hero::before { display: none !important; }
-.stat-card-hero:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 40px rgba(108,92,231,0.5) !important; }
+.stat-card-hero:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 40px rgba(20,116,107,0.5) !important; }
 
 /* Bento cards */
 .bento-card {
@@ -4248,12 +4250,12 @@ body { background-color: var(--bg-base); color: var(--text-primary); }
   -webkit-backdrop-filter: none !important;
   box-shadow: var(--shadow-sm) !important;
 }
-.bento-card:hover { box-shadow: var(--shadow-md) !important; border-color: rgba(108,92,231,0.25) !important; }
+.bento-card:hover { box-shadow: var(--shadow-md) !important; border-color: rgba(20,116,107,0.25) !important; }
 
 /* Bento hero card */
 .bento-hero-card {
   background: var(--bg-elevated) !important;
-  border: 1.5px solid rgba(108,92,231,0.25) !important;
+  border: 1.5px solid rgba(20,116,107,0.25) !important;
 }
 .bento-hero-value { color: var(--text-primary) !important; }
 .bento-hero-label { color: var(--text-muted) !important; }
@@ -4270,14 +4272,14 @@ body { background-color: var(--bg-base); color: var(--text-primary); }
 
 /* Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, #6C5CE7, #5A4BD1) !important;
+  background: linear-gradient(135deg, #14746B, #0C4F49) !important;
   color: #ffffff !important;
-  border-color: #5A4BD1 !important;
-  box-shadow: 0 4px 14px rgba(108,92,231,0.35) !important;
+  border-color: #0C4F49 !important;
+  box-shadow: 0 4px 14px rgba(20,116,107,0.35) !important;
 }
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #A29BFE, #6C5CE7) !important;
-  box-shadow: 0 6px 20px rgba(108,92,231,0.45) !important;
+  background: linear-gradient(135deg, #4FA89D, #14746B) !important;
+  box-shadow: 0 6px 20px rgba(20,116,107,0.45) !important;
 }
 .btn-secondary {
   background: var(--bg-elevated) !important;
@@ -4291,18 +4293,26 @@ body { background-color: var(--bg-base); color: var(--text-primary); }
 
 /* Form inputs */
 .form-control {
-  background: var(--bg-surface) !important;
+  background-color: var(--bg-surface) !important;
   border: 1px solid var(--bg-border) !important;
   color: var(--text-primary) !important;
 }
 .form-control:focus {
   border-color: var(--brand-primary) !important;
-  box-shadow: 0 0 0 3px rgba(108,92,231,0.15) !important;
+  box-shadow: 0 0 0 3px rgba(20,116,107,0.15) !important;
 }
 .form-label { color: var(--text-secondary) !important; }
 .form-control::placeholder { color: var(--text-muted) !important; }
 
-/* Select */
+/* Select — re-assert the chevron since the background-color rule above
+   only touches background-color now, but keep this explicit so select
+   styling doesn't silently break again if the rule above changes. */
+select.form-control {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231F2A28'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 14px center !important;
+  background-size: 18px 18px !important;
+}
 select.form-control option { background: var(--bg-surface); color: var(--text-primary); }
 
 /* Scrollable tabs */
@@ -4314,10 +4324,10 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
 }
 .scrollable-tab-btn:hover { background: var(--bg-hover) !important; color: var(--text-primary) !important; }
 .scrollable-tab-btn.active {
-  background: #6C5CE7 !important;
+  background: #14746B !important;
   color: #ffffff !important;
-  border-color: #5A4BD1 !important;
-  box-shadow: 0 4px 12px rgba(108,92,231,0.35) !important;
+  border-color: #0C4F49 !important;
+  box-shadow: 0 4px 12px rgba(20,116,107,0.35) !important;
 }
 
 /* Tracking & availability cards */
@@ -4327,7 +4337,7 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
 }
 .tracking-card:hover, .avail-card:hover {
   box-shadow: var(--shadow-md) !important;
-  border-color: rgba(108,92,231,0.2) !important;
+  border-color: rgba(20,116,107,0.2) !important;
 }
 
 /* Page header */
@@ -4358,8 +4368,8 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
 /* Auth page */
 .auth-page {
   background:
-    radial-gradient(ellipse at 30% 20%, rgba(108,92,231,0.12) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, rgba(162,155,254,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 20%, rgba(20,116,107,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(79,168,157,0.08) 0%, transparent 50%),
     var(--bg-base) !important;
 }
 .auth-card {
@@ -4422,7 +4432,7 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
   background: var(--brand-primary);
   border-color: var(--brand-primary-dark);
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(108,92,231,0.35);
+  box-shadow: 0 4px 14px rgba(20,116,107,0.35);
 }
 
 /* Rotating chevron */
@@ -4480,7 +4490,7 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
 }
 
 .theme-dropdown-item.active {
-  background: rgba(108,92,231,0.1);
+  background: rgba(20,116,107,0.1);
   color: var(--brand-primary);
   font-weight: 700;
 }
@@ -4521,7 +4531,7 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
   background: rgba(255,255,255,0.06);
 }
 [data-theme="dark"] .theme-dropdown-item.active {
-  background: rgba(108,92,231,0.18);
+  background: rgba(20,116,107,0.18);
 }
 
 /* =========================================
@@ -4587,10 +4597,10 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
   color: #ffffff;
 }
 .sidebar-dropdown-trigger.active {
-  background: #6C5CE7;
+  background: #14746B;
   color: #ffffff;
   font-weight: 700;
-  box-shadow: 0 4px 14px rgba(108,92,231,0.4);
+  box-shadow: 0 4px 14px rgba(20,116,107,0.4);
 }
 
 /* Child items — indented */
@@ -4622,8 +4632,8 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
   color: #ffffff;
 }
 .sidebar-child-item.active {
-  color: #A29BFE;
-  background: rgba(108,92,231,0.15);
+  color: #4FA89D;
+  background: rgba(20,116,107,0.15);
 }
 
 /* =========================================
@@ -4662,7 +4672,7 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
 .ptab-v4.on {
   background: var(--brand-primary);
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(108,92,231,0.3);
+  box-shadow: 0 2px 8px rgba(20,116,107,0.3);
 }
 .ptab-v4:not(.on):hover {
   background: var(--bg-elevated);

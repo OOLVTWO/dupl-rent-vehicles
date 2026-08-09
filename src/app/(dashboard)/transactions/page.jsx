@@ -220,7 +220,7 @@ function VehicleCombobox({ vehicles, value, onChange }) {
                       padding: '8px 12px',
                       borderRadius: '8px',
                       border: `1.5px solid ${isSelected ? 'var(--brand-primary)' : 'var(--bg-border)'}`,
-                      background: isSelected ? 'rgba(108, 92, 231, 0.12)' : 'var(--bg-elevated)',
+                      background: isSelected ? 'rgba(20, 116, 107, 0.12)' : 'var(--bg-elevated)',
                       cursor: 'pointer',
                       transition: 'all 0.15s ease'
                     }}
@@ -358,7 +358,7 @@ function CountryCodePicker({ value, onChange }) {
                       padding: '8px 10px',
                       borderRadius: '6px',
                       cursor: 'pointer',
-                      background: isSelected ? 'rgba(108, 92, 231, 0.15)' : 'transparent',
+                      background: isSelected ? 'rgba(20, 116, 107, 0.15)' : 'transparent',
                       color: isSelected ? 'var(--brand-primary-light)' : 'var(--text-primary)',
                       fontSize: '12px',
                       fontWeight: isSelected ? 700 : 500
@@ -505,7 +505,7 @@ function SmartPriceRecommendationPanel({ vehicle, startDate, endDate, selectedOp
               className={`smart-calc-card`}
               onClick={() => onSelectOption(opt.id, opt.total)}
               style={{
-                background: isSelected ? 'rgba(108, 92, 231, 0.1)' : 'var(--bg-elevated)',
+                background: isSelected ? 'rgba(20, 116, 107, 0.1)' : 'var(--bg-elevated)',
                 border: `1px solid ${isSelected ? 'var(--brand-primary)' : 'var(--bg-border)'}`,
                 borderRadius: '8px',
                 padding: '12px',
@@ -572,7 +572,7 @@ function CustomerPickerCombobox({ onSelectCustomer }) {
   };
 
   return (
-    <div style={{ marginBottom: '16px', background: 'rgba(108, 92, 231, 0.06)', border: '1px solid rgba(108, 92, 231, 0.25)', borderRadius: '12px', padding: '12px' }}>
+    <div style={{ marginBottom: '16px', background: 'rgba(20, 116, 107, 0.06)', border: '1px solid rgba(20, 116, 107, 0.25)', borderRadius: '12px', padding: '12px' }}>
       <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--brand-primary-light)', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span><i className="fa-solid fa-users" style={{ marginRight: '6px' }}></i> Auto-Fill Customer Terdaftar</span>
         <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 500 }}>{customers.length} customer tersimpan</span>
@@ -2162,7 +2162,7 @@ const handleSubmit = async (formData) => {
                           {tx.vehicles?.name || '-'}
                         </strong>
                         <div>
-                          <span className="tx-info-pill" style={{ color: 'var(--brand-primary-light)', borderColor: 'rgba(108, 92, 231, 0.35)', background: 'rgba(108, 92, 231, 0.12)', padding: '4px 10px' }}>
+                          <span className="tx-info-pill" style={{ color: 'var(--brand-primary-light)', borderColor: 'rgba(20, 116, 107, 0.35)', background: 'rgba(20, 116, 107, 0.12)', padding: '4px 10px' }}>
                             <i className="fa-solid fa-motorcycle" style={{ fontSize: '11px', marginRight: '6px' }}></i>
                             {tx.vehicles?.plate_number || '-'}
                           </span>

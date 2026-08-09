@@ -1,51 +1,46 @@
 /* =========================================
-   SHARP DESIGN SYSTEM — Public Marketing Site
+   TRUST DESIGN SYSTEM — Public Marketing Site
    (Boss Rent Pererenan — /fleet catalog)
 
-   This is the "bold/high-contrast" brand skin used for the
-   customer-facing catalog page, kept intentionally distinct
-   from the admin dashboard's soft/rounded system in globals.css.
-   Centralizing it here (tokens + real classes) replaces the old
-   approach of ~170 one-off inline style objects with repeated
-   hardcoded hex values scattered through fleet/page.jsx.
+   Calm, soft, minimal — shares the exact same color/radius/shadow
+   tokens as the admin dashboard (globals.css) so the whole product
+   feels like one thing, not two skins. This file only adds the
+   public-page-specific structural classes (hero, bento gallery,
+   marquee, trust seal) built on top of those shared tokens.
    ========================================= */
 
 .sharp-page {
-  --sharp-ink:        #0F172A; /* primary text / borders */
-  --sharp-ink-soft:   #334155;
-  --sharp-muted:      #64748B;
-  --sharp-accent:     #E85D04; /* brand orange */
-  --sharp-bg:         #F8FAFC;
-  --sharp-surface:    #FFFFFF;
-  --sharp-surface-2:  #F1F5F9;
-  --sharp-success:    #16A34A;
-  --sharp-success-bg: #22C55E;
-  --sharp-info:       #2563EB;
-  --sharp-warning:    #D97706;
-  --sharp-star:       #F59E0B;
+  /* Local aliases onto the shared design tokens — keeps every class
+     below unchanged while pointing at the one real palette. */
+  --sharp-ink:        var(--text-primary);
+  --sharp-ink-soft:   var(--text-secondary);
+  --sharp-muted:      var(--text-muted);
+  --sharp-accent:     var(--brand-accent);   /* muted clay — restrained use */
+  --sharp-bg:         var(--bg-base);
+  --sharp-surface:    var(--bg-surface);
+  --sharp-surface-2:  var(--bg-elevated);
+  --sharp-success:    var(--status-success);
+  --sharp-success-bg: var(--status-success);
+  --sharp-info:       var(--status-info);
+  --sharp-warning:    var(--status-warning);
+  --sharp-star:       #C08A34;
   --sharp-whatsapp:   #25D366;
 
-  --sharp-border-w:   1px;
-  --sharp-border-w-lg: 2px;
-  --sharp-shadow-sm:  2px 2px 0px var(--sharp-ink);
-  --sharp-shadow-md:  4px 4px 0px var(--sharp-ink);
-  --sharp-shadow-lg:  6px 6px 0px var(--sharp-ink);
-  --sharp-shadow-accent: 6px 6px 0px var(--sharp-accent);
+  --sharp-border-w:    1px;
+  --sharp-border-w-lg: 1.5px;
+  --sharp-shadow-sm:  var(--shadow-sm);
+  --sharp-shadow-md:  var(--shadow-md);
+  --sharp-shadow-lg:  var(--shadow-lg);
+  --sharp-shadow-accent: 0 12px 28px rgba(184, 112, 63, 0.18);
 
-  background: var(--sharp-surface);
+  background: var(--sharp-bg);
   color: var(--sharp-ink);
   min-height: 100vh;
   font-family: var(--font-inter), Inter, system-ui, -apple-system, sans-serif;
 }
 
-/* Scoped reset — only affects elements inside the sharp page,
-   not the whole document (the old version used a bare `* {}`
-   selector that reached every portal/toast/dev-overlay too). */
-.sharp-page,
-.sharp-page *,
-.sharp-page *::before,
-.sharp-page *::after {
-  border-radius: 0 !important;
+.sharp-page .font-display {
+  font-family: var(--font-display), Georgia, serif;
 }
 
 @keyframes marqueeScroll {
@@ -65,34 +60,36 @@
 /* ── Card ── */
 .sharp-card {
   background: var(--sharp-surface);
-  border: var(--sharp-border-w) solid var(--sharp-ink);
-  box-shadow: var(--sharp-shadow-md);
+  border: var(--sharp-border-w) solid var(--bg-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--sharp-shadow-sm);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .sharp-card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: var(--sharp-shadow-lg);
+  transform: translateY(-2px);
+  box-shadow: var(--sharp-shadow-md);
 }
 
 /* ── Stat card (hero counters) ── */
 .sharp-stat-card {
-  padding: 20px;
+  padding: 22px;
   text-align: center;
 }
 .sharp-stat-value {
-  font-size: 34px;
-  font-weight: 900;
-  letter-spacing: -1px;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
+  font-family: var(--font-display), Georgia, serif;
 }
 .sharp-stat-label {
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--sharp-ink);
-  margin-top: 4px;
+  margin-top: 6px;
 }
 .sharp-stat-sublabel {
   font-size: 11px;
@@ -102,10 +99,9 @@
 
 /* ── Button ── */
 .sharp-btn {
-  border-radius: 0 !important;
-  border: var(--sharp-border-w) solid var(--sharp-ink);
-  box-shadow: var(--sharp-shadow-sm);
-  font-weight: 800;
+  border: var(--sharp-border-w) solid transparent;
+  border-radius: var(--radius-md);
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
   display: inline-flex;
@@ -114,27 +110,29 @@
   gap: 8px;
   text-decoration: none;
   padding: 12px 22px;
-  font-size: 13px;
+  font-size: 13.5px;
 }
 .sharp-btn:hover {
-  transform: translate(-1px, -1px);
+  transform: translateY(-1px);
   box-shadow: var(--sharp-shadow-md);
 }
 .sharp-btn--dark      { background: var(--sharp-ink); color: #FFFFFF; }
-.sharp-btn--accent    { background: var(--sharp-accent); color: #FFFFFF; }
+.sharp-btn--accent    { background: var(--brand-primary); color: #FFFFFF; }
 .sharp-btn--whatsapp  { background: var(--sharp-whatsapp); color: #FFFFFF; }
-.sharp-btn--outline   { background: var(--sharp-surface); color: var(--sharp-ink); }
+.sharp-btn--outline   { background: var(--sharp-surface); color: var(--sharp-ink); border-color: var(--bg-border-strong); }
 .sharp-btn--sm        { padding: 8px 18px; font-size: 12px; }
-.sharp-btn--lg        { padding: 14px 36px; font-size: 14px; }
+.sharp-btn--lg        { padding: 14px 36px; font-size: 14.5px; }
 .sharp-btn--block     { width: 100%; }
 
 /* ── Badge / pill ── */
 .sharp-badge {
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.4px;
   padding: 4px 12px;
-  border: var(--sharp-border-w) solid var(--sharp-ink);
+  border-radius: var(--radius-full);
+  border: var(--sharp-border-w) solid transparent;
   color: #FFFFFF;
   display: inline-flex;
   align-items: center;
@@ -144,34 +142,42 @@
 /* ── Input ── */
 .sharp-input {
   width: 100%;
-  background: var(--sharp-bg);
-  border: var(--sharp-border-w) solid var(--sharp-ink);
+  background: var(--sharp-surface);
+  border: var(--sharp-border-w) solid var(--bg-border);
+  border-radius: var(--radius-md);
   color: var(--sharp-ink);
   padding: 10px 14px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
+}
+.sharp-input:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(20, 116, 107, 0.12);
 }
 
 /* ── Section heading ── */
 .sharp-eyebrow {
   font-size: 11px;
-  color: var(--sharp-accent);
-  font-weight: 900;
+  color: var(--brand-primary);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
 }
 .sharp-section-title {
-  font-size: 28px;
-  font-weight: 900;
+  font-size: 30px;
+  font-weight: 600;
   color: var(--sharp-ink);
-  margin: 4px 0 8px 0;
+  margin: 6px 0 10px 0;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  font-family: var(--font-display), Georgia, serif;
 }
 .sharp-section-subtitle {
-  font-size: 14px;
+  font-size: 14.5px;
   color: var(--sharp-muted);
+  line-height: 1.6;
 }
 
 /* ── Bento gallery card ── */
@@ -179,27 +185,28 @@
   position: relative;
   overflow: hidden;
   background: var(--sharp-surface-2);
-  border: var(--sharp-border-w) solid var(--sharp-ink);
-  box-shadow: var(--sharp-shadow-md);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: var(--sharp-border-w) solid var(--bg-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--sharp-shadow-sm);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 .bento-card-sharp:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: var(--sharp-shadow-accent);
+  transform: translateY(-3px);
+  box-shadow: var(--sharp-shadow-lg);
 }
 .bento-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: transform 0.4s ease;
 }
 .bento-card-sharp:hover .bento-img {
-  transform: scale(1.03);
+  transform: scale(1.04);
 }
 .bento-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.2) 60%, transparent 100%);
+  background: linear-gradient(to top, rgba(31, 42, 40, 0.88) 0%, rgba(31, 42, 40, 0.15) 60%, transparent 100%);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -209,19 +216,29 @@
 
 /* ── Floating action button ── */
 .sharp-fab {
-  width: 54px;
-  height: 54px;
-  border-radius: 0 !important;
-  border: var(--sharp-border-w-lg) solid var(--sharp-ink);
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  border: none;
   box-shadow: var(--sharp-shadow-md);
   color: #FFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
+  font-size: 24px;
   transition: all 0.15s ease;
 }
 .sharp-fab:hover {
-  transform: translate(-2px, -2px);
+  transform: translateY(-3px);
   box-shadow: var(--sharp-shadow-lg);
+}
+
+/* ── Trust seal (signature element) ── */
+.trust-seal {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.trust-seal-ring {
+  flex-shrink: 0;
 }

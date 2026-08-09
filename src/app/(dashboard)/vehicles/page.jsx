@@ -213,7 +213,7 @@ function ImageAdjusterModal({ isOpen, imageSrc, onConfirm, onCancel }) {
                     key={cell.key}
                     style={{
                       border: '1px dashed rgba(255,255,255,0.18)',
-                      background: isActive ? 'rgba(108, 92, 231, 0.12)' : 'transparent',
+                      background: isActive ? 'rgba(20, 116, 107, 0.12)' : 'transparent',
                       transition: 'all 0.15s ease'
                     }}
                   />

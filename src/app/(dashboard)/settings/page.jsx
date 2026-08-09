@@ -1230,7 +1230,7 @@ export default function SettingsPage() {
                             fontSize: '11px',
                             fontWeight: 600,
                             border: '1px solid var(--brand-primary)',
-                            background: 'rgba(108, 92, 231, 0.12)',
+                            background: 'rgba(20, 116, 107, 0.12)',
                             color: 'var(--brand-primary-light)',
                             cursor: 'pointer'
                           }}
@@ -1658,7 +1658,7 @@ export default function SettingsPage() {
 
                   <div className="form-group">
                     <label className="form-label" htmlFor="biz-tagline">
-                      <i className="fa-solid fa-bullhorn" style={{ marginRight: '6px', color: '#6C5CE7' }}></i> Tagline Running Announcement Web Publik
+                      <i className="fa-solid fa-bullhorn" style={{ marginRight: '6px', color: '#14746B' }}></i> Tagline Running Announcement Web Publik
                     </label>
                     <input
                       id="biz-tagline"
@@ -1774,7 +1774,7 @@ export default function SettingsPage() {
                     </div>
                     <div className="form-group">
                       <label className="form-label" htmlFor="cms-scooters">
-                        <i className="fa-solid fa-motorcycle" style={{ color: '#6C5CE7', marginRight: '6px' }}></i> Clean Scooters Fleet Count
+                        <i className="fa-solid fa-motorcycle" style={{ color: '#14746B', marginRight: '6px' }}></i> Clean Scooters Fleet Count
                       </label>
                       <input
                         id="cms-scooters"
@@ -1829,7 +1829,7 @@ export default function SettingsPage() {
                           alignItems: 'center',
                           cursor: 'grab',
                           opacity: draggedPhotoIdx === idx ? 0.4 : 1,
-                          boxShadow: draggedPhotoIdx === idx ? '0 0 10px rgba(108, 92, 231, 0.4)' : 'none',
+                          boxShadow: draggedPhotoIdx === idx ? '0 0 10px rgba(20, 116, 107, 0.4)' : 'none',
                           transition: 'transform 0.15s ease, border 0.15s ease'
                         }}
                       >
@@ -2103,7 +2103,7 @@ export default function SettingsPage() {
                         padding: '10px',
                         borderRadius: '8px',
                         border: `1px solid ${paymentForm.icon === item.icon ? 'var(--brand-primary)' : 'var(--bg-border)'}`,
-                        background: paymentForm.icon === item.icon ? 'rgba(108, 92, 231, 0.15)' : 'var(--bg-elevated)',
+                        background: paymentForm.icon === item.icon ? 'rgba(20, 116, 107, 0.15)' : 'var(--bg-elevated)',
                         color: paymentForm.icon === item.icon ? 'var(--brand-primary-light)' : 'var(--text-secondary)',
                         fontSize: '16px',
                         cursor: 'pointer',

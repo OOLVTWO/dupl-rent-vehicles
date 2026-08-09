@@ -99,7 +99,7 @@ function CountryCodePicker({ value, onChange }) {
                       padding: '8px 10px',
                       borderRadius: '6px',
                       cursor: 'pointer',
-                      background: isSelected ? 'rgba(108, 92, 231, 0.15)' : 'transparent',
+                      background: isSelected ? 'rgba(20, 116, 107, 0.15)' : 'transparent',
                       color: isSelected ? 'var(--brand-primary-light)' : 'var(--text-primary)',
                       fontSize: '12px',
                       fontWeight: isSelected ? 700 : 500
@@ -411,7 +411,7 @@ export default function CustomersPage() {
         }}>
           <div style={{
             width: '48px', height: '48px', borderRadius: '12px',
-            background: 'rgba(108, 92, 231, 0.15)', color: 'var(--brand-primary)',
+            background: 'rgba(20, 116, 107, 0.15)', color: 'var(--brand-primary)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px'
           }}>
             <i className="fa-solid fa-address-book"></i>
@@ -516,7 +516,7 @@ export default function CustomersPage() {
               fontSize: '13px',
               fontWeight: activeTab === 'all' ? 700 : 500,
               border: activeTab === 'all' ? '1px solid var(--brand-primary)' : '1px solid var(--bg-border)',
-              background: activeTab === 'all' ? 'rgba(108, 92, 231, 0.15)' : 'transparent',
+              background: activeTab === 'all' ? 'rgba(20, 116, 107, 0.15)' : 'transparent',
               color: activeTab === 'all' ? 'var(--brand-primary-light)' : 'var(--text-secondary)',
               cursor: 'pointer'
             }}
@@ -644,8 +644,8 @@ export default function CustomersPage() {
                               {customer.name}
                               {isRepeat && (
                                 <span style={{
-                                  background: 'rgba(59, 130, 246, 0.15)', color: '#60A5FA', border: '1px solid #3B82F6',
-                                  fontSize: '10px', padding: '1px 6px', borderRadius: '10px', fontWeight: 700
+                                  background: 'var(--status-info-bg)', color: 'var(--status-info)', border: '1px solid var(--status-info)',
+                                  fontSize: '10px', padding: '1px 6px', borderRadius: '10px', fontWeight: 700, whiteSpace: 'nowrap'
                                 }}>
                                   <i className="fa-solid fa-crown" style={{ marginRight: '3px' }}></i> Loyal
                                 </span>
@@ -668,8 +668,9 @@ export default function CustomersPage() {
                           rel="noopener noreferrer"
                           style={{
                             display: 'inline-flex', alignItems: 'center', gap: '6px',
-                            color: '#22C55E', fontWeight: 600, textDecoration: 'none',
-                            background: 'rgba(34, 197, 94, 0.1)', padding: '4px 10px', borderRadius: '6px'
+                            color: 'var(--status-success)', fontWeight: 600, textDecoration: 'none',
+                            background: 'var(--status-success-bg)', padding: '4px 10px', borderRadius: '6px',
+                            whiteSpace: 'nowrap'
                           }}
                         >
                           <i className="fa-brands fa-whatsapp" style={{ fontSize: '14px' }}></i>
@@ -694,8 +695,10 @@ export default function CustomersPage() {
                       {/* Total Rentals */}
                       <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                         <span style={{
-                          background: isRepeat ? 'rgba(59, 130, 246, 0.2)' : 'var(--bg-hover)',
-                          color: isRepeat ? '#60A5FA' : 'var(--text-secondary)',
+                          display: 'inline-block',
+                          whiteSpace: 'nowrap',
+                          background: isRepeat ? 'var(--status-info-bg)' : 'var(--bg-hover)',
+                          color: isRepeat ? 'var(--status-info)' : 'var(--text-secondary)',
                           fontWeight: 700, padding: '3px 10px', borderRadius: '12px', fontSize: '12px'
                         }}>
                           {customer.total_rentals || 0}x Sewa
@@ -703,7 +706,7 @@ export default function CustomersPage() {
                       </td>
 
                       {/* Total Spent */}
-                      <td style={{ padding: '14px 16px', fontWeight: 700, color: '#22C55E' }}>
+                      <td style={{ padding: '14px 16px', fontWeight: 700, color: 'var(--status-success)', whiteSpace: 'nowrap' }}>
                         {formatRupiah(customer.total_spent || 0)}
                       </td>
 
