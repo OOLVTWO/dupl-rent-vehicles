@@ -276,8 +276,14 @@ a:hover {
   display: flex;
   flex-direction: column;
   z-index: 100;
-  /* Scrolling happens inside .sidebar-nav-scroll, not here */
-  overflow: hidden;
+  /* Normal case: .sidebar-nav-scroll handles scrolling internally so the
+     footer/logout stays visibly pinned at the bottom. This overflow-y:auto
+     (was: hidden) is a safety net for edge cases the flex math above
+     doesn't anticipate — if content is ever taller than 100vh regardless,
+     the whole sidebar becomes scrollable so the footer is still reachable
+     rather than being silently clipped and unreachable. */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Logo area */
@@ -373,6 +379,11 @@ a:hover {
 /* Nav */
 .sidebar-nav {
   flex: 1;
+  min-height: 0; /* flex items default to min-height:auto, which refuses to
+    shrink below content's natural height and ignores flex:1 entirely —
+    this is what let the nav list push .sidebar-footer off-screen even
+    with flex-shrink:0 on the footer. Without this, the "flexible" 1fr
+    height is never actually enforced. */
   padding: 8px 10px;
   display: flex;
   flex-direction: column;
