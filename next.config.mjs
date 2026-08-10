@@ -2,17 +2,20 @@
  * Konfigurasi Next.js — Boss Rent Pererenan.
  *
  * NEXT_PUBLIC_* di-inject saat build (nilainya PUBLIK — memang dikirim ke browser).
- * Fallback di bawah mencegah situs mati total jika env belum di-set di Vercel.
- * Best practice tetap: set Environment Variables di Vercel.
+ * TIDAK ada fallback hardcode di sini — env WAJIB di-set di Vercel/host.
+ * (Sebelumnya ada fallback berisi URL & anon key produksi asli, langsung di
+ * source code di repo publik. Anon key memang didesain publik, tapi tidak
+ * ada alasan baik untuk menaruhnya di git history selain env var Vercel.)
  * SUPABASE_SERVICE_ROLE_KEY TIDAK pernah di-hardcode — server-side only.
  */
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  console.warn(
+    '[next.config] NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY belum di-set. ' +
+    'Set di Environment Variables Vercel — situs tidak akan bisa konek ke database tanpa ini.'
+  );
+}
+
 const nextConfig = {
-  env: {
-    NEXT_PUBLIC_SUPABASE_URL:
-      process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://eedrziblypwrufdzctvd.supabase.co',
-    NEXT_PUBLIC_SUPABASE_ANON_KEY:
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_zUqMMF85DjjkO4HMiiZcvQ_ZWdKiFpF',
-  },
   async headers() {
     return [
       {

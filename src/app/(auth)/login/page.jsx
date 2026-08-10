@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -16,17 +15,22 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
-    const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json().catch(() => ({}));
 
-    if (authError) {
-      setError('Email atau password salah. Silakan coba lagi.');
-    } else {
-      router.push('/dashboard');
-      router.refresh();
+      if (!res.ok) {
+        setError(data.error || 'Email atau password salah. Silakan coba lagi.');
+      } else {
+        router.push('/dashboard');
+        router.refresh();
+      }
+    } catch {
+      setError('Gagal terhubung ke server. Periksa koneksi internet Anda.');
     }
 
     setLoading(false);
