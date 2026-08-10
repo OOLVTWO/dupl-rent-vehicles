@@ -271,7 +271,12 @@ a:hover {
   top: 0;
   left: 0;
   width: var(--sidebar-width);
-  height: 100vh;
+  height: 100vh; /* fallback for browsers without dvh support */
+  height: 100dvh; /* dynamic viewport height — on mobile, 100vh can be
+    calculated as if the browser's address bar is hidden even while it's
+    actually shown, making the sidebar taller than what's really visible
+    and pushing the footer below the fold with no visual indication.
+    100dvh tracks the real, current visible viewport instead. */
   background: var(--sidebar-bg);
   display: flex;
   flex-direction: column;
@@ -279,9 +284,9 @@ a:hover {
   /* Normal case: .sidebar-nav-scroll handles scrolling internally so the
      footer/logout stays visibly pinned at the bottom. This overflow-y:auto
      (was: hidden) is a safety net for edge cases the flex math above
-     doesn't anticipate — if content is ever taller than 100vh regardless,
-     the whole sidebar becomes scrollable so the footer is still reachable
-     rather than being silently clipped and unreachable. */
+     doesn't anticipate — if content is ever taller than the sidebar's
+     height regardless, the whole sidebar becomes scrollable so the footer
+     is still reachable rather than being silently clipped and unreachable. */
   overflow-y: auto;
   overflow-x: hidden;
 }
