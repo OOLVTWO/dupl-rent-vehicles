@@ -287,6 +287,7 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .sidebar-logo-icon {
@@ -449,6 +450,7 @@ a:hover {
 .sidebar-footer {
   padding: 10px;
   border-top: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
 }
 
 /* =========================================
@@ -547,6 +549,22 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.card-header > *:first-child {
+  min-width: 0;
+}
+
+@media (max-width: 560px) {
+  .card-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .card-header > *:last-child {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .card-title {
@@ -922,6 +940,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   padding: var(--space-3) var(--space-4);
   color: var(--text-secondary);
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 .table tbody td strong {
@@ -1961,6 +1980,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   gap: 6px;
   font-size: 13px;
   color: var(--text-secondary);
+  min-width: 0;
+  flex-wrap: wrap;
+  overflow-wrap: anywhere;
 }
 
 .tracking-plate {
@@ -1971,6 +1993,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   font-weight: 700;
   letter-spacing: 0.5px;
   color: var(--text-primary);
+  overflow-wrap: anywhere;
 }
 
 .tracking-renter {
@@ -5130,6 +5153,7 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
   font-size: 15px;
   font-weight: 700;
   color: var(--text-primary);
+  white-space: nowrap;
 }
 .dash-finance-item.income .fin-value { color: #22C55E; }
 .dash-finance-item.expense .fin-value { color: #EF4444; }
@@ -5350,6 +5374,9 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
     flex: 1;
     min-width: 120px;
   }
+  .fin-value {
+    font-size: clamp(12px, 4vw, 15px);
+  }
 }
 
 @media (max-width: 600px) {
@@ -5506,10 +5533,18 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
     margin-bottom: 0;
     flex-shrink: 0;
   }
+  .dash-kpi-card > div:last-child {
+    min-width: 0;
+    flex: 1;
+  }
   .dash-kpi-label,
   .dash-kpi-value,
   .dash-kpi-sub {
     line-height: 1.3;
+  }
+  .dash-kpi-value {
+    white-space: nowrap;
+    font-size: clamp(15px, 5.5vw, 22px);
   }
 }
 

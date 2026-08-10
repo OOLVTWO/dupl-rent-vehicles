@@ -785,7 +785,7 @@ export default function FinancesPage() {
                           {isInc ? '+' : '-'}{formatRupiah(item.amount)}
                         </strong>
                       </td>
-                      <td style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{item.notes || '-'}</td>
+                      <td style={{ fontSize: '12px', color: 'var(--text-muted)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.notes || ''}>{item.notes || '-'}</td>
                       <td>
                         <div className="flex gap-2">
                           {item.isAutoTransaction ? (
