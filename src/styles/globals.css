@@ -929,11 +929,73 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   font-weight: 600;
 }
 
+/* ── Mobile-responsive table → stacked cards ──
+   Opt-in via .table--stack-mobile on the <table> (alongside .table).
+   Below the breakpoint, each row becomes its own card and each cell
+   shows a label (from data-label on the <td>) instead of a header
+   row + horizontal scroll — much easier to actually read on a phone
+   for glanceable summary widgets than scrolling a cramped table. */
+@media (max-width: 680px) {
+  .table.table--stack-mobile {
+    min-width: 0 !important;
+    width: 100% !important;
+    display: block !important;
+  }
+  .table--stack-mobile thead {
+    display: none;
+  }
+  .table--stack-mobile tbody,
+  .table--stack-mobile tr,
+  .table--stack-mobile td {
+    display: block;
+    width: 100%;
+  }
+  .table--stack-mobile tr {
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--bg-surface);
+  }
+  .table--stack-mobile tr:last-child {
+    margin-bottom: 0;
+  }
+  .table--stack-mobile td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--bg-border);
+    text-align: right;
+  }
+  .table--stack-mobile td:last-child {
+    border-bottom: none;
+  }
+  .table--stack-mobile td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: left;
+    flex-shrink: 0;
+  }
+  /* Cells with richer multi-line content read better stacked (label
+     above content) instead of squeezed into one row */
+  .table--stack-mobile td[data-label-align="left"] {
+    text-align: left;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
 .table-empty {
   text-align: center;
   padding: var(--space-12) var(--space-6);
-  color: var(--text-muted);
-}
+  color: var(--text-muted);}
 
 .table-empty-icon {
   font-size: 40px;

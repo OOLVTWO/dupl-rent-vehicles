@@ -447,7 +447,7 @@ export default function DashboardClient({ transactions, vehicles }) {
             </div>
           ) : (
             <div className="table-wrapper">
-              <table className="table" style={{ minWidth: '580px' }}>
+              <table className="table table--stack-mobile" style={{ minWidth: '580px' }}>
                 <thead>
                   <tr>
                     <th>Penyewa</th>
@@ -460,7 +460,7 @@ export default function DashboardClient({ transactions, vehicles }) {
                 <tbody>
                   {recentTx.map((tx) => (
                     <tr key={tx.id}>
-                      <td>
+                      <td data-label="Penyewa" data-label-align="left">
                         <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)' }}>{tx.renter_name}</div>
                         {tx.renter_phone && (
                           <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
@@ -468,7 +468,7 @@ export default function DashboardClient({ transactions, vehicles }) {
                           </div>
                         )}
                       </td>
-                      <td>
+                      <td data-label="Motor" data-label-align="left">
                         <div style={{ fontSize: '13px', fontWeight: 500 }}>{tx.vehicles?.name || tx.vehicle_name || '\u2014'}</div>
                         {(tx.vehicles?.plate_number || tx.plate_number) && (
                           <span style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'var(--bg-elevated)', padding: '1px 6px', borderRadius: '4px' }}>
@@ -476,14 +476,14 @@ export default function DashboardClient({ transactions, vehicles }) {
                           </span>
                         )}
                       </td>
-                      <td style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                      <td data-label="Tanggal" data-label-align="left" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
                         <div><i className="fa-solid fa-calendar-plus" style={{ marginRight: '3px', color: '#22C55E', fontSize: '10px' }}></i>{tx.start_date}</div>
                         <div><i className="fa-solid fa-calendar-check" style={{ marginRight: '3px', color: '#3B82F6', fontSize: '10px' }}></i>{tx.end_date}</div>
                       </td>
-                      <td>
+                      <td data-label="Total">
                         <strong style={{ fontSize: '13px' }}>{formatRupiah(tx.total_price)}</strong>
                       </td>
-                      <td>{statusBadge(tx.status, tx.payment_status)}</td>
+                      <td data-label="Status">{statusBadge(tx.status, tx.payment_status)}</td>
                     </tr>
                   ))}
                 </tbody>
