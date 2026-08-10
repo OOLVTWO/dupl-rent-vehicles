@@ -1,8 +1,23 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { compressImage } from '@/lib/imageCompressor';
 import { createClient } from '@/lib/supabase/client';
+
+const VALID_OWNERSHIP_TABS = ['all', 'internal', 'investor', 'investor_recap'];
+
+// Reads ?tab= so the sidebar "Data Motor" dropdown links land on the right
+// filter instead of always showing "Semua Unit Armada". Split out because
+// useSearchParams() requires a Suspense boundary.
+function TabFromQuery({ onTab }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && VALID_OWNERSHIP_TABS.includes(tab)) onTab(tab);
+  }, [searchParams, onTab]);
+  return null;
+}
 
 function formatRupiah(amount) {
   return new Intl.NumberFormat('id-ID', {
@@ -213,7 +228,7 @@ function ImageAdjusterModal({ isOpen, imageSrc, onConfirm, onCancel }) {
                     key={cell.key}
                     style={{
                       border: '1px dashed rgba(255,255,255,0.18)',
-                      background: isActive ? 'rgba(108, 92, 231, 0.12)' : 'transparent',
+                      background: isActive ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
                       transition: 'all 0.15s ease'
                     }}
                   />
@@ -847,7 +862,9 @@ function ConfirmModal({ isOpen, onClose, onConfirm, onForceDelete, onSetMaintena
         {historyError ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div className="alert alert-warning" style={{ fontSize: '13px', margin: 0 }}>
-              Motor <strong style={{ color: '#F59E0B' }}>{vehicleName}</strong> pernah disewakan dan memiliki riwayat transaksi di sistem. Menghapus motor ini secara paksa akan merusak laporan keuangan.
+              <span>
+                Motor <strong style={{ color: '#F59E0B' }}>{vehicleName}</strong> pernah disewakan dan memiliki riwayat transaksi di sistem. Menghapus motor ini secara paksa akan merusak laporan keuangan.
+              </span>
             </div>
             <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
               Pilih tindakan yang diinginkan:
@@ -1060,48 +1077,30 @@ export default function VehiclesPage() {
 
   return (
     <div className="fade-in">
+      <Suspense fallback={null}>
+        <TabFromQuery onTab={setOwnershipFilter} />
+      </Suspense>
+
       <div className="page-header">
         <h2><i className="fa-solid fa-motorcycle" style={{ marginRight: '8px' }}></i> Data Motor</h2>
         <p>Kelola armada kendaraan rental Boss Rent Pererenan</p>
       </div>
 
-      {alert && <div className={`alert alert-${alert.type}`}>{alert.message}</div>}
-
-      {/* OWNERSHIP TABS FILTER BAR */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '4px' }}>
-        <button
-          className={`btn btn-sm ${ownershipFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setOwnershipFilter('all')}
-          style={{ borderRadius: '8px', padding: '6px 14px', fontSize: '12.5px', fontWeight: 600, whiteSpace: 'nowrap' }}
-        >
-          <i className="fa-solid fa-motorcycle" style={{ marginRight: '6px' }}></i>
-          Semua Unit Armada ({safeVehicles.length})
-        </button>
-        <button
-          className={`btn btn-sm ${ownershipFilter === 'internal' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setOwnershipFilter('internal')}
-          style={{ borderRadius: '8px', padding: '6px 14px', fontSize: '12.5px', fontWeight: 600, whiteSpace: 'nowrap' }}
-        >
-          <i className="fa-solid fa-building" style={{ marginRight: '6px' }}></i>
-          Milik Internal ({internalVehicles.length})
-        </button>
-        <button
-          className={`btn btn-sm ${ownershipFilter === 'investor' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setOwnershipFilter('investor')}
-          style={{ borderRadius: '8px', padding: '6px 14px', fontSize: '12.5px', fontWeight: 600, whiteSpace: 'nowrap' }}
-        >
-          <i className="fa-solid fa-crown" style={{ marginRight: '6px', color: '#A855F7' }}></i>
-          Milik Investor ({investorVehicles.length})
-        </button>
-        <button
-          className={`btn btn-sm ${ownershipFilter === 'investor_recap' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setOwnershipFilter('investor_recap')}
-          style={{ borderRadius: '8px', padding: '6px 14px', fontSize: '12.5px', fontWeight: 600, whiteSpace: 'nowrap' }}
-        >
-          <i className="fa-solid fa-address-card" style={{ marginRight: '6px', color: '#A855F7' }}></i>
-          Directory & Rekap Investor ({investorList.length})
-        </button>
+      {/* Current filter indicator — the filter itself is now chosen from the
+          sidebar "Data Motor" dropdown, this just confirms what's showing */}
+      <div style={{ marginBottom: '16px' }}>
+        <span className="badge" style={{
+          background: 'var(--bg-elevated)', color: 'var(--brand-primary)', border: '1px solid var(--bg-border)',
+          fontSize: '12.5px', padding: '6px 14px', fontWeight: 600,
+        }}>
+          {ownershipFilter === 'all' && <><i className="fa-solid fa-motorcycle" style={{ marginRight: '6px' }}></i>Semua Unit Armada ({safeVehicles.length})</>}
+          {ownershipFilter === 'internal' && <><i className="fa-solid fa-building" style={{ marginRight: '6px' }}></i>Milik Internal ({internalVehicles.length})</>}
+          {ownershipFilter === 'investor' && <><i className="fa-solid fa-crown" style={{ marginRight: '6px', color: '#A855F7' }}></i>Milik Investor ({investorVehicles.length})</>}
+          {ownershipFilter === 'investor_recap' && <><i className="fa-solid fa-address-card" style={{ marginRight: '6px', color: '#A855F7' }}></i>Directory & Rekap Investor ({investorList.length})</>}
+        </span>
       </div>
+
+      {alert && <div className={`alert alert-${alert.type}`}>{alert.message}</div>}
 
       <div className="page-actions">
         <div className="filter-bar">

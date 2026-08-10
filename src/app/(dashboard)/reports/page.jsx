@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { exportTransactionsToExcel, exportExpensesToExcel, exportInvestorReportToExcel, formatRupiah } from '@/lib/excel';
 import {
   calcFinancialSummary, calcInvestorPayouts, isIncomeEntry, isPaidTransaction,
   isInvestorVehicle, expenseMatchesVehicle, getLocalDateStr,
 } from '@/lib/finance';
 import { createClient } from '@/lib/supabase/client';
+
+const VALID_TABS = ['income', 'expenses', 'profit_loss', 'investor'];
 
 const statusBadge = (status) => {
   const map = {
@@ -28,6 +31,18 @@ const statusBadge = (status) => {
   };
   return map[status] || <span className="tx-status-pill">{status}</span>;
 };
+
+// Reads ?tab= so the sidebar "Laporan" dropdown links actually land on the
+// right section instead of always showing Pemasukan. Split into its own
+// component because useSearchParams() requires a Suspense boundary.
+function TabFromQuery({ onTab }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && VALID_TABS.includes(tab)) onTab(tab);
+  }, [searchParams, onTab]);
+  return null;
+}
 
 export default function ReportsPage() {
   const [activeReportTab, setActiveReportTab] = useState('income'); // 'income' | 'expenses' | 'profit_loss' | 'investor'
@@ -196,41 +211,13 @@ export default function ReportsPage() {
 
   return (
     <div className="fade-in">
+      <Suspense fallback={null}>
+        <TabFromQuery onTab={setActiveReportTab} />
+      </Suspense>
+
       <div className="page-header">
         <h2><i className="fa-solid fa-chart-line" style={{ marginRight: '8px' }}></i> Laporan Keuangan & Laba Rugi</h2>
         <p>Analisis terpisah antara Pemasukan, Pengeluaran, Laba Bersih & Bagi Hasil Investor</p>
-      </div>
-
-      {/* Scrollable Tabs Chips / Pills Bar */}
-      <div className="scrollable-tabs-bar">
-        <button
-          type="button"
-          className={`scrollable-tab-btn ${activeReportTab === 'income' ? 'active' : ''}`}
-          onClick={() => setActiveReportTab('income')}
-        >
-          <i className="fa-solid fa-sack-dollar"></i> Laporan Pemasukan (Sewa)
-        </button>
-        <button
-          type="button"
-          className={`scrollable-tab-btn ${activeReportTab === 'expenses' ? 'active' : ''}`}
-          onClick={() => setActiveReportTab('expenses')}
-        >
-          <i className="fa-solid fa-money-bill-transfer"></i> Laporan Pengeluaran Operasional
-        </button>
-        <button
-          type="button"
-          className={`scrollable-tab-btn ${activeReportTab === 'profit_loss' ? 'active' : ''}`}
-          onClick={() => setActiveReportTab('profit_loss')}
-        >
-          <i className="fa-solid fa-calculator"></i> Ringkasan Laba Rugi
-        </button>
-        <button
-          type="button"
-          className={`scrollable-tab-btn ${activeReportTab === 'investor' ? 'active' : ''}`}
-          onClick={() => setActiveReportTab('investor')}
-        >
-          <i className="fa-solid fa-crown" style={{ color: '#A855F7', marginRight: '6px' }}></i> Laporan Bagi Hasil Investor
-        </button>
       </div>
 
       {/* Filter */}
@@ -420,7 +407,7 @@ export default function ReportsPage() {
                             <strong style={{ fontSize: '13.5px', color: 'var(--text-primary)', lineHeight: 1.35 }}>{tx.vehicles?.name || '-'}</strong>
                             {tx.vehicles?.plate_number && (
                               <div>
-                                <span className="tx-info-pill" style={{ color: 'var(--brand-primary-light)', borderColor: 'rgba(108, 92, 231, 0.35)', background: 'rgba(108, 92, 231, 0.12)', padding: '4px 10px' }}>
+                                <span className="tx-info-pill" style={{ color: 'var(--brand-primary-light)', borderColor: 'rgba(37, 99, 235, 0.35)', background: 'rgba(37, 99, 235, 0.12)', padding: '4px 10px' }}>
                                   <i className="fa-solid fa-motorcycle" style={{ fontSize: '11px', marginRight: '6px' }}></i>
                                   {tx.vehicles.plate_number}
                                 </span>

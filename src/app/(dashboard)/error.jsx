@@ -10,7 +10,7 @@ export default function DashboardError({ error, reset }) {
       </p>
       <button
         onClick={() => reset()}
-        style={{ marginTop: 16, padding: '10px 24px', border: 'none', borderRadius: 8, background: '#6C5CE7', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
+        style={{ marginTop: 16, padding: '10px 24px', border: 'none', borderRadius: 8, background: '#2563EB', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
       >
         Coba Lagi
       </button>

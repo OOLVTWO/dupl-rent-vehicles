@@ -1,0 +1,336 @@
+/* =========================================
+   AUTOMOTIVE DESIGN SYSTEM — Public Marketing Site
+   (Boss Rent Pererenan — /fleet catalog)
+
+   Bold, modern rental-brand look, distinct from the admin dashboard.
+   Ships with real light/dark themes — light is the default (per
+   product decision), dark is opt-in via .sharp-page--dark, toggled
+   client-side and persisted to localStorage. Structural classes
+   (hero, bento gallery, marquee, trust seal) live here on top of
+   these tokens.
+   ========================================= */
+
+.sharp-page {
+  --sharp-ink:        #0F172A;
+  --sharp-ink-soft:   #475569;
+  --sharp-muted:      #94A3B8;
+  --sharp-accent:     #2563EB;
+  --sharp-accent-solid: #2563EB;
+  --sharp-bg:         #FFFFFF;
+  --sharp-surface:    #FFFFFF;
+  --sharp-surface-2:  #F1F5F9;
+  --sharp-success:    #16A34A;
+  --sharp-success-bg: #16A34A;
+  --sharp-info:       #2563EB;
+  --sharp-warning:    #D97706;
+  --sharp-star:       #D97706;
+  --sharp-whatsapp:   #25D366;
+
+  --sharp-line:         #E2E8F0;
+  --sharp-line-strong:  #CBD5E1;
+
+  --sharp-border-w:    1px;
+  --sharp-border-w-lg: 1.5px;
+  --sharp-shadow-sm:  0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15,23,42,0.04);
+  --sharp-shadow-md:  0 4px 12px rgba(15, 23, 42, 0.07), 0 2px 4px rgba(15,23,42,0.05);
+  --sharp-shadow-lg:  0 20px 50px rgba(15, 23, 42, 0.12);
+  --sharp-shadow-accent: 0 12px 32px rgba(37, 99, 235, 0.18);
+
+  background: var(--sharp-bg);
+  color: var(--sharp-ink);
+  min-height: 100vh;
+  font-family: var(--font-inter), Inter, system-ui, -apple-system, sans-serif;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* ── Dark theme override (opt-in via toggle) ── */
+.sharp-page--dark {
+  --sharp-ink:        #F1F5F9;
+  --sharp-ink-soft:   #CBD5E1;
+  --sharp-muted:      #8B96A8;
+  --sharp-accent:     #60A5FA;
+  --sharp-accent-solid: #2563EB;
+  --sharp-bg:         #0B0F19;
+  --sharp-surface:    #141A26;
+  --sharp-surface-2:  #1B2332;
+  --sharp-success:    #4ADE80;
+  --sharp-success-bg: #16A34A;
+  --sharp-info:       #60A5FA;
+  --sharp-warning:    #FBBF24;
+  --sharp-star:       #FBBF24;
+
+  --sharp-line:        rgba(255, 255, 255, 0.09);
+  --sharp-line-strong: rgba(255, 255, 255, 0.16);
+
+  --sharp-shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.3);
+  --sharp-shadow-md:  0 8px 24px rgba(0, 0, 0, 0.45);
+  --sharp-shadow-lg:  0 20px 50px rgba(0, 0, 0, 0.55);
+  --sharp-shadow-accent: 0 12px 32px rgba(96, 165, 250, 0.22);
+}
+
+.sharp-page .font-display {
+  font-family: var(--font-display), 'Arial Narrow', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* ── Theme toggle button ── */
+.theme-toggle-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--sharp-line-strong);
+  background: var(--sharp-surface-2);
+  color: var(--sharp-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.theme-toggle-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--sharp-shadow-sm);
+}
+
+/* Generic round icon button — shares the toggle's visual style for
+   carousel prev/next controls etc, kept as its own class so it's not
+   confused with the actual theme-toggle functionality. */
+.icon-btn-round {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--sharp-line-strong);
+  background: var(--sharp-surface-2);
+  color: var(--sharp-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.icon-btn-round:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--sharp-shadow-sm);
+  border-color: var(--sharp-accent);
+  color: var(--sharp-accent);
+}
+
+/* ── Hero floating search bar ── */
+.hero-search-bar {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr auto;
+  gap: 18px;
+  align-items: end;
+}
+@media (max-width: 860px) {
+  .hero-search-bar {
+    grid-template-columns: 1fr 1fr;
+  }
+  .hero-search-bar > *:first-child { grid-column: 1 / -1; }
+  .hero-search-bar > *:last-child { grid-column: 1 / -1; }
+}
+
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  animation: marqueeScroll 40s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* ── Card ── */
+.sharp-card {
+  background: var(--sharp-surface);
+  border: var(--sharp-border-w) solid var(--sharp-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--sharp-shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.sharp-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sharp-shadow-md);
+}
+
+/* ── Stat card (hero counters) ── */
+.sharp-stat-card {
+  padding: 22px;
+  text-align: center;
+}
+.sharp-stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font-display), 'Arial Narrow', sans-serif;
+}
+.sharp-stat-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sharp-ink);
+  margin-top: 6px;
+}
+.sharp-stat-sublabel {
+  font-size: 11px;
+  color: var(--sharp-muted);
+  margin-top: 2px;
+}
+
+/* ── Button ── */
+.sharp-btn {
+  border: var(--sharp-border-w) solid transparent;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  padding: 12px 22px;
+  font-size: 13.5px;
+}
+.sharp-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--sharp-shadow-md);
+}
+.sharp-btn--dark      { background: var(--sharp-ink); color: var(--sharp-bg); }
+.sharp-btn--accent    { background: var(--sharp-accent-solid); color: #FFFFFF; }
+.sharp-btn--whatsapp  { background: var(--sharp-whatsapp); color: #FFFFFF; }
+.sharp-btn--outline   { background: transparent; color: var(--sharp-ink); border-color: var(--sharp-line-strong); }
+.sharp-btn--sm        { padding: 8px 18px; font-size: 12px; }
+.sharp-btn--lg        { padding: 14px 36px; font-size: 14.5px; }
+.sharp-btn--block     { width: 100%; }
+
+/* ── Badge / pill ── */
+.sharp-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  border: var(--sharp-border-w) solid transparent;
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ── Input ── */
+.sharp-input {
+  width: 100%;
+  background: var(--sharp-surface);
+  border: var(--sharp-border-w) solid var(--sharp-line);
+  border-radius: var(--radius-md);
+  color: var(--sharp-ink);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.sharp-input:focus {
+  outline: none;
+  border-color: var(--sharp-accent);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
+}
+
+/* ── Section heading ── */
+.sharp-eyebrow {
+  font-size: 11px;
+  color: var(--sharp-accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+.sharp-section-title {
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--sharp-ink);
+  margin: 6px 0 10px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display), 'Arial Narrow', sans-serif;
+}
+.sharp-section-subtitle {
+  font-size: 14.5px;
+  color: var(--sharp-muted);
+  line-height: 1.6;
+}
+
+/* ── Bento gallery card ── */
+.bento-card-sharp {
+  position: relative;
+  overflow: hidden;
+  background: var(--sharp-surface-2);
+  border: var(--sharp-border-w) solid var(--sharp-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--sharp-shadow-sm);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.bento-card-sharp:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--sharp-shadow-lg);
+}
+.bento-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.bento-card-sharp:hover .bento-img {
+  transform: scale(1.04);
+}
+.bento-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.2) 60%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  color: #FFF;
+}
+
+/* ── Floating action button ── */
+.sharp-fab {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  border: none;
+  box-shadow: var(--sharp-shadow-md);
+  color: #FFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: all 0.15s ease;
+}
+.sharp-fab:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--sharp-shadow-lg);
+}
+
+/* ── Trust seal (signature element) ── */
+.trust-seal {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.trust-seal-ring {
+  flex-shrink: 0;
+}

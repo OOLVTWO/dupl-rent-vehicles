@@ -13,16 +13,72 @@ const NAV_SECTIONS = [
     items: [
       { href: '/dashboard',    iconClass: 'fa-solid fa-chart-pie',           label: 'Dashboard' },
       { href: '/transactions', iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi',      badge: null },
-      { href: '/customers',    iconClass: 'fa-solid fa-users',               label: 'Data Customer' },
-      { href: '/vehicles',     iconClass: 'fa-solid fa-motorcycle',          label: 'Data Motor' },
-      { href: '/tracking',     iconClass: 'fa-solid fa-clock-rotate-left',   label: 'Tracking Sewa', badge: 'tracking' },
-      { href: '/availability', iconClass: 'fa-solid fa-circle-half-stroke',  label: 'Ketersediaan',  badge: 'availability' },
+      {
+        href: '/customers',
+        iconClass: 'fa-solid fa-users',
+        label: 'Data Customer',
+        isDropdown: true,
+        children: [
+          { href: '/customers?tab=all',    iconClass: 'fa-solid fa-users',      label: 'Semua Customer' },
+          { href: '/customers?tab=repeat', iconClass: 'fa-solid fa-crown',      label: 'Repeat Customer' },
+          { href: '/customers?tab=new',    iconClass: 'fa-solid fa-user-plus',  label: 'Customer Baru' },
+        ],
+      },
+      {
+        href: '/vehicles',
+        iconClass: 'fa-solid fa-motorcycle',
+        label: 'Data Motor',
+        isDropdown: true,
+        children: [
+          { href: '/vehicles?tab=all',            iconClass: 'fa-solid fa-motorcycle',    label: 'Semua Unit Armada' },
+          { href: '/vehicles?tab=internal',       iconClass: 'fa-solid fa-building',      label: 'Milik Internal' },
+          { href: '/vehicles?tab=investor',       iconClass: 'fa-solid fa-crown',         label: 'Milik Investor' },
+          { href: '/vehicles?tab=investor_recap', iconClass: 'fa-solid fa-address-card',  label: 'Directory & Rekap Investor' },
+        ],
+      },
+      {
+        href: '/tracking',
+        iconClass: 'fa-solid fa-clock-rotate-left',
+        label: 'Tracking Sewa',
+        badge: 'tracking',
+        isDropdown: true,
+        children: [
+          { href: '/tracking?tab=all',      iconClass: 'fa-solid fa-list',              label: 'Semua' },
+          { href: '/tracking?tab=overdue',  iconClass: 'fa-solid fa-circle-exclamation', label: 'Overdue' },
+          { href: '/tracking?tab=critical', iconClass: 'fa-solid fa-bell',               label: 'Kritis' },
+          { href: '/tracking?tab=upcoming', iconClass: 'fa-solid fa-calendar-days',      label: 'Akan Datang' },
+        ],
+      },
+      {
+        href: '/availability',
+        iconClass: 'fa-solid fa-circle-half-stroke',
+        label: 'Ketersediaan',
+        badge: 'availability',
+        isDropdown: true,
+        children: [
+          { href: '/availability?tab=all',         iconClass: 'fa-solid fa-grip',              label: 'Semua Armada' },
+          { href: '/availability?tab=available',   iconClass: 'fa-solid fa-circle-check',      label: 'Tersedia' },
+          { href: '/availability?tab=rented',      iconClass: 'fa-solid fa-key',                label: 'Disewa' },
+          { href: '/availability?tab=overdue',     iconClass: 'fa-solid fa-circle-exclamation', label: 'Overdue' },
+          { href: '/availability?tab=maintenance', iconClass: 'fa-solid fa-wrench',             label: 'Perawatan' },
+        ],
+      },
     ],
   },
   {
     label: 'Keuangan',
     items: [
-      { href: '/expenses', iconClass: 'fa-solid fa-wallet',     label: 'Keuangan' },
+      {
+        href: '/expenses',
+        iconClass: 'fa-solid fa-wallet',
+        label: 'Keuangan',
+        isDropdown: true,
+        children: [
+          { href: '/expenses?tab=all',     iconClass: 'fa-solid fa-list-check',        label: 'Semua Arus Kas' },
+          { href: '/expenses?tab=income',  iconClass: 'fa-solid fa-circle-arrow-down', label: 'Pemasukan (+)' },
+          { href: '/expenses?tab=expense', iconClass: 'fa-solid fa-circle-arrow-up',   label: 'Pengeluaran (-)' },
+        ],
+      },
       {
         href: '/reports',
         iconClass: 'fa-solid fa-chart-line',
@@ -40,15 +96,37 @@ const NAV_SECTIONS = [
   {
     label: 'Tools',
     items: [
-      { href: '/maintenance', iconClass: 'fa-solid fa-robot',  label: 'AI Diagnostic' },
+      {
+        href: '/maintenance',
+        iconClass: 'fa-solid fa-robot',
+        label: 'AI Diagnostic',
+        isDropdown: true,
+        children: [
+          { href: '/maintenance?tab=diagnostics', iconClass: 'fa-solid fa-robot',              label: 'Skor Kesehatan' },
+          { href: '/maintenance?tab=history',     iconClass: 'fa-solid fa-clock-rotate-left',  label: 'Riwayat Servis' },
+          { href: '/maintenance?tab=reports',     iconClass: 'fa-solid fa-clipboard-list',     label: 'Keluhan Pelanggan' },
+        ],
+      },
       { href: '/gallery',     iconClass: 'fa-solid fa-images', label: 'Galeri Foto' },
     ],
   },
   {
     label: 'Lainnya',
     items: [
-      { href: '/settings', iconClass: 'fa-solid fa-gear',  label: 'Pengaturan' },
-      { href: '/fleet',    iconClass: 'fa-solid fa-globe', label: 'Website Publik' },
+      {
+        href: '/settings',
+        iconClass: 'fa-solid fa-gear',
+        label: 'Pengaturan',
+        isDropdown: true,
+        children: [
+          { href: '/settings?tab=storage',  iconClass: 'fa-solid fa-database',       label: 'Database & Storage' },
+          { href: '/settings?tab=payment',  iconClass: 'fa-solid fa-credit-card',    label: 'Metode Pembayaran' },
+          { href: '/settings?tab=wacustom', iconClass: 'fa-brands fa-whatsapp',      label: 'Template Invoice WA' },
+          { href: '/settings?tab=security', iconClass: 'fa-solid fa-shield-halved', label: 'Keamanan & Password' },
+          { href: '/settings?tab=business', iconClass: 'fa-solid fa-sliders',        label: 'Operasional Rental' },
+        ],
+      },
+      { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'Website Publik' },
     ],
   },
 ];
@@ -65,12 +143,22 @@ export default function Sidebar({ user, mobileOpen, onClose }) {
   const pathname = usePathname();
   const router = useRouter();
   const [alertCounts, setAlertCounts] = useState({ tracking: 0, availability: 0 });
-  const [laporanOpen, setLaporanOpen] = useState(false);
+  const [openDropdowns, setOpenDropdowns] = useState({});
   const [logoUrl, setLogoUrl] = useState('/images/logoCompany.png');
 
-  // Auto-expand laporan dropdown if on /reports
+  // Auto-expand a dropdown if the current path matches one of its items
   useEffect(() => {
-    if (pathname.startsWith('/reports')) setLaporanOpen(true);
+    const match = {};
+    NAV_SECTIONS.forEach(section => {
+      section.items.forEach(item => {
+        if (item.isDropdown && pathname.startsWith(item.href)) {
+          match[item.href] = true;
+        }
+      });
+    });
+    if (Object.keys(match).length > 0) {
+      setOpenDropdowns(prev => ({ ...prev, ...match }));
+    }
   }, [pathname]);
 
   useEffect(() => {
@@ -149,31 +237,37 @@ export default function Sidebar({ user, mobileOpen, onClose }) {
                 : item.badge === 'availability' ? alertCounts.availability
                 : 0;
 
-              // Dropdown (Laporan)
+              // Dropdown (Laporan, Data Motor, Keuangan, Pengaturan)
               if (item.isDropdown) {
-                const isDropdownActive = pathname.startsWith('/reports');
+                const isDropdownActive = pathname.startsWith(item.href);
+                const isOpen = !!openDropdowns[item.href];
                 return (
                   <div key={item.href}>
                     <button
                       type="button"
-                      onClick={() => setLaporanOpen(prev => !prev)}
+                      onClick={() => setOpenDropdowns(prev => ({ ...prev, [item.href]: !prev[item.href] }))}
                       className={`sidebar-nav-item sidebar-dropdown-trigger ${isDropdownActive ? 'active' : ''}`}
                     >
                       <span className="nav-icon"><i className={item.iconClass}></i></span>
                       <span style={{ flex: 1 }}>{item.label}</span>
+                      {badgeCount > 0 && (
+                        <span className="sidebar-alert-badge" style={{ marginRight: '4px' }}>
+                          {badgeCount > 9 ? '9+' : badgeCount}
+                        </span>
+                      )}
                       <i
                         className="fa-solid fa-chevron-down"
                         style={{
                           fontSize: '10px',
                           transition: 'transform 0.22s ease',
-                          transform: laporanOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                           opacity: 0.45,
                         }}
                       />
                     </button>
                     <div style={{
                       overflow: 'hidden',
-                      maxHeight: laporanOpen ? '240px' : '0px',
+                      maxHeight: isOpen ? `${item.children.length * 42 + 8}px` : '0px',
                       transition: 'max-height 0.28s ease',
                     }}>
                       {item.children.map((child) => (

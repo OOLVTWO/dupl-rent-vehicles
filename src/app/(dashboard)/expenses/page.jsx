@@ -1,9 +1,26 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { exportFinancesToExcel } from '@/lib/excel';
 import { getLocalDateStr } from '@/lib/finance';
 import { createClient } from '@/lib/supabase/client';
+
+const VALID_TYPE_TABS = ['all', 'income', 'expense'];
+
+// Reads ?tab= so the sidebar "Keuangan" dropdown links land on the right
+// filter. Split out because useSearchParams() requires a Suspense boundary.
+function TabFromQuery({ onTab, onCategoryReset }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && VALID_TYPE_TABS.includes(tab)) {
+      onTab(tab);
+      onCategoryReset();
+    }
+  }, [searchParams, onTab, onCategoryReset]);
+  return null;
+}
 
 function formatRupiah(amount) {
   const cleanAmount = Math.round(Number(amount || 0));
@@ -15,12 +32,26 @@ function formatRupiah(amount) {
   }).format(cleanAmount);
 }
 
+// Selectable when creating a NEW income entry. Deliberately excludes
+// rental_income: motor rental revenue is already tracked automatically
+// from the Transaksi (booking) system, so offering it here would let
+// someone double-log it and inflate the Dashboard's total revenue.
+// This is for income *outside* that flow — tips-equivalent income like
+// add-on fees, delivery charges, or a forfeited deposit.
 const INCOME_CATEGORIES = {
-  rental_income: { label: 'Pendapatan Sewa Motor', icon: 'fa-solid fa-file-invoice-dollar', color: '#22C55E' },
   deposit_forfeit: { label: 'Klaim Deposit / Denda Damage', icon: 'fa-solid fa-shield-halved', color: '#F59E0B' },
   addon_services: { label: 'Layanan Tambahan (Helm / Jas Hujan)', icon: 'fa-solid fa-headset', color: '#3B82F6' },
   delivery_fee: { label: 'Biaya Antar-Jemput Motor', icon: 'fa-solid fa-truck-ramp-box', color: '#8B5CF6' },
-  other_income: { label: 'Pemasukan Lain-lain', icon: 'fa-solid fa-sack-dollar', color: '#10B981' },
+  other_income: { label: 'Pemasukan Lain-lain (mis. Tip)', icon: 'fa-solid fa-sack-dollar', color: '#10B981' },
+};
+
+// Full set including rental_income — kept only so any pre-existing
+// historical entry with that category (from before this change) still
+// displays with a proper label and can be filtered/found, not for
+// selecting on new entries. See INCOME_CATEGORIES above for that.
+const ALL_INCOME_CATEGORIES_FOR_DISPLAY = {
+  rental_income: { label: 'Pendapatan Sewa Motor (Legacy)', icon: 'fa-solid fa-file-invoice-dollar', color: '#22C55E' },
+  ...INCOME_CATEGORIES,
 };
 
 const EXPENSE_CATEGORIES = {
@@ -46,7 +77,7 @@ const getCleanCategoryKey = (cat) => {
 const getCategoryMeta = (cat, isIncome = false) => {
   const cleanKey = getCleanCategoryKey(cat);
   if (isIncome) {
-    return INCOME_CATEGORIES[cleanKey] || { label: 'Pemasukan Lain-lain', icon: 'fa-solid fa-sack-dollar', color: '#22C55E' };
+    return ALL_INCOME_CATEGORIES_FOR_DISPLAY[cleanKey] || { label: 'Pemasukan Lain-lain', icon: 'fa-solid fa-sack-dollar', color: '#22C55E' };
   }
   return EXPENSE_CATEGORIES[cleanKey] || { label: 'Pengeluaran Lain-lain', icon: 'fa-solid fa-receipt', color: '#EF4444' };
 };
@@ -201,6 +232,28 @@ function FinanceModal({ isOpen, onClose, onSubmit, editData, defaultType = 'expe
               </button>
             </div>
           </div>
+
+          {isIncome && !editData && (
+            <div className="alert alert-info" style={{ marginBottom: '16px', fontSize: '12.5px', lineHeight: 1.6 }}>
+              <i className="fa-solid fa-circle-info" style={{ marginTop: '1px' }}></i>
+              <span>
+                Pendapatan sewa motor sudah otomatis tercatat lewat menu <strong>Transaksi</strong>. Gunakan
+                form ini hanya untuk pemasukan di luar itu — misalnya tip, biaya antar-jemput, atau klaim
+                deposit — supaya total pendapatan di Dashboard tidak terhitung dobel.
+              </span>
+            </div>
+          )}
+
+          {!isIncome && !editData && (
+            <div className="alert alert-info" style={{ marginBottom: '16px', fontSize: '12.5px', lineHeight: 1.6 }}>
+              <i className="fa-solid fa-circle-info" style={{ marginTop: '1px' }}></i>
+              <span>
+                Gunakan form ini untuk biaya operasional usaha — servis motor, suku cadang, bahan bakar,
+                atau gaji karyawan. Untuk pengeluaran terkait motor tertentu, catat di sini agar bisa
+                muncul di riwayat perawatan motor tersebut.
+              </span>
+            </div>
+          )}
 
           <div className="form-group">
             <label className="form-label" htmlFor="fin-title">
@@ -535,6 +588,10 @@ export default function FinancesPage() {
 
   return (
     <div className="fade-in">
+      <Suspense fallback={null}>
+        <TabFromQuery onTab={setTypeFilter} onCategoryReset={() => setCategoryFilter('all')} />
+      </Suspense>
+
       <div className="page-header">
         <div>
           <h2><i className="fa-solid fa-wallet" style={{ marginRight: '8px' }}></i> Kelola Keuangan Usaha</h2>
@@ -596,35 +653,16 @@ export default function FinancesPage() {
       {/* Filter Tabs & Actions */}
       <div className="bento-card bento-table-card mb-6" style={{ padding: '16px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
-          {/* SCROLLABLE TABS SELECTOR (SWIPE / SCROLLABLE ON MOBILE) */}
-          <div className="scrollable-tabs-bar" style={{ marginBottom: 0, paddingBottom: 0, borderBottom: 'none', width: 'auto', maxWidth: '100%' }}>
-            <button
-              type="button"
-              className={`scrollable-tab-btn ${typeFilter === 'all' ? 'active' : ''}`}
-              onClick={() => { setTypeFilter('all'); setCategoryFilter('all'); }}
-            >
-              <i className="fa-solid fa-list-check"></i>
-              Semua Arus Kas ({records.length})
-            </button>
-            <button
-              type="button"
-              className={`scrollable-tab-btn ${typeFilter === 'income' ? 'active' : ''}`}
-              onClick={() => { setTypeFilter('income'); setCategoryFilter('all'); }}
-              style={typeFilter === 'income' ? { background: '#22C55E', borderColor: '#22C55E', color: '#fff', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.35)' } : {}}
-            >
-              <i className="fa-solid fa-circle-arrow-down" style={{ color: typeFilter === 'income' ? '#fff' : '#22C55E' }}></i>
-              Pemasukan (+)
-            </button>
-            <button
-              type="button"
-              className={`scrollable-tab-btn ${typeFilter === 'expense' ? 'active' : ''}`}
-              onClick={() => { setTypeFilter('expense'); setCategoryFilter('all'); }}
-              style={typeFilter === 'expense' ? { background: '#EF4444', borderColor: '#EF4444', color: '#fff', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.35)' } : {}}
-            >
-              <i className="fa-solid fa-circle-arrow-up" style={{ color: typeFilter === 'expense' ? '#fff' : '#EF4444' }}></i>
-              Pengeluaran (-)
-            </button>
-          </div>
+          {/* Current filter indicator — filter is now chosen from the sidebar
+              "Keuangan" dropdown, this just confirms what's showing */}
+          <span className="badge" style={{
+            background: 'var(--bg-elevated)', color: 'var(--brand-primary)', border: '1px solid var(--bg-border)',
+            fontSize: '12.5px', padding: '6px 14px', fontWeight: 600,
+          }}>
+            {typeFilter === 'all' && <><i className="fa-solid fa-list-check" style={{ marginRight: '6px' }}></i>Semua Arus Kas ({records.length})</>}
+            {typeFilter === 'income' && <><i className="fa-solid fa-circle-arrow-down" style={{ marginRight: '6px', color: '#22C55E' }}></i>Pemasukan (+)</>}
+            {typeFilter === 'expense' && <><i className="fa-solid fa-circle-arrow-up" style={{ marginRight: '6px', color: '#EF4444' }}></i>Pengeluaran (-)</>}
+          </span>
 
           {/* DUAL ACTION BUTTONS & EXPORT (2-COLUMN GRID ON MOBILE) */}
           <div className="fin-actions-wrap">
@@ -672,7 +710,7 @@ export default function FinancesPage() {
           >
             <option value="all">Semua Kategori</option>
             <optgroup label="Pemasukan">
-              {Object.entries(INCOME_CATEGORIES).map(([k, v]) => (
+              {Object.entries(ALL_INCOME_CATEGORIES_FOR_DISPLAY).map(([k, v]) => (
                 <option key={k} value={k}>{v.label}</option>
               ))}
             </optgroup>
