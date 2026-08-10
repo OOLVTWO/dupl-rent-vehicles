@@ -5533,7 +5533,7 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
     margin-bottom: 0;
     flex-shrink: 0;
   }
-  .dash-kpi-card > div:last-child {
+  .dash-kpi-text {
     min-width: 0;
     flex: 1;
   }
@@ -5541,6 +5541,8 @@ select.form-control option { background: var(--bg-surface); color: var(--text-pr
   .dash-kpi-value,
   .dash-kpi-sub {
     line-height: 1.3;
+    white-space: normal;
+    overflow-wrap: break-word;
   }
   .dash-kpi-value {
     white-space: nowrap;

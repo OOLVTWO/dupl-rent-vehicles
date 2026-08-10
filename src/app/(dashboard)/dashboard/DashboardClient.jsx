@@ -299,9 +299,11 @@ export default function DashboardClient({ transactions, vehicles }) {
             <div className="dash-kpi-icon" style={{ background: card.iconBg, color: card.iconColor }}>
               <i className={card.icon}></i>
             </div>
-            <div className="dash-kpi-label">{card.label}</div>
-            <div className="dash-kpi-value">{card.value}</div>
-            <div className="dash-kpi-sub">{card.sub}</div>
+            <div className="dash-kpi-text">
+              <div className="dash-kpi-label">{card.label}</div>
+              <div className="dash-kpi-value">{card.value}</div>
+              <div className="dash-kpi-sub">{card.sub}</div>
+            </div>
           </div>
         ))}
       </div>
