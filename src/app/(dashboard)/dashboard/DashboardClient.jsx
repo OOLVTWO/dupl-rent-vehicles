@@ -5,7 +5,7 @@ import DashboardCharts from '@/components/dashboard/DashboardCharts';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { analyzeVehicleHealth } from '@/lib/aiDiagnostic';
-import { calcFinancialSummary, formatRupiah, getLocalMonthStr, getLocalDateStr, toLocalDateStr, isPaidTransaction } from '@/lib/finance';
+import { calcFinancialSummary, formatRupiah, getLocalMonthStr, getLocalDateStr, toLocalDateStr, isPaidTransaction, isIncomeEntry } from '@/lib/finance';
 
 const MONTH_NAMES = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -141,7 +141,14 @@ export default function DashboardClient({ transactions, vehicles }) {
   const today        = getLocalDateStr();
   const paidTx       = filteredTx.filter(isPaidTransaction);
   const todayPaidTx  = paidTx.filter(t => toLocalDateStr(t.created_at) === today);
-  const todayRevenue = todayPaidTx.reduce((s, t) => s + Number(t.total_price || 0), 0);
+  // "Pendapatan Hari Ini" = pendapatan sewa motor hari ini + pemasukan
+  // Keuangan hari ini (tip, biaya antar-jemput, klaim deposit, dll).
+  // Keuangan income yang benar-benar "rental_income" sudah dikecualikan
+  // dari kategori yang bisa dipilih saat input (lihat expenses/page.jsx),
+  // jadi menjumlahkan keduanya di sini tidak akan menghitung dobel.
+  const todayExpenses = safeExpenses.filter(e => (e.expense_date || toLocalDateStr(e.created_at)) === today);
+  const todayOtherIncome = todayExpenses.filter(isIncomeEntry).reduce((s, e) => s + Number(e.amount || 0), 0);
+  const todayRevenue = todayPaidTx.reduce((s, t) => s + Number(t.total_price || 0), 0) + todayOtherIncome;
   const showToday    = periodRange.isCurrent && periodMode === 'month';
 
   const activeCount      = safeVehicles.filter(v => v.status === 'rented').length;
@@ -176,7 +183,11 @@ export default function DashboardClient({ transactions, vehicles }) {
   const recentTx    = filteredTx.slice(0, 5);
   const fleetPreview = safeVehicles.slice(0, 6);
 
-  const periodRevenue = paidTx.reduce((s, t) => s + Number(t.total_price || 0), 0);
+  // Reuse summary.totalRevenue (from calcFinancialSummary) rather than a
+  // separate transactions-only calculation, so this figure always matches
+  // the "Total Pemasukan" card lower on the page — same period, same
+  // rental + Keuangan income combination.
+  const periodRevenue = totalRevenue;
 
   const kpiCards = [
     {
