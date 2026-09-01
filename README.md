@@ -8,9 +8,18 @@ Aplikasi ini dikembangkan menggunakan stack teknologi terbaik: **Next.js 16 (App
 
 ## 🚀 AKSES WEB LIVE & AKUN LOGIN ADMIN
 
+### 🔵 Production (situs asli)
 - 🌐 **Katalog Utama Publik Customer**: [https://bossrentpererenan.vercel.app](https://bossrentpererenan.vercel.app)
 - 🔑 **Portal Login Admin Dashboard**: [https://bossrentpererenan.vercel.app/login](https://bossrentpererenan.vercel.app/login) (atau tambahkan `/dashboard`)
 - 🔒 **Akses admin dikelola via Supabase Auth** — kredensial TIDAK disimpan di repo. Hubungi pemilik untuk akun.
+
+### 🟡 Demo / Preview (repo & deployment duplikat ini)
+- 🌐 **Katalog Publik**: [https://dupl-rent-vehicles-zuef.vercel.app](https://dupl-rent-vehicles-zuef.vercel.app)
+- 🔑 **Login Admin Dashboard**: [https://dupl-rent-vehicles-zuef.vercel.app/login](https://dupl-rent-vehicles-zuef.vercel.app/login)
+- 👤 **Akun Demo** (khusus environment preview ini, database Supabase terpisah `boss-rent-demo-preview` — tidak menyentuh data production):
+  - Email: `admin@preview.com`
+  - Password: `Preview!`
+- ⚠️ Kredensial di atas sengaja ditulis terbuka karena environment ini murni untuk demo/testing. Repo ini bersifat publik, jadi jangan pakai kombinasi email/password yang sama di akun production atau akun penting lainnya.
 
 ---
 
@@ -97,8 +106,8 @@ Seluruh skema database tersimpan pada file **`supabase/schema.sql`** (Master Sch
 
 1. **Clone repository & install dependensi**:
    ```bash
-   git clone https://github.com/OOLVTWO/boss-rent-app.git
-   cd boss-rent-app
+   git clone https://github.com/OOLVTWO/dupl-rent-vehicles.git
+   cd dupl-rent-vehicles
    npm install
    ```
 
