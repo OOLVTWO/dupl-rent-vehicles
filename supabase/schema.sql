@@ -230,3 +230,55 @@ CREATE POLICY "bookings_admin_update" ON bookings
 CREATE POLICY "bookings_admin_delete" ON bookings
   FOR DELETE
   USING (auth.role() = 'authenticated');
+
+-- =============================================
+-- STAFF PROFILES (role: admin / driver)
+-- =============================================
+CREATE TABLE IF NOT EXISTS staff_profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name VARCHAR(100) NOT NULL,
+  role VARCHAR(20) NOT NULL DEFAULT 'driver' CHECK (role IN ('admin', 'driver')),
+  phone VARCHAR(30),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE staff_profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "staff_profiles_own_select" ON staff_profiles;
+CREATE POLICY "staff_profiles_own_select" ON staff_profiles
+  FOR SELECT
+  USING (auth.uid() = id);
+
+-- =============================================
+-- CONTRACTS (kontrak sewa: data diri, foto, tanda tangan customer)
+-- =============================================
+CREATE TABLE IF NOT EXISTS contracts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  transaction_id UUID REFERENCES transactions(id) ON DELETE SET NULL,
+  vehicle_id UUID REFERENCES vehicles(id) ON DELETE SET NULL,
+  vehicle_name VARCHAR(150),
+  customer_name VARCHAR(100) NOT NULL,
+  customer_id_number VARCHAR(50),
+  customer_phone VARCHAR(30),
+  customer_address TEXT,
+  start_date DATE,
+  end_date DATE,
+  passport_photo_url TEXT,
+  customer_vehicle_photo_url TEXT,
+  signature_url TEXT,
+  notes TEXT,
+  created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_by_name VARCHAR(100),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_contracts_created_at ON contracts(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_contracts_transaction_id ON contracts(transaction_id);
+
+ALTER TABLE contracts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "contracts_staff_select" ON contracts;
+CREATE POLICY "contracts_staff_select" ON contracts
+  FOR SELECT
+  USING (auth.role() = 'authenticated');

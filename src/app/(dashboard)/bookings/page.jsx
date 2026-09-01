@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { formatRupiah } from '@/lib/finance';
 import { getWhatsAppShareUrl } from '@/lib/countryCodes';
+import { useRole } from '@/lib/RoleContext';
 
 const STATUS_META = {
   pending:   { label: 'Pending',   color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.15)' },
@@ -219,6 +220,7 @@ function EditBookingModal({ booking, onClose, onSaved }) {
 }
 
 function BookingsPageInner() {
+  const role = useRole();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('all');
@@ -379,46 +381,54 @@ function BookingsPageInner() {
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                          <ActionBtn
-                            active={b.status === 'confirmed'}
-                            color="#22C55E"
-                            icon="fa-solid fa-check"
-                            title="Confirm"
-                            disabled={busyId === b.id}
-                            onClick={() => updateStatus(b.id, 'confirmed')}
-                          />
-                          <ActionBtn
-                            active={b.status === 'cancelled'}
-                            color="#EF4444"
-                            icon="fa-solid fa-xmark"
-                            title="Tolak / Cancel"
-                            disabled={busyId === b.id}
-                            onClick={() => updateStatus(b.id, 'cancelled')}
-                          />
-                          <ActionBtn
-                            active={b.status === 'completed'}
-                            color="#3B82F6"
-                            icon="fa-solid fa-flag-checkered"
-                            title="Selesai"
-                            disabled={busyId === b.id}
-                            onClick={() => updateStatus(b.id, 'completed')}
-                          />
-                          <ActionBtn
-                            active={false}
-                            color="#94A3B8"
-                            icon="fa-solid fa-pen"
-                            title="Edit nama / tanggal / detail booking"
-                            disabled={busyId === b.id}
-                            onClick={() => setEditingBooking(b)}
-                          />
-                          <ActionBtn
-                            active={false}
-                            color="#64748B"
-                            icon="fa-solid fa-trash"
-                            title="Hapus"
-                            disabled={busyId === b.id}
-                            onClick={() => deleteBooking(b.id)}
-                          />
+                          {role === 'admin' ? (
+                            <>
+                              <ActionBtn
+                                active={b.status === 'confirmed'}
+                                color="#22C55E"
+                                icon="fa-solid fa-check"
+                                title="Confirm"
+                                disabled={busyId === b.id}
+                                onClick={() => updateStatus(b.id, 'confirmed')}
+                              />
+                              <ActionBtn
+                                active={b.status === 'cancelled'}
+                                color="#EF4444"
+                                icon="fa-solid fa-xmark"
+                                title="Tolak / Cancel"
+                                disabled={busyId === b.id}
+                                onClick={() => updateStatus(b.id, 'cancelled')}
+                              />
+                              <ActionBtn
+                                active={b.status === 'completed'}
+                                color="#3B82F6"
+                                icon="fa-solid fa-flag-checkered"
+                                title="Selesai"
+                                disabled={busyId === b.id}
+                                onClick={() => updateStatus(b.id, 'completed')}
+                              />
+                              <ActionBtn
+                                active={false}
+                                color="#94A3B8"
+                                icon="fa-solid fa-pen"
+                                title="Edit nama / tanggal / detail booking"
+                                disabled={busyId === b.id}
+                                onClick={() => setEditingBooking(b)}
+                              />
+                              <ActionBtn
+                                active={false}
+                                color="#64748B"
+                                icon="fa-solid fa-trash"
+                                title="Hapus"
+                                disabled={busyId === b.id}
+                                onClick={() => deleteBooking(b.id)}
+                              />
+                            </>
+                          ) : (
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                              <i className="fa-solid fa-lock" style={{ marginRight: '4px' }}></i>Lihat saja
+                            </span>
+                          )}
                         </div>
                       </td>
                     </tr>

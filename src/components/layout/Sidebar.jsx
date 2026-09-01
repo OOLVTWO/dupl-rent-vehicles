@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useState, useEffect } from 'react';
 
 // ── Nav grouped by section ──
+// `driverAllowed: true` = tetap muncul untuk akun role Driver.
+// Item tanpa flag ini otomatis disembunyikan dari Driver (khusus Admin).
 const NAV_SECTIONS = [
   {
     label: 'Operasional',
@@ -18,6 +20,7 @@ const NAV_SECTIONS = [
         label: 'Booking Confirmation',
         badge: 'bookings',
         isDropdown: true,
+        driverAllowed: true,
         children: [
           { href: '/bookings?tab=all',       iconClass: 'fa-solid fa-list',              label: 'Semua' },
           { href: '/bookings?tab=pending',   iconClass: 'fa-solid fa-hourglass-half',    label: 'Pending' },
@@ -26,7 +29,18 @@ const NAV_SECTIONS = [
           { href: '/bookings?tab=cancelled', iconClass: 'fa-solid fa-circle-xmark',      label: 'Cancelled' },
         ],
       },
-      { href: '/transactions', iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi',      badge: null },
+      { href: '/transactions', iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi',      badge: null, driverAllowed: true },
+      {
+        href: '/contracts',
+        iconClass: 'fa-solid fa-file-signature',
+        label: 'Kontrak',
+        driverAllowed: true,
+        isDropdown: true,
+        children: [
+          { href: '/contracts',     iconClass: 'fa-solid fa-list',        label: 'Laporan Kontrak' },
+          { href: '/contracts/new', iconClass: 'fa-solid fa-file-pen',    label: 'Buat Kontrak Baru' },
+        ],
+      },
       {
         href: '/customers',
         iconClass: 'fa-solid fa-users',
@@ -56,6 +70,7 @@ const NAV_SECTIONS = [
         label: 'Tracking Sewa',
         badge: 'tracking',
         isDropdown: true,
+        driverAllowed: true,
         children: [
           { href: '/tracking?tab=all',      iconClass: 'fa-solid fa-list',              label: 'Semua' },
           { href: '/tracking?tab=overdue',  iconClass: 'fa-solid fa-circle-exclamation', label: 'Overdue' },
@@ -69,6 +84,7 @@ const NAV_SECTIONS = [
         label: 'Ketersediaan',
         badge: 'availability',
         isDropdown: true,
+        driverAllowed: true,
         children: [
           { href: '/availability?tab=all',         iconClass: 'fa-solid fa-grip',              label: 'Semua Armada' },
           { href: '/availability?tab=available',   iconClass: 'fa-solid fa-circle-check',      label: 'Tersedia' },
@@ -87,6 +103,7 @@ const NAV_SECTIONS = [
         iconClass: 'fa-solid fa-wallet',
         label: 'Keuangan',
         isDropdown: true,
+        driverAllowed: true,
         children: [
           { href: '/expenses?tab=all',     iconClass: 'fa-solid fa-list-check',        label: 'Semua Arus Kas' },
           { href: '/expenses?tab=income',  iconClass: 'fa-solid fa-circle-arrow-down', label: 'Pemasukan (+)' },
@@ -138,9 +155,10 @@ const NAV_SECTIONS = [
           { href: '/settings?tab=wacustom', iconClass: 'fa-brands fa-whatsapp',      label: 'Template Invoice WA' },
           { href: '/settings?tab=security', iconClass: 'fa-solid fa-shield-halved', label: 'Keamanan & Password' },
           { href: '/settings?tab=business', iconClass: 'fa-solid fa-sliders',        label: 'Operasional Rental' },
+          { href: '/settings?tab=staff',    iconClass: 'fa-solid fa-user-tie',       label: 'Akun Staff' },
         ],
       },
-      { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'Website Publik' },
+      { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'Website Publik', driverAllowed: true },
     ],
   },
 ];
@@ -153,7 +171,7 @@ function getDaysLeft(endDate) {
   return Math.floor((end - today) / (1000 * 60 * 60 * 24));
 }
 
-export default function Sidebar({ user, mobileOpen, onClose }) {
+export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
   const pathname = usePathname();
   const router = useRouter();
   const [alertCounts, setAlertCounts] = useState({ tracking: 0, availability: 0, bookings: 0 });
@@ -244,11 +262,17 @@ export default function Sidebar({ user, mobileOpen, onClose }) {
 
       {/* Nav sections */}
       <nav className="sidebar-nav sidebar-nav-scroll">
-        {NAV_SECTIONS.map((section) => (
+        {NAV_SECTIONS.map((section) => {
+          const visibleItems = role === 'driver'
+            ? section.items.filter(item => item.driverAllowed)
+            : section.items;
+          if (visibleItems.length === 0) return null;
+
+          return (
           <div key={section.label} className="sidebar-section">
             <div className="sidebar-section-label">{section.label}</div>
 
-            {section.items.map((item) => {
+            {visibleItems.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/') ||
                 (item.href !== '/dashboard' && pathname.startsWith(item.href.split('?')[0]));
               const badgeCount =
@@ -328,7 +352,8 @@ export default function Sidebar({ user, mobileOpen, onClose }) {
               );
             })}
           </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Footer: user + logout */}

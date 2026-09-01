@@ -1,13 +1,14 @@
 import { createAdminClient } from '@/lib/supabase/server';
-import { requireAuth } from '@/lib/apiAuth';
+import { requireAdmin } from '@/lib/apiAuth';
 import { NextResponse } from 'next/server';
 
 const VALID_STATUS = ['pending', 'confirmed', 'cancelled', 'completed'];
 const VALID_FULFILLMENT = ['pickup', 'delivery'];
 
-// PATCH /api/bookings/[id] — ubah status dan/atau detail booking (nama, tanggal, dll)
+// PATCH /api/bookings/[id] — ubah status dan/atau detail booking (admin only;
+// staff/driver hanya boleh MELIHAT booking, tidak boleh mengedit)
 export async function PATCH(request, { params }) {
-  const authError = await requireAuth(request);
+  const authError = await requireAdmin(request);
   if (authError) return authError;
 
   const { id } = await params;
@@ -80,9 +81,9 @@ export async function PATCH(request, { params }) {
   return NextResponse.json(data);
 }
 
-// DELETE /api/bookings/[id]
+// DELETE /api/bookings/[id] — admin only
 export async function DELETE(request, { params }) {
-  const authError = await requireAuth(request);
+  const authError = await requireAdmin(request);
   if (authError) return authError;
 
   const { id } = await params;

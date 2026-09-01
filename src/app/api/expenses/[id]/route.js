@@ -1,14 +1,16 @@
 import { createAdminClient } from '@/lib/supabase/server';
-import { requireAuth } from '@/lib/apiAuth';
+import { requireAuth, requireAdmin } from '@/lib/apiAuth';
 import { NextResponse } from 'next/server';
 
-// PUT /api/expenses/[id]
+// PUT /api/expenses/[id] — staff/driver hanya boleh edit record bertipe 'expense'
 export async function PUT(request, { params }) {
-  const authError = await requireAuth(request);
-  if (authError) return authError;
-
   const { id } = await params;
   const supabase = await createAdminClient();
+
+  const { data: existing } = await supabase.from('expenses').select('type').eq('id', id).maybeSingle();
+  const authError = existing?.type === 'income' ? await requireAdmin(request) : await requireAuth(request);
+  if (authError) return authError;
+
   const body = await request.json();
 
   const { id: _id, created_at, updated_at, ...rawUpdateData } = body;
@@ -43,13 +45,14 @@ export async function PUT(request, { params }) {
   return NextResponse.json(data);
 }
 
-// DELETE /api/expenses/[id]
+// DELETE /api/expenses/[id] — staff/driver hanya boleh hapus record bertipe 'expense'
 export async function DELETE(request, { params }) {
-  const authError = await requireAuth(request);
-  if (authError) return authError;
-
   const { id } = await params;
   const supabase = await createAdminClient();
+
+  const { data: existing } = await supabase.from('expenses').select('type').eq('id', id).maybeSingle();
+  const authError = existing?.type === 'income' ? await requireAdmin(request) : await requireAuth(request);
+  if (authError) return authError;
 
   const { error } = await supabase.from('expenses').delete().eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

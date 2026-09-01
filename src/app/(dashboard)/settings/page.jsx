@@ -17,7 +17,7 @@ import {
 } from '@/lib/countryCodes';
 import { updateFavicon } from '@/lib/favicon';
 
-const VALID_SETTINGS_TABS = ['storage', 'payment', 'wacustom', 'security', 'business'];
+const VALID_SETTINGS_TABS = ['storage', 'payment', 'wacustom', 'security', 'business', 'staff'];
 
 // Reads ?tab= so the sidebar "Pengaturan" dropdown links land on the right
 // section. Split out because useSearchParams() requires a Suspense boundary.
@@ -85,8 +85,89 @@ const DEFAULT_STORAGE_PHOTOS = [
 ];
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('storage'); // 'storage', 'payment', 'security', 'business', 'wacustom'
+  const [activeTab, setActiveTab] = useState('storage'); // 'storage', 'payment', 'security', 'business', 'wacustom', 'staff'
   const [alert, setAlert] = useState(null);
+
+  // ── Staff accounts (Akun Staff tab) ──
+  const [staffList, setStaffList] = useState([]);
+  const [staffLoading, setStaffLoading] = useState(false);
+  const [staffModalOpen, setStaffModalOpen] = useState(false);
+  const [editingStaff, setEditingStaff] = useState(null);
+  const [staffForm, setStaffForm] = useState({ email: '', password: '', full_name: '', role: 'driver', phone: '' });
+  const [staffSaving, setStaffSaving] = useState(false);
+  const [staffError, setStaffError] = useState('');
+
+  const fetchStaff = useCallback(async () => {
+    setStaffLoading(true);
+    try {
+      const res = await fetch('/api/staff');
+      const data = await res.json().catch(() => []);
+      if (res.ok) setStaffList(Array.isArray(data) ? data : []);
+    } catch { /* ignore */ }
+    setStaffLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'staff') Promise.resolve().then(fetchStaff);
+  }, [activeTab, fetchStaff]);
+
+  const openAddStaff = () => {
+    setEditingStaff(null);
+    setStaffForm({ email: '', password: '', full_name: '', role: 'driver', phone: '' });
+    setStaffError('');
+    setStaffModalOpen(true);
+  };
+
+  const openEditStaff = (s) => {
+    setEditingStaff(s);
+    setStaffForm({ email: s.email || '', password: '', full_name: s.full_name || '', role: s.role || 'driver', phone: s.phone || '' });
+    setStaffError('');
+    setStaffModalOpen(true);
+  };
+
+  const handleStaffSave = async (e) => {
+    e.preventDefault();
+    if (!staffForm.full_name.trim()) { setStaffError('Nama wajib diisi.'); return; }
+    if (!editingStaff && (!staffForm.email.trim() || !staffForm.password)) {
+      setStaffError('Email dan password wajib diisi untuk akun baru.');
+      return;
+    }
+    setStaffSaving(true);
+    setStaffError('');
+    try {
+      const res = await fetch(editingStaff ? `/api/staff/${editingStaff.id}` : '/api/staff', {
+        method: editingStaff ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(staffForm),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setStaffError(data.error || 'Gagal menyimpan akun staff.');
+        setStaffSaving(false);
+        return;
+      }
+      setStaffModalOpen(false);
+      fetchStaff();
+    } catch {
+      setStaffError('Gagal terhubung ke server.');
+    }
+    setStaffSaving(false);
+  };
+
+  const handleStaffDelete = async (s) => {
+    if (!confirm(`Hapus akun staff "${s.full_name}"? Aksi ini tidak bisa dibatalkan.`)) return;
+    try {
+      const res = await fetch(`/api/staff/${s.id}`, { method: 'DELETE' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setStaffList(prev => prev.filter(x => x.id !== s.id));
+      } else {
+        alert(data.error || 'Gagal menghapus akun staff.');
+      }
+    } catch {
+      alert('Gagal terhubung ke server.');
+    }
+  };
 
   // Statistics State
   const [stats, setStats] = useState({ vehicles: 0, transactions: 0, expenses: 0 });
@@ -905,6 +986,7 @@ export default function SettingsPage() {
           { id: 'wacustom', label: 'Template Invoice WA', icon: 'fa-brands fa-whatsapp' },
           { id: 'security', label: 'Keamanan & Password', icon: 'fa-solid fa-shield-halved' },
           { id: 'business', label: 'Operasional Rental', icon: 'fa-solid fa-sliders' },
+          { id: 'staff', label: 'Akun Staff', icon: 'fa-solid fa-user-tie' },
         ];
         const current = TABS.find(t => t.id === activeTab) || TABS[0];
         return (
@@ -1528,6 +1610,174 @@ export default function SettingsPage() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* TAB: AKUN STAFF (Admin / Driver) */}
+      {activeTab === 'staff' && (
+        <div style={{ maxWidth: '100%' }}>
+          <div className="card" style={{ marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>Akun Staff</h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: 'var(--text-muted)' }}>
+                  Kelola akun Admin & Driver yang bisa login ke panel ini.
+                </p>
+              </div>
+              <button className="btn btn-primary" onClick={openAddStaff}>
+                <i className="fa-solid fa-user-plus" style={{ marginRight: '6px' }}></i> Tambah Staff
+              </button>
+            </div>
+
+            <div className="table-wrapper">
+              {staffLoading ? (
+                <div className="table-empty"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Memuat data...</div>
+              ) : staffList.length === 0 ? (
+                <div className="table-empty">
+                  <div className="table-empty-icon"><i className="fa-solid fa-user-tie"></i></div>
+                  <p>Belum ada akun staff.</p>
+                </div>
+              ) : (
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Nama</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Telepon</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {staffList.map((s) => (
+                      <tr key={s.id}>
+                        <td><strong>{s.full_name}</strong></td>
+                        <td style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>{s.email}</td>
+                        <td>
+                          <span className="badge" style={{
+                            background: s.role === 'admin' ? 'rgba(139,92,246,0.15)' : 'rgba(59,130,246,0.15)',
+                            color: s.role === 'admin' ? '#8B5CF6' : '#3B82F6',
+                            border: `1px solid ${s.role === 'admin' ? '#8B5CF6' : '#3B82F6'}`,
+                          }}>
+                            <i className={`fa-solid ${s.role === 'admin' ? 'fa-user-shield' : 'fa-motorcycle'}`} style={{ marginRight: '4px' }}></i>
+                            {s.role === 'admin' ? 'Admin' : 'Driver'}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: '12.5px' }}>{s.phone || '-'}</td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button className="btn btn-secondary btn-sm" title="Edit" onClick={() => openEditStaff(s)}>
+                              <i className="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button className="btn btn-danger btn-sm" title="Hapus" onClick={() => handleStaffDelete(s)}>
+                              <i className="fa-solid fa-trash-can"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+
+          {staffModalOpen && (
+            <div className="modal-overlay" onClick={() => setStaffModalOpen(false)}>
+              <div className="modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <div className="modal-title">{editingStaff ? 'Edit Staff' : 'Tambah Staff Baru'}</div>
+                  <button className="modal-close" onClick={() => setStaffModalOpen(false)}>✕</button>
+                </div>
+                <form onSubmit={handleStaffSave}>
+                  <div className="form-group">
+                    <label className="form-label">Nama Lengkap</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={staffForm.full_name}
+                      onChange={(e) => setStaffForm(p => ({ ...p, full_name: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Email {editingStaff && <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(tidak bisa diubah)</span>}</label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      value={staffForm.email}
+                      onChange={(e) => setStaffForm(p => ({ ...p, email: e.target.value }))}
+                      disabled={!!editingStaff}
+                      required={!editingStaff}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">
+                      {editingStaff ? 'Ganti Password (opsional)' : 'Password'}
+                    </label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      placeholder={editingStaff ? 'Kosongkan jika tidak diganti' : 'Minimal 6 karakter'}
+                      value={staffForm.password}
+                      onChange={(e) => setStaffForm(p => ({ ...p, password: e.target.value }))}
+                      required={!editingStaff}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Role</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                      {[
+                        { key: 'admin', label: 'Admin', icon: 'fa-solid fa-user-shield' },
+                        { key: 'driver', label: 'Driver', icon: 'fa-solid fa-motorcycle' },
+                      ].map(opt => (
+                        <button
+                          key={opt.key}
+                          type="button"
+                          onClick={() => setStaffForm(p => ({ ...p, role: opt.key }))}
+                          style={{
+                            padding: '10px', borderRadius: '10px', cursor: 'pointer',
+                            border: staffForm.role === opt.key ? '2px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+                            background: staffForm.role === opt.key ? 'var(--brand-primary-bg, rgba(59,130,246,0.1))' : 'transparent',
+                            color: 'var(--text-primary)', fontSize: '13px', fontWeight: 700,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                          }}
+                        >
+                          <i className={opt.icon}></i> {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Nomor Telepon (opsional)</label>
+                    <input
+                      type="tel"
+                      className="form-control"
+                      value={staffForm.phone}
+                      onChange={(e) => setStaffForm(p => ({ ...p, phone: e.target.value }))}
+                    />
+                  </div>
+
+                  {staffError && (
+                    <div className="alert alert-danger" style={{ marginBottom: '12px' }}>
+                      <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '6px' }}></i>{staffError}
+                    </div>
+                  )}
+
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setStaffModalOpen(false)}>Batal</button>
+                    <button type="submit" className="btn btn-primary" disabled={staffSaving}>
+                      {staffSaving ? <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>Menyimpan...</> : 'Simpan'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

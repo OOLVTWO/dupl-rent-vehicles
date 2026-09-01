@@ -1,10 +1,11 @@
 import { createAdminClient } from '@/lib/supabase/server';
-import { requireAuth } from '@/lib/apiAuth';
+import { requireAdmin } from '@/lib/apiAuth';
 import { NextResponse } from 'next/server';
 
-// PUT /api/transactions/[id]
+// PUT /api/transactions/[id] — ubah transaksi yang sudah ada (admin only;
+// staff/driver hanya boleh MEMBUAT transaksi baru lewat POST di route.js utama)
 export async function PUT(request, { params }) {
-  const authError = await requireAuth(request);
+  const authError = await requireAdmin(request);
   if (authError) return authError;
 
   const { id } = await params;
@@ -77,9 +78,9 @@ export async function PUT(request, { params }) {
   return NextResponse.json(data);
 }
 
-// DELETE /api/transactions/[id]
+// DELETE /api/transactions/[id] — admin only
 export async function DELETE(request, { params }) {
-  const authError = await requireAuth(request);
+  const authError = await requireAdmin(request);
   if (authError) return authError;
 
   const { id } = await params;

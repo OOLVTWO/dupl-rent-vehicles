@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const [loginAs, setLoginAs] = useState('admin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,14 +20,14 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, loginAs }),
       });
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         setError(data.error || 'Email atau password salah. Silakan coba lagi.');
       } else {
-        router.push('/dashboard');
+        router.push(data.role === 'driver' ? '/transactions' : '/dashboard');
         router.refresh();
       }
     } catch {
@@ -45,7 +46,31 @@ export default function LoginPage() {
             <i className="fa-solid fa-motorcycle"></i>
           </div>
           <h1>Demo Rental Preview</h1>
-          <p>Masuk ke panel admin</p>
+          <p>Masuk ke panel kerja</p>
+        </div>
+
+        {/* Role selector */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+          {[
+            { key: 'admin', label: 'Admin', icon: 'fa-solid fa-user-shield' },
+            { key: 'driver', label: 'Driver', icon: 'fa-solid fa-motorcycle' },
+          ].map(opt => (
+            <button
+              key={opt.key}
+              type="button"
+              onClick={() => { setLoginAs(opt.key); setError(''); }}
+              style={{
+                padding: '12px', borderRadius: 'var(--radius-md, 10px)', cursor: 'pointer',
+                border: loginAs === opt.key ? '2px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+                background: loginAs === opt.key ? 'var(--brand-primary-bg, rgba(59,130,246,0.1))' : 'transparent',
+                color: 'var(--text-primary)', fontSize: '13px', fontWeight: 700,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+              }}
+            >
+              <i className={opt.icon} style={{ fontSize: '18px', color: loginAs === opt.key ? 'var(--brand-primary)' : 'var(--text-muted)' }}></i>
+              {opt.label}
+            </button>
+          ))}
         </div>
 
         {/* Error */}
@@ -65,7 +90,7 @@ export default function LoginPage() {
               id="email"
               type="email"
               className="form-control"
-              placeholder="admin@preview.com"
+              placeholder={loginAs === 'driver' ? 'driver@preview.com' : 'admin@preview.com'}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -98,7 +123,7 @@ export default function LoginPage() {
             {loading ? (
               <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i> Masuk...</>
             ) : (
-              <><i className="fa-solid fa-right-to-bracket" style={{ marginRight: '6px' }}></i> Masuk</>
+              <><i className="fa-solid fa-right-to-bracket" style={{ marginRight: '6px' }}></i> Masuk sebagai {loginAs === 'driver' ? 'Driver' : 'Admin'}</>
             )}
           </button>
         </form>

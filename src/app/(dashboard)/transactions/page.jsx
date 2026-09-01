@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { useRole } from '@/lib/RoleContext';
 import { compressImage } from '@/lib/imageCompressor';
 import { getPaymentMethods, getPaymentMethodMeta } from '@/lib/paymentMethods';
 import { COUNTRY_CODES, getWhatsAppShareUrl, generateInvoiceText, getFlagImageUrl } from '@/lib/countryCodes';
@@ -1868,6 +1870,7 @@ function ConfirmDeleteModal({ isOpen, onClose, onConfirm }) {
 
 // ===== MAIN TRANSACTIONS PAGE =====
 export default function TransactionsPage() {
+  const role = useRole();
   const [transactions, setTransactions] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -2236,8 +2239,17 @@ const handleSubmit = async (formData) => {
                           <i className="fa-brands fa-whatsapp"></i>
                         </button>
 
+                        <Link
+                          href={`/contracts/new?transactionId=${tx.id}`}
+                          className="btn btn-sm"
+                          title="Buat Kontrak Sewa"
+                          style={{ padding: '7px 10px', background: 'rgba(139,92,246,0.15)', border: '1px solid #8B5CF6', color: '#8B5CF6' }}
+                        >
+                          <i className="fa-solid fa-file-signature"></i>
+                        </Link>
+
                         {/* Tandai Lunas button for unpaid active transactions */}
-                        {tx.status === 'active' && tx.payment_status === 'unpaid' && (
+                        {role === 'admin' && tx.status === 'active' && tx.payment_status === 'unpaid' && (
                         <button
                         className="btn btn-sm"
                         title="Tandai Lunas — Masukkan ke Pendapatan"
@@ -2248,7 +2260,7 @@ const handleSubmit = async (formData) => {
                       </button>
                     )}
 
-                        {tx.status === 'active' && (
+                        {role === 'admin' && tx.status === 'active' && (
                           <button
                             className="btn btn-success btn-sm"
                             title="Tandai Selesai & Penyesuaian Deposit"
@@ -2258,22 +2270,26 @@ const handleSubmit = async (formData) => {
                             <i className="fa-solid fa-check"></i>
                           </button>
                         )}
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          title="Edit Transaksi"
-                          style={{ padding: '7px 10px' }}
-                          onClick={() => { setEditData(tx); setShowModal(true); }}
-                        >
-                          <i className="fa-solid fa-pen-to-square"></i>
-                        </button>
-                        <button
-                          className="btn btn-danger btn-sm"
-                          title="Hapus Transaksi"
-                          style={{ padding: '7px 10px' }}
-                          onClick={() => setDeleteModal({ open: true, txId: tx.id })}
-                        >
-                          <i className="fa-solid fa-trash-can"></i>
-                        </button>
+                        {role === 'admin' && (
+                          <>
+                            <button
+                              className="btn btn-secondary btn-sm"
+                              title="Edit Transaksi"
+                              style={{ padding: '7px 10px' }}
+                              onClick={() => { setEditData(tx); setShowModal(true); }}
+                            >
+                              <i className="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button
+                              className="btn btn-danger btn-sm"
+                              title="Hapus Transaksi"
+                              style={{ padding: '7px 10px' }}
+                              onClick={() => setDeleteModal({ open: true, txId: tx.id })}
+                            >
+                              <i className="fa-solid fa-trash-can"></i>
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

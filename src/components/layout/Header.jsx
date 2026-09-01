@@ -8,6 +8,8 @@ import VuiVoiceControl from '@/components/dashboard/VuiVoiceControl';
 const pageMeta = {
   '/dashboard':   { title: 'Dashboard',       subtitle: 'Ringkasan statistik usaha rental' },
   '/bookings':    { title: 'Booking Confirmation', subtitle: 'Booking masuk dari website publik' },
+  '/contracts/new': { title: 'Buat Kontrak Baru', subtitle: 'Data diri, foto, dan tanda tangan customer' },
+  '/contracts':   { title: 'Laporan Kontrak', subtitle: 'Kontrak sewa yang sudah ditandatangani' },
   '/transactions':{ title: 'Transaksi',        subtitle: 'Kelola pencatatan sewa motor' },
   '/vehicles':    { title: 'Data Motor',       subtitle: 'Manajemen armada kendaraan' },
   '/tracking':    { title: 'Tracking Sewa',    subtitle: 'Monitoring durasi sewa & pengingat WA' },

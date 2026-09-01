@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/server';
-import { requireAuth, readJsonBody, missingFields } from '@/lib/apiAuth';
+import { requireAuth, requireAdmin, readJsonBody, missingFields } from '@/lib/apiAuth';
 import { NextResponse } from 'next/server';
 
 // GET /api/expenses
@@ -57,12 +57,14 @@ export async function GET(request) {
 
 // POST /api/expenses
 export async function POST(request) {
-  const authError = await requireAuth(request);
+  const body = await readJsonBody(request);
+  if (!body) return NextResponse.json({ error: 'Body request bukan JSON valid.' }, { status: 400 });
+
+  // Staff/driver hanya boleh mencatat pengeluaran, bukan pemasukan.
+  const authError = body.type === 'income' ? await requireAdmin(request) : await requireAuth(request);
   if (authError) return authError;
 
   const supabase = await createAdminClient();
-  const body = await readJsonBody(request);
-  if (!body) return NextResponse.json({ error: 'Body request bukan JSON valid.' }, { status: 400 });
 
   const missing = missingFields(body, ['title']);
   if (missing.length > 0) {

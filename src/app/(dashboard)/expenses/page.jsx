@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { exportFinancesToExcel } from '@/lib/excel';
 import { getLocalDateStr } from '@/lib/finance';
 import { createClient } from '@/lib/supabase/client';
+import { useRole } from '@/lib/RoleContext';
 
 const VALID_TYPE_TABS = ['all', 'income', 'expense'];
 
@@ -90,7 +91,7 @@ UPDATE expenses SET type = 'expense' WHERE type IS NULL;
 `;
 
 // ===== FINANCIAL MODAL (PEMASUKAN & PENGELUARAN) =====
-function FinanceModal({ isOpen, onClose, onSubmit, editData, defaultType = 'expense' }) {
+function FinanceModal({ isOpen, onClose, onSubmit, editData, defaultType = 'expense', allowIncome = true }) {
   const [form, setForm] = useState({
     type: 'expense',
     title: '',
@@ -189,6 +190,7 @@ function FinanceModal({ isOpen, onClose, onSubmit, editData, defaultType = 'expe
               <button
                 type="button"
                 className="btn"
+                disabled={!allowIncome}
                 onClick={() => handleTypeSwitch('income')}
                 style={{
                   padding: '10px 14px',
@@ -198,7 +200,8 @@ function FinanceModal({ isOpen, onClose, onSubmit, editData, defaultType = 'expe
                   border: `2px solid ${isIncome ? '#22C55E' : 'var(--bg-border)'}`,
                   background: isIncome ? 'rgba(34, 197, 94, 0.15)' : 'var(--bg-elevated)',
                   color: isIncome ? '#22C55E' : 'var(--text-muted)',
-                  cursor: 'pointer',
+                  cursor: allowIncome ? 'pointer' : 'not-allowed',
+                  opacity: allowIncome ? 1 : 0.5,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -439,6 +442,7 @@ function ConfirmDeleteModal({ isOpen, onClose, onConfirm, record }) {
 
 // ===== MAIN FINANCIAL MANAGEMENT PAGE =====
 export default function FinancesPage() {
+  const role = useRole();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [needsMigration, setNeedsMigration] = useState(false);
@@ -675,12 +679,14 @@ export default function FinancesPage() {
               <i className="fa-solid fa-file-excel" style={{ marginRight: '6px', color: '#10B981' }}></i>
               Export Excel
             </button>
-            <button
-              className="fin-btn-income"
-              onClick={() => { setEditData(null); setDefaultModalType('income'); setShowModal(true); }}
-            >
-              <i className="fa-solid fa-plus"></i> Tambah Pemasukan
-            </button>
+            {role === 'admin' && (
+              <button
+                className="fin-btn-income"
+                onClick={() => { setEditData(null); setDefaultModalType('income'); setShowModal(true); }}
+              >
+                <i className="fa-solid fa-plus"></i> Tambah Pemasukan
+              </button>
+            )}
             <button
               className="fin-btn-expense"
               onClick={() => { setEditData(null); setDefaultModalType('expense'); setShowModal(true); }}
@@ -792,7 +798,7 @@ export default function FinancesPage() {
                             <span className="badge badge-muted" title="Otomatis terhubung dengan fitur transaksi sewa" style={{ fontSize: '11px', padding: '6px 10px' }}>
                               <i className="fa-solid fa-lock" style={{ marginRight: '4px' }}></i> Auto System
                             </span>
-                          ) : (
+                          ) : (role === 'admin' || !isInc) ? (
                             <>
                               <button
                                 className="btn btn-secondary btn-sm"
@@ -809,6 +815,10 @@ export default function FinancesPage() {
                                 <i className="fa-solid fa-trash-can"></i>
                               </button>
                             </>
+                          ) : (
+                            <span className="badge badge-muted" title="Staff hanya bisa melihat data pemasukan" style={{ fontSize: '11px', padding: '6px 10px' }}>
+                              <i className="fa-solid fa-eye" style={{ marginRight: '4px' }}></i> Lihat saja
+                            </span>
                           )}
                         </div>
                       </td>
@@ -827,6 +837,7 @@ export default function FinancesPage() {
         onSubmit={handleSubmit}
         editData={editData}
         defaultType={defaultModalType}
+        allowIncome={role === 'admin'}
       />
 
       <ConfirmDeleteModal

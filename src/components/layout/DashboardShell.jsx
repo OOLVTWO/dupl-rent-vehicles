@@ -6,8 +6,9 @@ import { usePathname } from 'next/navigation';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import { updateFavicon } from '@/lib/favicon';
+import { RoleContext } from '@/lib/RoleContext';
 
-export default function DashboardShell({ user, children }) {
+export default function DashboardShell({ user, role = 'admin', fullName, children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [theme, setTheme] = useState('light');
   const pathname = usePathname();
@@ -60,6 +61,7 @@ export default function DashboardShell({ user, children }) {
 
       <Sidebar
         user={user}
+        role={role}
         mobileOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
       />
@@ -67,12 +69,16 @@ export default function DashboardShell({ user, children }) {
       <div className="main-content">
         <Header
           user={user}
+          role={role}
+          fullName={fullName}
           theme={theme}
           onToggleTheme={toggleTheme}
           onToggleMobile={() => setMobileOpen(prev => !prev)}
         />
         <main className="page-content fade-in">
-          {children}
+          <RoleContext.Provider value={role}>
+            {children}
+          </RoleContext.Provider>
         </main>
       </div>
     </div>
