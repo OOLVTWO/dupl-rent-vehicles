@@ -12,6 +12,7 @@ const NAV_SECTIONS = [
     label: 'Operasional',
     items: [
       { href: '/dashboard',    iconClass: 'fa-solid fa-chart-pie',           label: 'Dashboard' },
+      { href: '/bookings',     iconClass: 'fa-solid fa-inbox',               label: 'Booking Confirmation', badge: 'bookings' },
       { href: '/transactions', iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi',      badge: null },
       {
         href: '/customers',
@@ -142,7 +143,7 @@ function getDaysLeft(endDate) {
 export default function Sidebar({ user, mobileOpen, onClose }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [alertCounts, setAlertCounts] = useState({ tracking: 0, availability: 0 });
+  const [alertCounts, setAlertCounts] = useState({ tracking: 0, availability: 0, bookings: 0 });
   const [openDropdowns, setOpenDropdowns] = useState({});
   const [logoUrl, setLogoUrl] = useState('/images/logoCompany.png');
 
@@ -179,9 +180,14 @@ export default function Sidebar({ user, mobileOpen, onClose }) {
           .from('transactions')
           .select('end_date, vehicle_id')
           .eq('status', 'active');
-        if (!activeTx) return;
-        const alertCount = activeTx.filter(tx => getDaysLeft(tx.end_date) <= 0).length;
-        setAlertCounts({ tracking: alertCount, availability: alertCount });
+        const alertCount = activeTx ? activeTx.filter(tx => getDaysLeft(tx.end_date) <= 0).length : 0;
+
+        const { count: pendingBookings } = await supabase
+          .from('bookings')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'pending');
+
+        setAlertCounts({ tracking: alertCount, availability: alertCount, bookings: pendingBookings || 0 });
       } catch { /* ignore */ }
     };
     fetchAlerts();
@@ -235,6 +241,7 @@ export default function Sidebar({ user, mobileOpen, onClose }) {
               const badgeCount =
                 item.badge === 'tracking' ? alertCounts.tracking
                 : item.badge === 'availability' ? alertCounts.availability
+                : item.badge === 'bookings' ? alertCounts.bookings
                 : 0;
 
               // Dropdown (Laporan, Data Motor, Keuangan, Pengaturan)

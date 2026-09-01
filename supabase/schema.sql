@@ -175,3 +175,58 @@ CREATE POLICY "transactions_all_access" ON transactions FOR ALL USING (true) WIT
 CREATE POLICY "expenses_all_access" ON expenses FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "customers_all_access" ON customers FOR ALL USING (true) WITH CHECK (true);
 
+
+-- =============================================
+-- TABEL BOOKINGS (Booking Confirmation dari Website Publik /fleet)
+-- =============================================
+CREATE TABLE IF NOT EXISTS bookings (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  vehicle_id UUID REFERENCES vehicles(id) ON DELETE SET NULL,
+  vehicle_name VARCHAR(150) NOT NULL,
+  vehicle_category VARCHAR(30),
+  customer_name VARCHAR(100) NOT NULL,
+  customer_phone VARCHAR(30) NOT NULL,
+  customer_address TEXT,
+  fulfillment_method VARCHAR(20) NOT NULL DEFAULT 'pickup'
+    CHECK (fulfillment_method IN ('pickup', 'delivery')),
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  duration_days INTEGER DEFAULT 1,
+  estimated_price DECIMAL(12,2) DEFAULT 0,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending', 'confirmed', 'cancelled', 'completed')),
+  notes TEXT,
+  wa_notified_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
+CREATE INDEX IF NOT EXISTS idx_bookings_created_at ON bookings(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_bookings_vehicle_id ON bookings(vehicle_id);
+
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "bookings_public_insert" ON bookings;
+DROP POLICY IF EXISTS "bookings_admin_select" ON bookings;
+DROP POLICY IF EXISTS "bookings_admin_update" ON bookings;
+DROP POLICY IF EXISTS "bookings_admin_delete" ON bookings;
+
+-- Siapa saja (pengunjung website publik) boleh membuat booking baru.
+CREATE POLICY "bookings_public_insert" ON bookings
+  FOR INSERT
+  WITH CHECK (true);
+
+-- Hanya admin yang login yang boleh membaca/mengubah/menghapus data booking
+-- (melindungi nama/telepon/alamat customer dari akses publik).
+CREATE POLICY "bookings_admin_select" ON bookings
+  FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "bookings_admin_update" ON bookings
+  FOR UPDATE
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "bookings_admin_delete" ON bookings
+  FOR DELETE
+  USING (auth.role() = 'authenticated');

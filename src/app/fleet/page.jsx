@@ -66,6 +66,12 @@ export default function SharpSquareBusinessWebsitePage() {
   const [showAllFleet, setShowAllFleet] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
 
+  // ── Booking Confirmation modal (Book via WhatsApp -> form -> confirmed) ──
+  const [bookingModal, setBookingModal] = useState({ open: false, step: 'form', vehicle: null, submitting: false, error: '' });
+  const [bookingForm, setBookingForm] = useState({ name: '', phone: '', address: '', fulfillment: 'pickup' });
+  const [confirmedBooking, setConfirmedBooking] = useState(null);
+
+
   // Light/dark theme — light is the default; dark is opt-in and
   // remembered. Starts 'light' on the server and first client render
   // (avoids hydration mismatch), then syncs from localStorage after mount.
@@ -393,11 +399,78 @@ export default function SharpSquareBusinessWebsitePage() {
   };
 
   const handleBookVehicle = (vehicle) => {
+    setBookingForm({ name: '', phone: '', address: '', fulfillment: 'pickup' });
+    setConfirmedBooking(null);
+    setBookingModal({ open: true, step: 'form', vehicle, submitting: false, error: '' });
+  };
+
+  const closeBookingModal = () => {
+    setBookingModal({ open: false, step: 'form', vehicle: null, submitting: false, error: '' });
+  };
+
+  const handleBookingFormChange = (field, value) => {
+    setBookingForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const submitBooking = async (e) => {
+    e.preventDefault();
+    const vehicle = bookingModal.vehicle;
+    if (!vehicle) return;
+
+    if (!bookingForm.name.trim() || !bookingForm.phone.trim()) {
+      setBookingModal(prev => ({ ...prev, error: 'Nama dan nomor telepon wajib diisi.' }));
+      return;
+    }
+    if (!startDate || !endDate) {
+      setBookingModal(prev => ({ ...prev, error: 'Pilih tanggal sewa dulu di bagian Schedule Your Rental di atas.' }));
+      return;
+    }
+
+    setBookingModal(prev => ({ ...prev, submitting: true, error: '' }));
+
     const est = calculateEstimate(vehicle);
     const days = est ? est.durationDays : 1;
-    const priceStr = est ? formatRupiah(est.total) : `${formatRupiah(vehicle.rate_per_day)}/day`;
+    const price = est ? est.total : Number(vehicle.rate_per_day || 0);
 
-    const msg = `Aloha *${biz.name}*! 🌴✨\n\nI would like to inquire & book a motorbike rental:\n\n🏍️ *Vehicle:* ${vehicle.name} (${vehicle.category ? vehicle.category.toUpperCase() : 'Scooter'})\n📅 *Start Date:* ${formatEnDate(startDate)}\n📅 *End Date:* ${formatEnDate(endDate)}\n⏳ *Duration:* ${days} day(s)\n💰 *Estimated Total:* ${priceStr}\n📍 *Pickup Area:* Pererenan / Canggu\n\nIs this bike available for these dates? Thank you!`;
+    const payload = {
+      vehicle_id: vehicle.id || null,
+      vehicle_name: vehicle.name,
+      vehicle_category: vehicle.category || null,
+      customer_name: bookingForm.name.trim(),
+      customer_phone: bookingForm.phone.trim(),
+      customer_address: bookingForm.address.trim() || null,
+      fulfillment_method: bookingForm.fulfillment,
+      start_date: startDate,
+      end_date: endDate,
+      duration_days: days,
+      estimated_price: price,
+      status: 'pending',
+    };
+
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.from('bookings').insert([payload]).select().single();
+      if (error) {
+        console.error('Booking insert error:', error.message);
+        setBookingModal(prev => ({ ...prev, submitting: false, error: 'Gagal mengirim booking. Silakan coba lagi.' }));
+        return;
+      }
+      setConfirmedBooking(data);
+      setBookingModal(prev => ({ ...prev, submitting: false, step: 'confirmed' }));
+    } catch {
+      setBookingModal(prev => ({ ...prev, submitting: false, error: 'Gagal terhubung ke server. Periksa koneksi internet.' }));
+    }
+  };
+
+  const notifyOwnerViaWhatsApp = () => {
+    const b = confirmedBooking;
+    if (!b) return;
+
+    const methodLabel = b.fulfillment_method === 'delivery'
+      ? `Delivery ke alamat: ${b.customer_address || '-'}`
+      : 'Ambil sendiri di toko (Pererenan / Canggu)';
+
+    const msg = `🔔 *NEW BOOKING CONFIRMATION* — ${biz.name}\n\n👤 *Nama:* ${b.customer_name}\n📞 *Telepon:* ${b.customer_phone}\n🏍️ *Motor:* ${b.vehicle_name}\n📅 *Tanggal:* ${formatEnDate(b.start_date)} - ${formatEnDate(b.end_date)} (${b.duration_days} hari)\n📦 *Metode:* ${methodLabel}\n💰 *Estimasi Harga:* ${formatRupiah(b.estimated_price)}\n\n✅ Booking ini sudah otomatis tercatat di Admin Panel (menu Booking Confirmation).`;
 
     const gateway = getWaGatewayConfig();
     if (gateway.enabled) {
@@ -407,8 +480,7 @@ export default function SharpSquareBusinessWebsitePage() {
         }
       });
     } else {
-      const waUrl = getWhatsAppShareUrl(biz.phone, msg);
-      window.open(waUrl, '_blank');
+      window.open(getWhatsAppShareUrl(biz.phone, msg), '_blank');
     }
   };
 
@@ -1333,6 +1405,169 @@ export default function SharpSquareBusinessWebsitePage() {
           </div>
         </div>
       </footer>
+
+      {/* ── BOOKING CONFIRMATION MODAL ── */}
+      {bookingModal.open && (
+        <div
+          onClick={closeBookingModal}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.55)',
+            zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="sharp-card"
+            style={{ maxWidth: '460px', width: '100%', maxHeight: '90vh', overflowY: 'auto', padding: '28px', position: 'relative' }}
+          >
+            <button
+              onClick={closeBookingModal}
+              aria-label="Close"
+              style={{
+                position: 'absolute', top: '16px', right: '16px', width: '32px', height: '32px',
+                borderRadius: 'var(--radius-full)', border: '1px solid var(--sharp-line)', background: 'var(--sharp-surface)',
+                color: 'var(--sharp-muted)', cursor: 'pointer', fontSize: '14px',
+              }}
+            >
+              <i className="fa-solid fa-xmark"></i>
+            </button>
+
+            {bookingModal.step === 'form' && bookingModal.vehicle && (
+              <>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sharp-accent)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                  Booking Confirmation
+                </div>
+                <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--sharp-ink)', margin: '0 0 4px 0' }}>
+                  {bookingModal.vehicle.name}
+                </h2>
+                <p style={{ fontSize: '13px', color: 'var(--sharp-muted)', margin: '0 0 20px 0' }}>
+                  {formatEnDate(startDate)} — {formatEnDate(endDate)}
+                </p>
+
+                <form onSubmit={submitBooking}>
+                  <div style={{ marginBottom: '14px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      className="sharp-input"
+                      style={{ width: '100%' }}
+                      value={bookingForm.name}
+                      onChange={(e) => handleBookingFormChange('name', e.target.value)}
+                      placeholder="Nama lengkap"
+                      required
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: '14px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
+                      Phone / WhatsApp *
+                    </label>
+                    <input
+                      type="tel"
+                      className="sharp-input"
+                      style={{ width: '100%' }}
+                      value={bookingForm.phone}
+                      onChange={(e) => handleBookingFormChange('phone', e.target.value)}
+                      placeholder="08xx-xxxx-xxxx"
+                      required
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: '14px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
+                      Fulfillment
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                      {[
+                        { key: 'pickup', label: 'Ambil di Toko', icon: 'fa-solid fa-store' },
+                        { key: 'delivery', label: 'Delivery', icon: 'fa-solid fa-truck-fast' },
+                      ].map(opt => (
+                        <button
+                          type="button"
+                          key={opt.key}
+                          onClick={() => handleBookingFormChange('fulfillment', opt.key)}
+                          style={{
+                            padding: '12px', borderRadius: 'var(--radius-md)', cursor: 'pointer',
+                            border: bookingForm.fulfillment === opt.key ? '2px solid var(--sharp-accent)' : '1px solid var(--sharp-line)',
+                            background: bookingForm.fulfillment === opt.key ? 'rgba(184, 112, 63, 0.08)' : 'var(--sharp-surface)',
+                            color: 'var(--sharp-ink)', fontSize: '12.5px', fontWeight: 700,
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                          }}
+                        >
+                          <i className={opt.icon} style={{ fontSize: '16px', color: bookingForm.fulfillment === opt.key ? 'var(--sharp-accent)' : 'var(--sharp-muted)' }}></i>
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '18px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
+                      {bookingForm.fulfillment === 'delivery' ? 'Delivery Address *' : 'Address (optional)'}
+                    </label>
+                    <textarea
+                      className="sharp-input"
+                      style={{ width: '100%', resize: 'vertical', minHeight: '64px' }}
+                      value={bookingForm.address}
+                      onChange={(e) => handleBookingFormChange('address', e.target.value)}
+                      placeholder={bookingForm.fulfillment === 'delivery' ? 'Villa / hotel name & full address' : 'Optional'}
+                      required={bookingForm.fulfillment === 'delivery'}
+                    />
+                  </div>
+
+                  {bookingModal.error && (
+                    <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444', borderRadius: 'var(--radius-md)', padding: '10px 12px', fontSize: '12.5px', marginBottom: '14px' }}>
+                      <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '6px' }}></i>{bookingModal.error}
+                    </div>
+                  )}
+
+                  <SharpButton type="submit" variant="accent" block disabled={bookingModal.submitting}>
+                    {bookingModal.submitting ? (
+                      <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>Submitting...</>
+                    ) : (
+                      'Confirm Booking'
+                    )}
+                  </SharpButton>
+                </form>
+              </>
+            )}
+
+            {bookingModal.step === 'confirmed' && confirmedBooking && (
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  width: '64px', height: '64px', borderRadius: 'var(--radius-full)', background: 'rgba(34,197,94,0.12)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', fontSize: '28px', color: '#22C55E',
+                }}>
+                  <i className="fa-solid fa-check"></i>
+                </div>
+                <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--sharp-ink)', margin: '0 0 6px 0' }}>Booking Confirmed!</h2>
+                <p style={{ fontSize: '13px', color: 'var(--sharp-muted)', margin: '0 0 20px 0' }}>
+                  Your request has been sent to our system. Notify us on WhatsApp to speed things up.
+                </p>
+
+                <div style={{ background: 'var(--sharp-bg)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-md)', padding: '16px', textAlign: 'left', fontSize: '12.5px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div><i className="fa-solid fa-motorcycle" style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {confirmedBooking.vehicle_name}</div>
+                  <div><i className="fa-solid fa-calendar-days" style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {formatEnDate(confirmedBooking.start_date)} — {formatEnDate(confirmedBooking.end_date)} ({confirmedBooking.duration_days} day{confirmedBooking.duration_days > 1 ? 's' : ''})</div>
+                  <div><i className={`fa-solid ${confirmedBooking.fulfillment_method === 'delivery' ? 'fa-truck-fast' : 'fa-store'}`} style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {confirmedBooking.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup at store'}</div>
+                  <div><i className="fa-solid fa-wallet" style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> Est. {formatRupiah(confirmedBooking.estimated_price)}</div>
+                </div>
+
+                <SharpButton variant="whatsapp" block icon="fa-brands fa-whatsapp" onClick={notifyOwnerViaWhatsApp}>
+                  Kirim ke WhatsApp
+                </SharpButton>
+                <button
+                  onClick={closeBookingModal}
+                  style={{ marginTop: '12px', background: 'none', border: 'none', color: 'var(--sharp-muted)', fontSize: '12.5px', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  Close
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
