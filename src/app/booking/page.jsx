@@ -22,6 +22,17 @@ const PAYMENT_METHOD_META = {
   card:     { label: 'Card', icon: 'fa-solid fa-credit-card' },
 };
 
+// Zona dikelola admin dalam Bahasa Indonesia ("Zona Biru", dst), tapi
+// halaman booking ini customer-facing (Inggris) — terjemahkan buat tampilan.
+const ZONE_LABEL_EN = {
+  'Zona Hijau': 'Green Zone',
+  'Zona Biru': 'Blue Zone',
+  'Zona Kuning': 'Yellow Zone',
+};
+function zoneLabelEn(label) {
+  return ZONE_LABEL_EN[label] || label || '';
+}
+
 function formatRupiah(amount) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount || 0);
 }
@@ -203,7 +214,7 @@ function BookingPageInner() {
       fulfillment_method: form.fulfillment,
       payment_method: form.payment_method,
       delivery_zone_id: selectedZone?.id || null,
-      delivery_zone_name: selectedZone ? `${selectedZone.name} (${selectedZone.zone_label})` : null,
+      delivery_zone_name: selectedZone ? zoneLabelEn(selectedZone.zone_label) : null,
       delivery_fee: deliveryFee,
       start_date: startDate,
       end_date: endDate,
@@ -238,15 +249,15 @@ function BookingPageInner() {
     const b = confirmedBooking;
     if (!b) return;
     const methodLabel = b.fulfillment_method === 'delivery'
-      ? `Delivery (${b.delivery_zone_name || '-'}) ke alamat: ${b.customer_address || '-'}`
-      : 'Ambil sendiri di toko (Pererenan / Canggu)';
+      ? `Delivery (${b.delivery_zone_name || '-'}) to: ${b.customer_address || '-'}`
+      : 'Self pickup at your shop (Pererenan / Canggu)';
     const paymentLabel = PAYMENT_METHOD_META[b.payment_method]?.label || 'Cash';
-    const paymentNote = b.payment_method === 'card' ? ' (bawa mesin EDC)' : '';
+    const paymentNote = b.payment_method === 'card' ? ' (please bring the card machine)' : '';
     const deliveryFeeLine = b.fulfillment_method === 'delivery' && b.delivery_fee > 0
-      ? `\n🛵 *Ongkos Delivery:* ${formatRupiah(b.delivery_fee)} (buat driver yang nganter)`
+      ? `\n🛵 *Delivery Fee:* ${formatRupiah(b.delivery_fee)}`
       : '';
 
-    const msg = `🔔 *NEW BOOKING CONFIRMATION* — ${OWNER_NAME}\n\n👤 *Nama:* ${b.customer_name}\n📞 *Telepon:* ${b.customer_phone}\n🏍️ *Motor:* ${b.vehicle_name}\n📅 *Tanggal:* ${formatEnDate(b.start_date)} - ${formatEnDate(b.end_date)} (${b.duration_days} hari)\n📦 *Metode:* ${methodLabel}${deliveryFeeLine}\n💳 *Pembayaran:* ${paymentLabel}${paymentNote}\n💰 *Estimasi Harga:* ${formatRupiah(b.estimated_price)}\n\n✅ Booking ini sudah otomatis tercatat di Admin Panel (menu Booking Confirmation).`;
+    const msg = `Hi ${OWNER_NAME}! 👋 I'd like to confirm my scooter booking:\n\n👤 *Name:* ${b.customer_name}\n📞 *Phone:* ${b.customer_phone}\n🏍️ *Scooter:* ${b.vehicle_name}\n📅 *Dates:* ${formatEnDate(b.start_date)} - ${formatEnDate(b.end_date)} (${b.duration_days} day${b.duration_days > 1 ? 's' : ''})\n📦 *Method:* ${methodLabel}${deliveryFeeLine}\n💳 *Payment:* ${paymentLabel}${paymentNote}\n💰 *Estimated Total:* ${formatRupiah(b.estimated_price)}\n\nLooking forward to hearing from you, thank you! 🙏`;
 
     const gateway = getWaGatewayConfig();
     if (gateway.enabled) {
@@ -432,7 +443,7 @@ function BookingPageInner() {
                             >
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: zone.color, flexShrink: 0 }}></span>
-                                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--sharp-muted)' }}>{zone.zone_label}</span>
+                                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--sharp-muted)' }}>{zoneLabelEn(zone.zone_label)}</span>
                               </div>
                               <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--sharp-ink)' }}>{zone.name}</div>
                               <div style={{ fontSize: '12px', color: 'var(--sharp-accent)', fontWeight: 700 }}>{formatRupiah(zone.fee)}</div>
@@ -448,7 +459,7 @@ function BookingPageInner() {
                         }}>
                           <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--sharp-ink)' }}>
                             <i className="fa-solid fa-truck-fast" style={{ marginRight: '6px', color: selectedZone.color }}></i>
-                            Delivery fee ({selectedZone.zone_label})
+                            Delivery fee ({zoneLabelEn(selectedZone.zone_label)})
                           </span>
                           <span style={{ fontSize: '16px', fontWeight: 900, color: selectedZone.color }}>
                             {selectedZone.fee > 0 ? formatRupiah(selectedZone.fee) : 'FREE'}
