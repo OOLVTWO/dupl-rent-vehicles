@@ -54,6 +54,11 @@ export async function PATCH(request, { params }) {
     const price = Number(body.estimated_price);
     updateData.estimated_price = Number.isFinite(price) && price >= 0 ? price : 0;
   }
+  // Penugasan driver untuk booking delivery — biaya delivery dibagi full ke driver ini.
+  if ('assigned_driver_id' in body) {
+    updateData.assigned_driver_id = body.assigned_driver_id || null;
+    updateData.assigned_driver_name = body.assigned_driver_name || null;
+  }
 
   // Tanggal — kalau salah satu diubah, hitung ulang duration_days otomatis.
   if ('start_date' in body || 'end_date' in body) {

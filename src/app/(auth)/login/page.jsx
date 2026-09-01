@@ -27,7 +27,7 @@ export default function LoginPage() {
       if (!res.ok) {
         setError(data.error || 'Email atau password salah. Silakan coba lagi.');
       } else {
-        router.push(data.role === 'driver' ? '/transactions' : '/dashboard');
+        router.push('/dashboard');
         router.refresh();
       }
     } catch {

@@ -13,7 +13,7 @@ const NAV_SECTIONS = [
   {
     label: 'Operasional',
     items: [
-      { href: '/dashboard',    iconClass: 'fa-solid fa-chart-pie',           label: 'Dashboard' },
+      { href: '/dashboard',    iconClass: 'fa-solid fa-chart-pie',           label: 'Dashboard', driverAllowed: true },
       {
         href: '/bookings',
         iconClass: 'fa-solid fa-inbox',
@@ -156,6 +156,7 @@ const NAV_SECTIONS = [
           { href: '/settings?tab=security', iconClass: 'fa-solid fa-shield-halved', label: 'Keamanan & Password' },
           { href: '/settings?tab=business', iconClass: 'fa-solid fa-sliders',        label: 'Operasional Rental' },
           { href: '/settings?tab=staff',    iconClass: 'fa-solid fa-user-tie',       label: 'Akun Staff' },
+          { href: '/settings?tab=delivery', iconClass: 'fa-solid fa-truck-fast',     label: 'Zona Delivery' },
         ],
       },
       { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'Website Publik', driverAllowed: true },

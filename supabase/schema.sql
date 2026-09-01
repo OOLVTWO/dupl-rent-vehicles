@@ -284,3 +284,34 @@ DROP POLICY IF EXISTS "contracts_staff_select" ON contracts;
 CREATE POLICY "contracts_staff_select" ON contracts
   FOR SELECT
   USING (auth.role() = 'authenticated');
+
+-- =============================================
+-- DELIVERY ZONES (zona & biaya antar motor)
+-- =============================================
+CREATE TABLE IF NOT EXISTS delivery_zones (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name VARCHAR(100) NOT NULL,
+  zone_label VARCHAR(50) NOT NULL,
+  color VARCHAR(20) NOT NULL DEFAULT '#3B82F6',
+  fee DECIMAL(12,2) NOT NULL DEFAULT 0,
+  sort_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE delivery_zones ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "delivery_zones_public_select" ON delivery_zones;
+CREATE POLICY "delivery_zones_public_select" ON delivery_zones
+  FOR SELECT
+  USING (true);
+
+-- Bookings: kolom tambahan zona delivery + penugasan driver
+ALTER TABLE bookings
+  ADD COLUMN IF NOT EXISTS delivery_zone_id UUID REFERENCES delivery_zones(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS delivery_zone_name VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS delivery_fee DECIMAL(12,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS assigned_driver_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS assigned_driver_name VARCHAR(100);
+
+CREATE INDEX IF NOT EXISTS idx_bookings_assigned_driver ON bookings(assigned_driver_id);

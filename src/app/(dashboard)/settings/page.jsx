@@ -17,7 +17,7 @@ import {
 } from '@/lib/countryCodes';
 import { updateFavicon } from '@/lib/favicon';
 
-const VALID_SETTINGS_TABS = ['storage', 'payment', 'wacustom', 'security', 'business', 'staff'];
+const VALID_SETTINGS_TABS = ['storage', 'payment', 'wacustom', 'security', 'business', 'staff', 'delivery'];
 
 // Reads ?tab= so the sidebar "Pengaturan" dropdown links land on the right
 // section. Split out because useSearchParams() requires a Suspense boundary.
@@ -167,6 +167,76 @@ export default function SettingsPage() {
     } catch {
       alert('Gagal terhubung ke server.');
     }
+  };
+
+  // ── Delivery Zones (Zona Delivery tab) ──
+  const [zoneList, setZoneList] = useState([]);
+  const [zoneLoading, setZoneLoading] = useState(false);
+  const [zoneModalOpen, setZoneModalOpen] = useState(false);
+  const [editingZone, setEditingZone] = useState(null);
+  const [zoneForm, setZoneForm] = useState({ name: '', zone_label: '', color: '#3B82F6', fee: '' });
+  const [zoneSaving, setZoneSaving] = useState(false);
+  const [zoneError, setZoneError] = useState('');
+
+  const fetchZones = useCallback(async () => {
+    setZoneLoading(true);
+    try {
+      const supabase = createClient();
+      const { data } = await supabase.from('delivery_zones').select('*').order('sort_order', { ascending: true });
+      setZoneList(data || []);
+    } catch { /* ignore */ }
+    setZoneLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'delivery') Promise.resolve().then(fetchZones);
+  }, [activeTab, fetchZones]);
+
+  const openAddZone = () => {
+    setEditingZone(null);
+    setZoneForm({ name: '', zone_label: '', color: '#3B82F6', fee: '' });
+    setZoneError('');
+    setZoneModalOpen(true);
+  };
+
+  const openEditZone = (z) => {
+    setEditingZone(z);
+    setZoneForm({ name: z.name || '', zone_label: z.zone_label || '', color: z.color || '#3B82F6', fee: String(z.fee || '') });
+    setZoneError('');
+    setZoneModalOpen(true);
+  };
+
+  const handleZoneSave = async (e) => {
+    e.preventDefault();
+    if (!zoneForm.name.trim() || !zoneForm.zone_label.trim()) { setZoneError('Nama area dan label zona wajib diisi.'); return; }
+    setZoneSaving(true);
+    setZoneError('');
+    try {
+      const res = await fetch(editingZone ? `/api/delivery-zones/${editingZone.id}` : '/api/delivery-zones', {
+        method: editingZone ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(zoneForm),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setZoneError(data.error || 'Gagal menyimpan zona.');
+        setZoneSaving(false);
+        return;
+      }
+      setZoneModalOpen(false);
+      fetchZones();
+    } catch {
+      setZoneError('Gagal terhubung ke server.');
+    }
+    setZoneSaving(false);
+  };
+
+  const handleZoneDelete = async (z) => {
+    if (!confirm(`Hapus zona "${z.name}"?`)) return;
+    try {
+      const res = await fetch(`/api/delivery-zones/${z.id}`, { method: 'DELETE' });
+      if (res.ok) setZoneList(prev => prev.filter(x => x.id !== z.id));
+    } catch { /* ignore */ }
   };
 
   // Statistics State
@@ -987,6 +1057,7 @@ export default function SettingsPage() {
           { id: 'security', label: 'Keamanan & Password', icon: 'fa-solid fa-shield-halved' },
           { id: 'business', label: 'Operasional Rental', icon: 'fa-solid fa-sliders' },
           { id: 'staff', label: 'Akun Staff', icon: 'fa-solid fa-user-tie' },
+          { id: 'delivery', label: 'Zona Delivery', icon: 'fa-solid fa-truck-fast' },
         ];
         const current = TABS.find(t => t.id === activeTab) || TABS[0];
         return (
@@ -1610,6 +1681,145 @@ export default function SettingsPage() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* TAB: ZONA DELIVERY */}
+      {activeTab === 'delivery' && (
+        <div style={{ maxWidth: '100%' }}>
+          <div className="card" style={{ marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>Zona Delivery</h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: 'var(--text-muted)' }}>
+                  Atur area & biaya delivery. Biaya ini yang muncul ke customer di form booking, dan dibagi full ke driver yang mengantar.
+                </p>
+              </div>
+              <button className="btn btn-primary" onClick={openAddZone}>
+                <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Tambah Zona
+              </button>
+            </div>
+
+            <div className="table-wrapper">
+              {zoneLoading ? (
+                <div className="table-empty"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Memuat data...</div>
+              ) : zoneList.length === 0 ? (
+                <div className="table-empty">
+                  <div className="table-empty-icon"><i className="fa-solid fa-map-location-dot"></i></div>
+                  <p>Belum ada zona delivery.</p>
+                </div>
+              ) : (
+                <table className="table table--stack-mobile">
+                  <thead>
+                    <tr>
+                      <th>Area</th>
+                      <th>Zona</th>
+                      <th>Biaya Delivery</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {zoneList.map((z) => (
+                      <tr key={z.id}>
+                        <td data-label="Area"><strong>{z.name}</strong></td>
+                        <td data-label="Zona">
+                          <span className="badge" style={{ background: `${z.color}22`, color: z.color, border: `1px solid ${z.color}` }}>
+                            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: z.color, marginRight: '6px' }}></span>
+                            {z.zone_label}
+                          </span>
+                        </td>
+                        <td data-label="Biaya Delivery" style={{ fontWeight: 800 }}>{formatRupiah(z.fee)}</td>
+                        <td data-label="Aksi" data-label-align="left">
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button className="btn btn-secondary btn-sm" title="Edit" onClick={() => openEditZone(z)}>
+                              <i className="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button className="btn btn-danger btn-sm" title="Hapus" onClick={() => handleZoneDelete(z)}>
+                              <i className="fa-solid fa-trash-can"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+
+          {zoneModalOpen && (
+            <div className="modal-overlay" onClick={() => setZoneModalOpen(false)}>
+              <div className="modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <div className="modal-title">{editingZone ? 'Edit Zona' : 'Tambah Zona Baru'}</div>
+                  <button className="modal-close" onClick={() => setZoneModalOpen(false)}>✕</button>
+                </div>
+                <form onSubmit={handleZoneSave}>
+                  <div className="form-group">
+                    <label className="form-label">Nama Area</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Uluwatu"
+                      value={zoneForm.name}
+                      onChange={(e) => setZoneForm(p => ({ ...p, name: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Label Zona</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Zona Biru"
+                      value={zoneForm.zone_label}
+                      onChange={(e) => setZoneForm(p => ({ ...p, zone_label: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '12px' }}>
+                    <div className="form-group">
+                      <label className="form-label">Warna</label>
+                      <input
+                        type="color"
+                        className="form-control"
+                        style={{ height: '42px', padding: '4px' }}
+                        value={zoneForm.color}
+                        onChange={(e) => setZoneForm(p => ({ ...p, color: e.target.value }))}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Biaya Delivery (Rp)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="form-control"
+                        placeholder="75000"
+                        value={zoneForm.fee}
+                        onChange={(e) => setZoneForm(p => ({ ...p, fee: e.target.value }))}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {zoneError && (
+                    <div className="alert alert-danger" style={{ marginBottom: '12px' }}>
+                      <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '6px' }}></i>{zoneError}
+                    </div>
+                  )}
+
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setZoneModalOpen(false)}>Batal</button>
+                    <button type="submit" className="btn btn-primary" disabled={zoneSaving}>
+                      {zoneSaving ? <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>Menyimpan...</> : 'Simpan'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

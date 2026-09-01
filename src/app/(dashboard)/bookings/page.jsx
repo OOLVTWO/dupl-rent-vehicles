@@ -249,6 +249,30 @@ function BookingsPageInner() {
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState('');
   const [editingBooking, setEditingBooking] = useState(null);
+  const [drivers, setDrivers] = useState([]);
+
+  const fetchDrivers = useCallback(async () => {
+    try {
+      const res = await fetch('/api/staff');
+      const data = await res.json().catch(() => []);
+      if (res.ok) setDrivers((Array.isArray(data) ? data : []).filter(s => s.role === 'driver'));
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    if (role === 'admin') Promise.resolve().then(fetchDrivers);
+  }, [role, fetchDrivers]);
+
+  // Berapa delivery yang sudah ditugaskan ke tiap driver bulan ini — biar
+  // pemerataan jelas kelihatan saat admin memilih siapa yang jalan.
+  const deliveryCountThisMonth = (driverId) => {
+    const now = new Date();
+    return bookings.filter(b => {
+      if (b.assigned_driver_id !== driverId || b.fulfillment_method !== 'delivery') return false;
+      const d = new Date(b.created_at);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).length;
+  };
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
@@ -288,6 +312,25 @@ function BookingsPageInner() {
       }
     } catch {
       /* ignore, list stays stale — next poll will resync */
+    }
+    setBusyId(null);
+  };
+
+  const assignDriver = async (id, driverId) => {
+    const driver = drivers.find(d => d.id === driverId);
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/bookings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assigned_driver_id: driverId || null, assigned_driver_name: driver?.full_name || null }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setBookings(prev => prev.map(b => (b.id === id ? updated : b)));
+      }
+    } catch {
+      /* ignore */
     }
     setBusyId(null);
   };
@@ -354,6 +397,7 @@ function BookingsPageInner() {
                   <th>Motor</th>
                   <th>Tanggal Sewa</th>
                   <th>Metode</th>
+                  <th>Driver</th>
                   <th>Estimasi</th>
                   <th>Status</th>
                   <th>Aksi</th>
@@ -402,6 +446,41 @@ function BookingsPageInner() {
                         </div>
                       </td>
                       <td data-label="Estimasi" style={{ fontWeight: 800, fontSize: '13px' }}>{formatRupiah(b.estimated_price)}</td>
+                      <td data-label="Driver" data-label-align="left">
+                        {b.fulfillment_method !== 'delivery' ? (
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>— (pickup)</span>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            {b.delivery_zone_name && (
+                              <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
+                                <i className="fa-solid fa-location-dot" style={{ marginRight: '3px' }}></i>{b.delivery_zone_name} · {formatRupiah(b.delivery_fee)}
+                              </span>
+                            )}
+                            {role === 'admin' ? (
+                              <select
+                                className="form-control"
+                                value={b.assigned_driver_id || ''}
+                                disabled={busyId === b.id}
+                                onChange={(e) => assignDriver(b.id, e.target.value)}
+                                style={{ fontSize: '12px', padding: '6px 8px', width: 'auto', minWidth: '160px' }}
+                              >
+                                <option value="">— Belum ditugaskan —</option>
+                                {drivers.map(d => (
+                                  <option key={d.id} value={d.id}>
+                                    {d.full_name} ({deliveryCountThisMonth(d.id)}x bulan ini)
+                                  </option>
+                                ))}
+                              </select>
+                            ) : b.assigned_driver_name ? (
+                              <span className="badge" style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: '1px solid #8B5CF6' }}>
+                                <i className="fa-solid fa-motorcycle" style={{ marginRight: '4px' }}></i>{b.assigned_driver_name}
+                              </span>
+                            ) : (
+                              <span className="badge badge-muted"><i className="fa-solid fa-hourglass-half" style={{ marginRight: '4px' }}></i>Belum ditugaskan</span>
+                            )}
+                          </div>
+                        )}
+                      </td>
                       <td data-label="Status">
                         <span className="badge" style={{ background: meta.bg, color: meta.color, border: `1px solid ${meta.color}` }}>
                           {meta.label}

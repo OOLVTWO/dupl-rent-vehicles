@@ -128,10 +128,11 @@ function BookingPageInner() {
   const [vehicle, setVehicle] = useState(null);
   const [loadingVehicle, setLoadingVehicle] = useState(true);
   const [step, setStep] = useState('form');
-  const [form, setForm] = useState({ name: '', phone: '', address: '', fulfillment: 'pickup', payment_method: 'cash' });
+  const [form, setForm] = useState({ name: '', phone: '', address: '', fulfillment: 'pickup', payment_method: 'cash', delivery_zone_id: '' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+  const [deliveryZones, setDeliveryZones] = useState([]);
 
   useEffect(() => {
     Promise.resolve().then(async () => {
@@ -147,25 +148,44 @@ function BookingPageInner() {
     });
   }, [vehicleId]);
 
+  useEffect(() => {
+    Promise.resolve().then(async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase.from('delivery_zones').select('*').order('sort_order', { ascending: true });
+        setDeliveryZones(data || []);
+      } catch {
+        setDeliveryZones([]);
+      }
+    });
+  }, []);
+
   const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
   const est = vehicle ? calculateEstimate(vehicle, startDate, endDate) : null;
   const days = est ? est.durationDays : 1;
   const price = est ? est.total : Number(vehicle?.rate_per_day || 0);
+  const selectedZone = deliveryZones.find(z => z.id === form.delivery_zone_id) || null;
+  const deliveryFee = form.fulfillment === 'delivery' && selectedZone ? Number(selectedZone.fee) : 0;
+  const grandTotal = price + deliveryFee;
 
   const submitBooking = async (e) => {
     e.preventDefault();
     if (!vehicle) return;
     if (!form.name.trim() || !form.phone.trim()) {
-      setError('Nama dan nomor telepon wajib diisi.');
+      setError('Name and phone number are required.');
       return;
     }
     if (!startDate || !endDate) {
-      setError('Tanggal sewa tidak ditemukan. Silakan kembali ke halaman utama dan pilih tanggal dulu.');
+      setError('Rental dates not found. Please go back to the homepage and select your dates first.');
       return;
     }
     if (form.fulfillment === 'delivery' && !form.address.trim()) {
-      setError('Alamat wajib diisi untuk pengantaran (delivery).');
+      setError('Address is required for delivery.');
+      return;
+    }
+    if (form.fulfillment === 'delivery' && !selectedZone) {
+      setError('Please select a delivery area.');
       return;
     }
 
@@ -181,10 +201,13 @@ function BookingPageInner() {
       customer_address: form.address.trim() || null,
       fulfillment_method: form.fulfillment,
       payment_method: form.payment_method,
+      delivery_zone_id: selectedZone?.id || null,
+      delivery_zone_name: selectedZone ? `${selectedZone.name} (${selectedZone.zone_label})` : null,
+      delivery_fee: deliveryFee,
       start_date: startDate,
       end_date: endDate,
       duration_days: days,
-      estimated_price: price,
+      estimated_price: grandTotal,
       status: 'pending',
     };
 
@@ -197,7 +220,7 @@ function BookingPageInner() {
       const { error: insertError } = await supabase.from('bookings').insert([payload]);
       if (insertError) {
         console.error('Booking insert error:', insertError.message);
-        setError('Gagal mengirim booking. Silakan coba lagi.');
+        setError('Failed to submit booking. Please try again.');
         setSubmitting(false);
         return;
       }
@@ -205,7 +228,7 @@ function BookingPageInner() {
       setStep('confirmed');
       setSubmitting(false);
     } catch {
-      setError('Gagal terhubung ke server. Periksa koneksi internet.');
+      setError('Failed to connect to the server. Please check your internet connection.');
       setSubmitting(false);
     }
   };
@@ -214,12 +237,15 @@ function BookingPageInner() {
     const b = confirmedBooking;
     if (!b) return;
     const methodLabel = b.fulfillment_method === 'delivery'
-      ? `Delivery ke alamat: ${b.customer_address || '-'}`
+      ? `Delivery (${b.delivery_zone_name || '-'}) ke alamat: ${b.customer_address || '-'}`
       : 'Ambil sendiri di toko (Pererenan / Canggu)';
     const paymentLabel = PAYMENT_METHOD_META[b.payment_method]?.label || 'Cash';
     const paymentNote = b.payment_method === 'card' ? ' (bawa mesin EDC)' : '';
+    const deliveryFeeLine = b.fulfillment_method === 'delivery' && b.delivery_fee > 0
+      ? `\n🛵 *Ongkos Delivery:* ${formatRupiah(b.delivery_fee)} (buat driver yang nganter)`
+      : '';
 
-    const msg = `🔔 *NEW BOOKING CONFIRMATION* — ${OWNER_NAME}\n\n👤 *Nama:* ${b.customer_name}\n📞 *Telepon:* ${b.customer_phone}\n🏍️ *Motor:* ${b.vehicle_name}\n📅 *Tanggal:* ${formatEnDate(b.start_date)} - ${formatEnDate(b.end_date)} (${b.duration_days} hari)\n📦 *Metode:* ${methodLabel}\n💳 *Pembayaran:* ${paymentLabel}${paymentNote}\n💰 *Estimasi Harga:* ${formatRupiah(b.estimated_price)}\n\n✅ Booking ini sudah otomatis tercatat di Admin Panel (menu Booking Confirmation).`;
+    const msg = `🔔 *NEW BOOKING CONFIRMATION* — ${OWNER_NAME}\n\n👤 *Nama:* ${b.customer_name}\n📞 *Telepon:* ${b.customer_phone}\n🏍️ *Motor:* ${b.vehicle_name}\n📅 *Tanggal:* ${formatEnDate(b.start_date)} - ${formatEnDate(b.end_date)} (${b.duration_days} hari)\n📦 *Metode:* ${methodLabel}${deliveryFeeLine}\n💳 *Pembayaran:* ${paymentLabel}${paymentNote}\n💰 *Estimasi Harga:* ${formatRupiah(b.estimated_price)}\n\n✅ Booking ini sudah otomatis tercatat di Admin Panel (menu Booking Confirmation).`;
 
     const gateway = getWaGatewayConfig();
     if (gateway.enabled) {
@@ -263,9 +289,15 @@ function BookingPageInner() {
                 <p style={{ fontSize: '13px', color: 'var(--sharp-muted)', margin: '0 0 6px 0' }}>
                   {formatEnDate(startDate)} — {formatEnDate(endDate)} ({days} day{days > 1 ? 's' : ''})
                 </p>
-                <p style={{ fontSize: '15px', fontWeight: 800, color: 'var(--sharp-accent)', margin: '0 0 20px 0' }}>
-                  Estimated total: {formatRupiah(price)}
+                <p style={{ fontSize: '15px', fontWeight: 800, color: 'var(--sharp-accent)', margin: '0 0 4px 0' }}>
+                  Estimated total: {formatRupiah(grandTotal)}
                 </p>
+                {deliveryFee > 0 && (
+                  <p style={{ fontSize: '11.5px', color: 'var(--sharp-muted)', margin: '0 0 16px 0' }}>
+                    ({formatRupiah(price)} rental + {formatRupiah(deliveryFee)} delivery fee)
+                  </p>
+                )}
+                {deliveryFee === 0 && <div style={{ marginBottom: '16px' }} />}
 
                 <form onSubmit={submitBooking}>
                   <div style={{ marginBottom: '14px' }}>
@@ -363,6 +395,39 @@ function BookingPageInner() {
                     </div>
                   </div>
 
+                  {form.fulfillment === 'delivery' && (
+                    <div style={{ marginBottom: '14px' }}>
+                      <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
+                        Delivery Area *
+                      </label>
+                      {deliveryZones.length === 0 ? (
+                        <p style={{ fontSize: '12px', color: 'var(--sharp-muted)' }}>Loading areas...</p>
+                      ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
+                          {deliveryZones.map(zone => (
+                            <button
+                              type="button"
+                              key={zone.id}
+                              onClick={() => handleChange('delivery_zone_id', zone.id)}
+                              style={{
+                                padding: '12px', borderRadius: 'var(--radius-md)', cursor: 'pointer', textAlign: 'left',
+                                border: form.delivery_zone_id === zone.id ? `2px solid ${zone.color}` : '1px solid var(--sharp-line)',
+                                background: form.delivery_zone_id === zone.id ? `${zone.color}18` : 'var(--sharp-surface)',
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: zone.color, flexShrink: 0 }}></span>
+                                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--sharp-muted)' }}>{zone.zone_label}</span>
+                              </div>
+                              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--sharp-ink)' }}>{zone.name}</div>
+                              <div style={{ fontSize: '12px', color: 'var(--sharp-accent)', fontWeight: 700 }}>{formatRupiah(zone.fee)}</div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div style={{ marginBottom: '18px' }}>
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
                       {form.fulfillment === 'delivery' ? 'Delivery Address *' : 'Address (optional)'}
@@ -410,7 +475,7 @@ function BookingPageInner() {
                 <div style={{ background: 'var(--sharp-bg)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-md)', padding: '16px', textAlign: 'left', fontSize: '12.5px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div><i className="fa-solid fa-motorcycle" style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {confirmedBooking.vehicle_name}</div>
                   <div><i className="fa-solid fa-calendar-days" style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {formatEnDate(confirmedBooking.start_date)} — {formatEnDate(confirmedBooking.end_date)} ({confirmedBooking.duration_days} day{confirmedBooking.duration_days > 1 ? 's' : ''})</div>
-                  <div><i className={`fa-solid ${confirmedBooking.fulfillment_method === 'delivery' ? 'fa-truck-fast' : 'fa-store'}`} style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {confirmedBooking.fulfillment_method === 'delivery' ? 'Delivery' : 'Self Pickup'}</div>
+                  <div><i className={`fa-solid ${confirmedBooking.fulfillment_method === 'delivery' ? 'fa-truck-fast' : 'fa-store'}`} style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {confirmedBooking.fulfillment_method === 'delivery' ? `Delivery — ${confirmedBooking.delivery_zone_name || ''}` : 'Self Pickup'}</div>
                   <div><i className={PAYMENT_METHOD_META[confirmedBooking.payment_method]?.icon || 'fa-solid fa-wallet'} style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {PAYMENT_METHOD_META[confirmedBooking.payment_method]?.label || 'Cash'}{confirmedBooking.payment_method === 'card' && <span style={{ color: 'var(--sharp-muted)' }}> — driver will bring an EDC machine</span>}</div>
                   <div><i className="fa-solid fa-wallet" style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> Est. {formatRupiah(confirmedBooking.estimated_price)}</div>
                 </div>

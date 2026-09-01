@@ -18,6 +18,7 @@ import { NextResponse } from 'next/server';
 
 // Prefix path yang boleh diakses akun Driver.
 const DRIVER_ALLOWED_PREFIXES = [
+  '/dashboard',
   '/transactions',
   '/bookings',
   '/tracking',
