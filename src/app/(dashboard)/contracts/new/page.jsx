@@ -231,7 +231,7 @@ function NewContractInner() {
               Data Diri Customer
             </h3>
 
-            <CustomerPickerCombobox onSelectCustomer={handleSelectCustomer} label="Tamu Repeater? Cari & Auto-Fill Di Sini" />
+            <CustomerPickerCombobox onSelectCustomer={handleSelectCustomer} label="Tamu Repeater? Auto-Fill Di Sini" />
 
             <div className="form-group">
               <label className="form-label">Nama Lengkap *</label>

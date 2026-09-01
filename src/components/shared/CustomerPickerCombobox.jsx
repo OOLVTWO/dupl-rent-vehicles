@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { fetchCustomers } from '@/lib/customers';
 
 // ===== SMART CHOOSE: auto-fill data dari customer yang sudah pernah menyewa =====
-export default function CustomerPickerCombobox({ onSelectCustomer, label = 'Auto-Fill Customer Terdaftar' }) {
+export default function CustomerPickerCombobox({ onSelectCustomer, label = 'Cari Customer Lama (Auto-Fill)' }) {
   const [customers, setCustomers] = useState([]);
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -42,9 +42,9 @@ export default function CustomerPickerCombobox({ onSelectCustomer, label = 'Auto
 
   return (
     <div style={{ marginBottom: '16px', background: 'rgba(37, 99, 235, 0.06)', border: '1px solid rgba(37, 99, 235, 0.25)', borderRadius: '12px', padding: '12px' }}>
-      <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--brand-primary-light)', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span><i className="fa-solid fa-users" style={{ marginRight: '6px' }}></i> {label}</span>
-        <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 500 }}>{customers.length} customer tersimpan</span>
+      <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--brand-primary-light)', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '10px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px 10px' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><i className="fa-solid fa-users"></i> {label}</span>
+        <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 500, textTransform: 'none', letterSpacing: 0 }}>{customers.length} customer tersimpan</span>
       </div>
 
       <div style={{ position: 'relative' }}>
