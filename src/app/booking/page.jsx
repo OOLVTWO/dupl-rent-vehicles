@@ -455,15 +455,14 @@ function BookingPageInner() {
                         <div style={{
                           marginTop: '10px', padding: '12px 14px', borderRadius: 'var(--radius-md)',
                           background: `${selectedZone.color}12`, border: `1px solid ${selectedZone.color}`,
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px',
                         }}>
-                          <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--sharp-ink)' }}>
+                          <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--sharp-ink)', marginBottom: '4px' }}>
                             <i className="fa-solid fa-truck-fast" style={{ marginRight: '6px', color: selectedZone.color }}></i>
                             Delivery fee ({zoneLabelEn(selectedZone.zone_label)})
-                          </span>
-                          <span style={{ fontSize: '16px', fontWeight: 900, color: selectedZone.color }}>
+                          </div>
+                          <div style={{ fontSize: '20px', fontWeight: 900, color: selectedZone.color, whiteSpace: 'nowrap' }}>
                             {selectedZone.fee > 0 ? formatRupiah(selectedZone.fee) : 'FREE'}
-                          </span>
+                          </div>
                         </div>
                       )}
                       {selectedZone && (
