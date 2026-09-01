@@ -457,20 +457,35 @@ function BookingsPageInner() {
                               </span>
                             )}
                             {role === 'admin' ? (
-                              <select
-                                className="form-control"
-                                value={b.assigned_driver_id || ''}
-                                disabled={busyId === b.id}
-                                onChange={(e) => assignDriver(b.id, e.target.value)}
-                                style={{ fontSize: '12px', padding: '6px 8px', width: 'auto', minWidth: '160px' }}
-                              >
-                                <option value="">— Belum ditugaskan —</option>
-                                {drivers.map(d => (
-                                  <option key={d.id} value={d.id}>
-                                    {d.full_name} ({deliveryCountThisMonth(d.id)}x bulan ini)
-                                  </option>
-                                ))}
-                              </select>
+                              <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
+                                <select
+                                  value={b.assigned_driver_id || ''}
+                                  disabled={busyId === b.id}
+                                  onChange={(e) => assignDriver(b.id, e.target.value)}
+                                  style={{
+                                    fontSize: '11.5px', fontWeight: 700, padding: '5px 26px 5px 10px',
+                                    width: 'fit-content', maxWidth: '100%', height: 'auto',
+                                    borderRadius: 'var(--radius-full, 999px)',
+                                    border: `1px solid ${b.assigned_driver_id ? '#8B5CF6' : 'var(--bg-border)'}`,
+                                    background: b.assigned_driver_id ? 'rgba(139,92,246,0.12)' : 'var(--bg-elevated)',
+                                    color: b.assigned_driver_id ? '#8B5CF6' : 'var(--text-secondary)',
+                                    appearance: 'none',
+                                    backgroundImage: 'none',
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  <option value="">Belum ditugaskan</option>
+                                  {drivers.map(d => (
+                                    <option key={d.id} value={d.id}>
+                                      {d.full_name} ({deliveryCountThisMonth(d.id)}x)
+                                    </option>
+                                  ))}
+                                </select>
+                                <i className="fa-solid fa-chevron-down" style={{
+                                  position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                                  fontSize: '9px', color: b.assigned_driver_id ? '#8B5CF6' : 'var(--text-muted)', pointerEvents: 'none',
+                                }}></i>
+                              </div>
                             ) : b.assigned_driver_name ? (
                               <span className="badge" style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: '1px solid #8B5CF6' }}>
                                 <i className="fa-solid fa-motorcycle" style={{ marginRight: '4px' }}></i>{b.assigned_driver_name}
