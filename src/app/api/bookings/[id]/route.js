@@ -51,6 +51,12 @@ export async function PATCH(request, { params }) {
       .select()
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // Motor resmi lagi disewa customer sekarang — update status di /fleet.
+    if (data.vehicle_id) {
+      await admin.from('vehicles').update({ status: 'rented' }).eq('id', data.vehicle_id);
+    }
+
     return NextResponse.json(data);
   }
 
@@ -132,6 +138,21 @@ export async function PATCH(request, { params }) {
     console.error('PATCH /api/bookings/[id] error:', error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  // Sinkronkan status motor di halaman /fleet mengikuti tahap booking:
+  // dikonfirmasi admin -> "booked" (bukan available lagi tapi belum di
+  // tangan customer), dibatalkan/selesai -> balik "available". Status
+  // "rented" sendiri baru di-set saat driver konfirmasi delivery (di atas)
+  // — untuk booking pickup, motor tetap "booked" sampai admin menandai
+  // selesai, karena belum ada langkah "konfirmasi ambil di toko" terpisah.
+  if (data.vehicle_id && 'status' in body) {
+    if (body.status === 'confirmed') {
+      await supabase.from('vehicles').update({ status: 'booked' }).eq('id', data.vehicle_id).eq('status', 'available');
+    } else if (body.status === 'cancelled' || body.status === 'completed') {
+      await supabase.from('vehicles').update({ status: 'available' }).eq('id', data.vehicle_id).in('status', ['booked', 'rented']);
+    }
+  }
+
   return NextResponse.json(data);
 }
 

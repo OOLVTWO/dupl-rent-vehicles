@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
   rate_per_week DECIMAL(12,2) DEFAULT 0,
   rate_per_month DECIMAL(12,2) DEFAULT 0,
   status VARCHAR(20) NOT NULL DEFAULT 'available'
-    CHECK (status IN ('available', 'rented', 'maintenance')),
+    CHECK (status IN ('available', 'booked', 'rented', 'maintenance')),
   image_url TEXT,
   current_km INTEGER DEFAULT 15000,
   last_service_km INTEGER DEFAULT 0,

@@ -712,6 +712,12 @@ export default function SharpSquareBusinessWebsitePage() {
               {(showAllFleet ? filtered : filtered.slice(0, 6)).map(vehicle => {
               const estimate = calculateEstimate(vehicle);
               const isAvailable = vehicle.status === 'available';
+              const statusMeta = {
+                available:   { label: 'Available Now', icon: 'fa-solid fa-circle-check', bg: 'var(--sharp-success-bg)' },
+                booked:      { label: 'Booked',        icon: 'fa-solid fa-clock',         bg: '#F59E0B' },
+                rented:      { label: 'Rented',        icon: 'fa-solid fa-key',           bg: 'var(--sharp-info)' },
+                maintenance: { label: 'In Service',    icon: 'fa-solid fa-wrench',        bg: '#EF4444' },
+              }[vehicle.status] || { label: 'Rented', icon: 'fa-solid fa-key', bg: 'var(--sharp-info)' };
 
               return (
                 <div key={vehicle.id} className="sharp-card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
@@ -733,7 +739,7 @@ export default function SharpSquareBusinessWebsitePage() {
                         fontSize: '10px',
                         fontWeight: 900,
                         textTransform: 'uppercase',
-                        background: isAvailable ? 'var(--sharp-success-bg)' : 'var(--sharp-info)',
+                        background: statusMeta.bg,
                         color: '#FFF',
                         borderRadius: 'var(--radius-full)',
                         display: 'inline-flex',
@@ -741,17 +747,8 @@ export default function SharpSquareBusinessWebsitePage() {
                         gap: '5px'
                       }}
                     >
-                      {isAvailable ? (
-                        <>
-                          <span>Available Now</span>
-                          <i className="fa-solid fa-circle-check"></i>
-                        </>
-                      ) : (
-                        <>
-                          <span>Rented</span>
-                          <i className="fa-solid fa-key"></i>
-                        </>
-                      )}
+                      <span>{statusMeta.label}</span>
+                      <i className={statusMeta.icon}></i>
                     </span>
                   </div>
 
@@ -827,13 +824,14 @@ export default function SharpSquareBusinessWebsitePage() {
 
                     {/* Booking Button */}
                     <SharpButton
-                      variant="whatsapp"
+                      variant={isAvailable ? 'whatsapp' : 'dark'}
                       block
-                      onClick={() => handleBookVehicle(vehicle)}
-                      icon="fa-brands fa-whatsapp"
-                      style={{ marginTop: 'auto' }}
+                      disabled={!isAvailable}
+                      onClick={() => isAvailable && handleBookVehicle(vehicle)}
+                      icon={isAvailable ? 'fa-brands fa-whatsapp' : statusMeta.icon}
+                      style={{ marginTop: 'auto', opacity: isAvailable ? 1 : 0.6, cursor: isAvailable ? 'pointer' : 'not-allowed' }}
                     >
-                      Book Now
+                      {isAvailable ? 'Book Now' : statusMeta.label}
                     </SharpButton>
                   </div>
                 </div>
