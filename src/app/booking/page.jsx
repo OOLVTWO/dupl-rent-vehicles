@@ -63,29 +63,29 @@ function calculateEstimate(vehicle, startDate, endDate) {
 function BrandHeader({ theme, onToggleTheme }) {
   return (
     <header style={{ background: 'var(--sharp-surface)', borderBottom: '1px solid var(--sharp-line)', position: 'sticky', top: 0, zIndex: 100, padding: '16px 20px' }}>
-      <div style={{ maxWidth: '620px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
-        <Link href="/fleet" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
-          <img src={OWNER_LOGO} alt={`${OWNER_NAME} Logo`} style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
-          <div>
-            <div style={{ fontSize: '17px', fontWeight: 900, color: 'var(--sharp-ink)', letterSpacing: '-0.4px' }}>
+      <div style={{ maxWidth: '620px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+        <Link href="/fleet" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', minWidth: 0, flex: '1 1 auto' }}>
+          <img src={OWNER_LOGO} alt={`${OWNER_NAME} Logo`} style={{ height: '36px', width: 'auto', objectFit: 'contain', flexShrink: 0 }} />
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: '15px', fontWeight: 900, color: 'var(--sharp-ink)', letterSpacing: '-0.4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {OWNER_NAME}
             </div>
-            <div style={{ fontSize: '10.5px', color: 'var(--sharp-muted)', marginTop: '1px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <i className="fa-solid fa-location-dot" style={{ color: 'var(--sharp-accent)' }}></i>
-              {OWNER_ADDRESS}
+            <div style={{ fontSize: '10px', color: 'var(--sharp-muted)', marginTop: '1px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <i className="fa-solid fa-location-dot" style={{ color: 'var(--sharp-accent)', flexShrink: 0 }}></i>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{OWNER_ADDRESS}</span>
             </div>
           </div>
         </Link>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
           <Link
             href="/fleet"
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              fontSize: '12.5px', fontWeight: 700, color: 'var(--sharp-muted)', textDecoration: 'none',
+              display: 'inline-flex', alignItems: 'center', gap: '5px',
+              fontSize: '12px', fontWeight: 700, color: 'var(--sharp-muted)', textDecoration: 'none', whiteSpace: 'nowrap',
             }}
           >
-            <i className="fa-solid fa-arrow-left"></i> Back to Home
+            <i className="fa-solid fa-arrow-left"></i> Back
           </Link>
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
         </div>
@@ -292,7 +292,7 @@ function BookingPageInner() {
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
                       Fulfillment
                     </label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
                       {[
                         { key: 'pickup', label: 'Ambil di Toko', icon: 'fa-solid fa-store' },
                         { key: 'delivery', label: 'Delivery', icon: 'fa-solid fa-truck-fast' },

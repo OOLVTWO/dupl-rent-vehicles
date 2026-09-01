@@ -89,7 +89,7 @@ function ContractDetailModal({ contract, onClose, onDelete, canDelete, onSaved }
               <label className="form-label">Nama Motor</label>
               <input type="text" className="form-control" value={form.vehicle_name} onChange={(e) => handleChange('vehicle_name', e.target.value)} />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
               <div className="form-group">
                 <label className="form-label">Tanggal Mulai</label>
                 <input type="date" className="form-control" value={form.start_date} onChange={(e) => handleChange('start_date', e.target.value)} required />
@@ -304,7 +304,7 @@ export default function ContractsPage() {
               <p>Belum ada kontrak yang tercatat.</p>
             </div>
           ) : (
-            <table className="table">
+            <table className="table table--stack-mobile">
               <thead>
                 <tr>
                   <th>Customer</th>
@@ -318,14 +318,14 @@ export default function ContractsPage() {
               <tbody>
                 {filtered.map((c) => (
                   <tr key={c.id} style={{ cursor: 'pointer' }} onClick={() => setSelected(c)}>
-                    <td>
+                    <td data-label="Customer" data-label-align="left">
                       <strong style={{ fontSize: '14px' }}>{c.customer_name}</strong>
                       {c.customer_id_number && <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{c.customer_id_number}</div>}
                     </td>
-                    <td style={{ fontSize: '13px' }}>{c.vehicle_name || '-'}</td>
-                    <td style={{ fontSize: '12.5px' }}>{formatDate(c.start_date)} — {formatDate(c.end_date)}</td>
-                    <td style={{ fontSize: '12.5px' }}>{c.created_by_name || '-'}</td>
-                    <td>
+                    <td data-label="Motor" style={{ fontSize: '13px' }}>{c.vehicle_name || '-'}</td>
+                    <td data-label="Tanggal Sewa" style={{ fontSize: '12.5px' }}>{formatDate(c.start_date)} — {formatDate(c.end_date)}</td>
+                    <td data-label="Dibuat Oleh" style={{ fontSize: '12.5px' }}>{c.created_by_name || '-'}</td>
+                    <td data-label="Dokumen">
                       <div style={{ display: 'flex', gap: '6px' }}>
                         {c.passport_photo_url && <span className="badge badge-muted" title="Foto Passport"><i className="fa-solid fa-id-card"></i></span>}
                         {c.customer_vehicle_photo_url && <span className="badge badge-muted" title="Foto Customer + Motor"><i className="fa-solid fa-camera"></i></span>}

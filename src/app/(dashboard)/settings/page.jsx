@@ -1638,7 +1638,7 @@ export default function SettingsPage() {
                   <p>Belum ada akun staff.</p>
                 </div>
               ) : (
-                <table className="table">
+                <table className="table table--stack-mobile">
                   <thead>
                     <tr>
                       <th>Nama</th>
@@ -1651,9 +1651,9 @@ export default function SettingsPage() {
                   <tbody>
                     {staffList.map((s) => (
                       <tr key={s.id}>
-                        <td><strong>{s.full_name}</strong></td>
-                        <td style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>{s.email}</td>
-                        <td>
+                        <td data-label="Nama"><strong>{s.full_name}</strong></td>
+                        <td data-label="Email" style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>{s.email}</td>
+                        <td data-label="Role">
                           <span className="badge" style={{
                             background: s.role === 'admin' ? 'rgba(139,92,246,0.15)' : 'rgba(59,130,246,0.15)',
                             color: s.role === 'admin' ? '#8B5CF6' : '#3B82F6',
@@ -1663,8 +1663,8 @@ export default function SettingsPage() {
                             {s.role === 'admin' ? 'Admin' : 'Driver'}
                           </span>
                         </td>
-                        <td style={{ fontSize: '12.5px' }}>{s.phone || '-'}</td>
-                        <td>
+                        <td data-label="Telepon" style={{ fontSize: '12.5px' }}>{s.phone || '-'}</td>
+                        <td data-label="Aksi" data-label-align="left">
                           <div style={{ display: 'flex', gap: '6px' }}>
                             <button className="btn btn-secondary btn-sm" title="Edit" onClick={() => openEditStaff(s)}>
                               <i className="fa-solid fa-pen-to-square"></i>
@@ -1729,7 +1729,7 @@ export default function SettingsPage() {
 
                   <div className="form-group">
                     <label className="form-label">Role</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px' }}>
                       {[
                         { key: 'admin', label: 'Admin', icon: 'fa-solid fa-user-shield' },
                         { key: 'driver', label: 'Driver', icon: 'fa-solid fa-motorcycle' },

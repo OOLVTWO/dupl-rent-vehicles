@@ -166,7 +166,7 @@ function EditBookingModal({ booking, onClose, onSaved }) {
             </select>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
             <div className="form-group">
               <label className="form-label">Tanggal Mulai</label>
               <input
@@ -294,7 +294,7 @@ function BookingsPageInner() {
       <TabFromQuery onTab={setTab} />
       <div className="page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '18px' }}>
         <div>
-          <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
             Booking Confirmation
             <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--brand-primary)', background: 'var(--brand-primary-bg, rgba(59,130,246,0.12))', padding: '3px 10px', borderRadius: 'var(--radius-full, 999px)' }}>
               {TABS.find(t => t.key === tab)?.label || 'Semua'}
@@ -325,7 +325,7 @@ function BookingsPageInner() {
               <p>Belum ada booking {tab !== 'all' ? `dengan status "${STATUS_META[tab]?.label}"` : 'masuk'}</p>
             </div>
           ) : (
-            <table className="table">
+            <table className="table table--stack-mobile">
               <thead>
                 <tr>
                   <th>Customer</th>
@@ -346,7 +346,7 @@ function BookingsPageInner() {
                   );
                   return (
                     <tr key={b.id}>
-                      <td>
+                      <td data-label="Customer" data-label-align="left">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                           <strong style={{ fontSize: '14px', color: 'var(--text-primary)' }}>{b.customer_name}</strong>
                           <a href={waUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '11.5px', color: 'var(--brand-primary-light, #25D366)' }}>
@@ -359,27 +359,27 @@ function BookingsPageInner() {
                           )}
                         </div>
                       </td>
-                      <td>
+                      <td data-label="Motor">
                         <div style={{ fontWeight: 700, fontSize: '13px' }}>{b.vehicle_name}</div>
                         {b.vehicle_category && <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{b.vehicle_category}</div>}
                       </td>
-                      <td style={{ fontSize: '12.5px' }}>
+                      <td data-label="Tanggal Sewa" style={{ fontSize: '12.5px' }}>
                         {formatDate(b.start_date)} — {formatDate(b.end_date)}
                         <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{b.duration_days} hari</div>
                       </td>
-                      <td>
+                      <td data-label="Metode">
                         <span className="badge" style={{ background: b.fulfillment_method === 'delivery' ? 'rgba(59,130,246,0.15)' : 'rgba(148,163,184,0.2)', color: b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8', border: `1px solid ${b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8'}` }}>
                           <i className={`fa-solid ${b.fulfillment_method === 'delivery' ? 'fa-truck-fast' : 'fa-store'}`} style={{ marginRight: '4px' }}></i>
                           {b.fulfillment_method === 'delivery' ? 'Delivery' : 'Ambil di Toko'}
                         </span>
                       </td>
-                      <td style={{ fontWeight: 800, fontSize: '13px' }}>{formatRupiah(b.estimated_price)}</td>
-                      <td>
+                      <td data-label="Estimasi" style={{ fontWeight: 800, fontSize: '13px' }}>{formatRupiah(b.estimated_price)}</td>
+                      <td data-label="Status">
                         <span className="badge" style={{ background: meta.bg, color: meta.color, border: `1px solid ${meta.color}` }}>
                           {meta.label}
                         </span>
                       </td>
-                      <td>
+                      <td data-label="Aksi" data-label-align="left">
                         <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                           {role === 'admin' ? (
                             <>
