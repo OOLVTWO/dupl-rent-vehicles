@@ -93,23 +93,23 @@ export default function SharpSquareBusinessWebsitePage() {
 
   // Business & CMS Landing Page State (Loads dynamically from admin panel settings)
   const [biz, setBiz] = useState({
-    name: 'BOSS RENT PERERENAN',
-    tagline: 'Available Scooter For Rent • Best Service • Best Price • Villa Delivery Available • Clean & Well-Maintained Scooters',
-    address: 'Jl. Pantai Pererenan No.119, Pererenan, Kec. Mengwi, Kabupaten Badung, Bali 80351',
-    phone: '+62 812-3710-9751',
-    phoneRaw: '0812-3710-9751',
-    hours: 'Open Daily from 09.00 AM WITA',
-    rating: 5.0,
-    reviewsCount: 24,
-    satisfactionPercent: 100,
-    cleanScootersCount: 50,
-    heroTitle: 'Clean & Reliable Scooter Rental in Pererenan & Canggu',
-    heroSubtitle: 'Explore Bali with confidence! Clean helmets, delivery & pickup in Canggu / Pererenan area, transparent daily & weekly rates, and 24/7 WhatsApp support.',
-    instagramUrl: 'https://www.instagram.com/bossrentpererenan?igsh=MWFxZzE3eWI2dWlqZA==',
-    instagramHandle: '@bossrentpererenan',
-    mapsUrl: 'https://maps.app.goo.gl/SdqrCREMRtkanUGd6',
-    mapsEmbedUrl: 'https://maps.google.com/maps?q=-8.6477169,115.1226017&z=16&output=embed'
-  });
+  name: 'Demo Rental Preview',
+  tagline: 'Sample Scooter Rental Platform • Live Preview Build',
+  address: 'Sample Address, Bali, Indonesia',
+  phone: '+62 000-0000-0000',
+  phoneRaw: '0000-0000-0000',
+  hours: 'Open Daily (Demo Data)',
+  rating: 5.0,
+  reviewsCount: 0,
+  satisfactionPercent: 100,
+  cleanScootersCount: 6,
+  heroTitle: 'Vehicle Rental Platform — Live Demo',
+  heroSubtitle: 'This is a preview build showcasing the booking flow, fleet catalog, and admin dashboard.',
+  instagramUrl: '#',
+  instagramHandle: '@demo',
+  mapsUrl: '#',
+  mapsEmbedUrl: ''
+});
 
   // FAQ Accordion State (100% English for Tourists)
   const [openFaq, setOpenFaq] = useState(null);
