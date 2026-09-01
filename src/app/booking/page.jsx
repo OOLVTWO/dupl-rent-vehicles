@@ -354,12 +354,13 @@ function BookingPageInner() {
                         </button>
                       ))}
                     </div>
-                    {form.payment_method === 'card' && (
-                      <div style={{ marginTop: '10px', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.25)', fontSize: '12px', color: 'var(--sharp-ink)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                        <i className="fa-solid fa-circle-info" style={{ color: '#3B82F6', marginTop: '2px' }}></i>
-                        <span>Our driver will bring a portable card machine (EDC) with them for card payment.</span>
-                      </div>
-                    )}
+                    <div style={{ marginTop: '10px', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.25)', fontSize: '12px', color: 'var(--sharp-ink)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                      <i className="fa-solid fa-circle-info" style={{ color: '#3B82F6', marginTop: '2px' }}></i>
+                      <span>
+                        Payment is collected in person when our driver arrives with your scooter.
+                        {form.payment_method === 'card' && ' Our driver will bring a portable card machine (EDC) for card payment.'}
+                      </span>
+                    </div>
                   </div>
 
                   <div style={{ marginBottom: '18px' }}>
