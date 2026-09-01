@@ -226,12 +226,14 @@ function NewContractInner() {
       ) : (
         <form onSubmit={handleSubmit}>
           <div className="card" style={{ marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0 }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0, marginBottom: '18px' }}>
               <i className="fa-solid fa-id-card" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
               Data Diri Customer
             </h3>
 
-            <CustomerPickerCombobox onSelectCustomer={handleSelectCustomer} label="Tamu Repeater? Auto-Fill Di Sini" />
+            <div style={{ marginBottom: '20px' }}>
+              <CustomerPickerCombobox onSelectCustomer={handleSelectCustomer} label="Tamu Repeater? Auto-Fill Di Sini" />
+            </div>
 
             <div className="form-group">
               <label className="form-label">Nama Lengkap *</label>
