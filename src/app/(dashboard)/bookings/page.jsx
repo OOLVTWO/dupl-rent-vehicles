@@ -155,7 +155,6 @@ export default function BookingsPage() {
                   <th>Metode</th>
                   <th>Estimasi</th>
                   <th>Status</th>
-                  <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -196,45 +195,21 @@ export default function BookingsPage() {
                       </td>
                       <td style={{ fontWeight: 800, fontSize: '13px' }}>{formatRupiah(b.estimated_price)}</td>
                       <td>
-                        <span className="badge" style={{ background: meta.bg, color: meta.color, border: `1px solid ${meta.color}` }}>
-                          {meta.label}
-                        </span>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                          {b.status === 'pending' && (
-                            <button
-                              className="btn btn-sm"
-                              disabled={busyId === b.id}
-                              onClick={() => updateStatus(b.id, 'confirmed')}
-                              style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E', border: '1px solid #22C55E' }}
-                              title="Konfirmasi booking"
-                            >
-                              <i className="fa-solid fa-check"></i>
-                            </button>
-                          )}
-                          {(b.status === 'pending' || b.status === 'confirmed') && (
-                            <button
-                              className="btn btn-sm"
-                              disabled={busyId === b.id}
-                              onClick={() => updateStatus(b.id, 'cancelled')}
-                              style={{ background: 'rgba(239,68,68,0.15)', color: '#EF4444', border: '1px solid #EF4444' }}
-                              title="Batalkan booking"
-                            >
-                              <i className="fa-solid fa-xmark"></i>
-                            </button>
-                          )}
-                          {b.status === 'confirmed' && (
-                            <button
-                              className="btn btn-sm"
-                              disabled={busyId === b.id}
-                              onClick={() => updateStatus(b.id, 'completed')}
-                              style={{ background: 'rgba(59,130,246,0.15)', color: '#3B82F6', border: '1px solid #3B82F6' }}
-                              title="Tandai selesai"
-                            >
-                              <i className="fa-solid fa-flag-checkered"></i>
-                            </button>
-                          )}
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <select
+                            value={b.status}
+                            disabled={busyId === b.id}
+                            onChange={(e) => updateStatus(b.id, e.target.value)}
+                            className="form-control"
+                            style={{
+                              width: 'auto', padding: '6px 10px', fontSize: '12px', fontWeight: 700,
+                              color: meta.color, borderColor: meta.color, background: meta.bg,
+                            }}
+                          >
+                            {Object.entries(STATUS_META).map(([key, m]) => (
+                              <option key={key} value={key}>{m.label}</option>
+                            ))}
+                          </select>
                           <button
                             className="btn btn-sm"
                             disabled={busyId === b.id}
