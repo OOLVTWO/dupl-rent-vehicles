@@ -81,6 +81,32 @@ export default function DriverDashboard({ fullName }) {
         </p>
       </div>
 
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '10px', marginBottom: '20px' }}>
+        {[
+          { href: '/transactions', icon: 'fa-solid fa-plus', label: 'Tambah Transaksi', color: '#3B82F6' },
+          { href: '/expenses', icon: 'fa-solid fa-wallet', label: 'Kelola Pengeluaran', color: '#22C55E' },
+          { href: '/contracts/new', icon: 'fa-solid fa-file-signature', label: 'Buat Kontrak', color: '#8B5CF6' },
+        ].map(action => (
+          <Link
+            key={action.href}
+            href={action.href}
+            className="card"
+            style={{
+              padding: '16px 12px', textAlign: 'center', textDecoration: 'none',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+            }}
+          >
+            <div style={{
+              width: '38px', height: '38px', borderRadius: '10px', background: `${action.color}18`, color: action.color,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px',
+            }}>
+              <i className={action.icon}></i>
+            </div>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>{action.label}</span>
+          </Link>
+        ))}
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginBottom: '20px' }}>
         <StatBox icon="fa-solid fa-sack-dollar" label="Pemasukan Bulan Ini" value={formatRupiah(summary.totalRevenue)} color="#22C55E" />
         <StatBox icon="fa-solid fa-money-bill-transfer" label="Pengeluaran Bulan Ini" value={formatRupiah(summary.totalExpenses)} color="#EF4444" />
@@ -122,12 +148,6 @@ export default function DriverDashboard({ fullName }) {
             ))}
           </div>
         )}
-      </div>
-
-      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        <Link href="/transactions" className="btn btn-primary"><i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Tambah Transaksi</Link>
-        <Link href="/expenses" className="btn btn-secondary"><i className="fa-solid fa-wallet" style={{ marginRight: '6px' }}></i> Kelola Pengeluaran</Link>
-        <Link href="/contracts/new" className="btn btn-secondary"><i className="fa-solid fa-file-signature" style={{ marginRight: '6px' }}></i> Buat Kontrak</Link>
       </div>
     </div>
   );
