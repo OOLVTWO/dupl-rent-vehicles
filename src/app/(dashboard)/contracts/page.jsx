@@ -322,8 +322,8 @@ export default function ContractsPage() {
                       <strong style={{ fontSize: '14px' }}>{c.customer_name}</strong>
                       {c.customer_id_number && <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{c.customer_id_number}</div>}
                     </td>
-                    <td data-label="Motor" style={{ fontSize: '13px' }}>{c.vehicle_name || '-'}</td>
-                    <td data-label="Tanggal Sewa" style={{ fontSize: '12.5px' }}>{formatDate(c.start_date)} — {formatDate(c.end_date)}</td>
+                    <td data-label="Motor" data-label-align="left" style={{ fontSize: '13px' }}>{c.vehicle_name || '-'}</td>
+                    <td data-label="Tanggal Sewa" data-label-align="left" style={{ fontSize: '13px' }}>{formatDate(c.start_date)} — {formatDate(c.end_date)}</td>
                     <td data-label="Dibuat Oleh" style={{ fontSize: '12.5px' }}>{c.created_by_name || '-'}</td>
                     <td data-label="Dokumen">
                       <div style={{ display: 'flex', gap: '6px' }}>
