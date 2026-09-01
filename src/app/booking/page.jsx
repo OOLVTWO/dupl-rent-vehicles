@@ -7,10 +7,13 @@ import { createClient } from '@/lib/supabase/client';
 import { getWhatsAppShareUrl, getWaGatewayConfig, sendWhatsAppGateway } from '@/lib/countryCodes';
 import '@/styles/sharp-system.css';
 import SharpButton from '@/components/fleet/SharpButton';
+import ThemeToggle from '@/components/fleet/ThemeToggle';
 
-// Matches the default business WhatsApp number set on the fleet homepage.
+// Matches the default business profile set on the fleet homepage.
 const OWNER_PHONE = '+62 812-3962-7764';
 const OWNER_NAME = 'Demo Rental Preview';
+const OWNER_ADDRESS = 'Sample Address, Bali, Indonesia';
+const OWNER_LOGO = '/images/logoCompany.png';
 
 function formatRupiah(amount) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount || 0);
@@ -57,19 +60,37 @@ function calculateEstimate(vehicle, startDate, endDate) {
   return { durationDays, total: bestGross, tierUsed };
 }
 
-function BackHomeBar() {
+function BrandHeader({ theme, onToggleTheme }) {
   return (
-    <div style={{ maxWidth: '620px', margin: '0 auto', padding: '20px 20px 0 20px' }}>
-      <Link
-        href="/fleet"
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: '8px',
-          fontSize: '13px', fontWeight: 700, color: 'var(--sharp-muted)', textDecoration: 'none',
-        }}
-      >
-        <i className="fa-solid fa-arrow-left"></i> Back to Home
-      </Link>
-    </div>
+    <header style={{ background: 'var(--sharp-surface)', borderBottom: '1px solid var(--sharp-line)', position: 'sticky', top: 0, zIndex: 100, padding: '16px 20px' }}>
+      <div style={{ maxWidth: '620px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+        <Link href="/fleet" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
+          <img src={OWNER_LOGO} alt={`${OWNER_NAME} Logo`} style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
+          <div>
+            <div style={{ fontSize: '17px', fontWeight: 900, color: 'var(--sharp-ink)', letterSpacing: '-0.4px' }}>
+              {OWNER_NAME}
+            </div>
+            <div style={{ fontSize: '10.5px', color: 'var(--sharp-muted)', marginTop: '1px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <i className="fa-solid fa-location-dot" style={{ color: 'var(--sharp-accent)' }}></i>
+              {OWNER_ADDRESS}
+            </div>
+          </div>
+        </Link>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <Link
+            href="/fleet"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              fontSize: '12.5px', fontWeight: 700, color: 'var(--sharp-muted)', textDecoration: 'none',
+            }}
+          >
+            <i className="fa-solid fa-arrow-left"></i> Back to Home
+          </Link>
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+        </div>
+      </div>
+    </header>
   );
 }
 
@@ -78,6 +99,24 @@ function BookingPageInner() {
   const vehicleId = searchParams.get('vehicleId') || '';
   const startDate = searchParams.get('start') || '';
   const endDate = searchParams.get('end') || '';
+
+  const [theme, setTheme] = useState('light');
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('boss_rent_fleet_theme');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (saved === 'dark') setTheme('dark');
+    } catch {
+      // ignore
+    }
+  }, []);
+  const toggleTheme = () => {
+    setTheme(prev => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('boss_rent_fleet_theme', next); } catch { /* ignore */ }
+      return next;
+    });
+  };
 
   const [vehicle, setVehicle] = useState(null);
   const [loadingVehicle, setLoadingVehicle] = useState(true);
@@ -183,8 +222,8 @@ function BookingPageInner() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--sharp-bg)', paddingBottom: '60px' }}>
-      <BackHomeBar />
+    <div className={`sharp-page ${theme === 'dark' ? 'sharp-page--dark' : ''}`} style={{ minHeight: '100vh', paddingBottom: '60px' }}>
+      <BrandHeader theme={theme} onToggleTheme={toggleTheme} />
 
       <div style={{ maxWidth: '620px', margin: '0 auto', padding: '20px' }}>
         {loadingVehicle ? (
