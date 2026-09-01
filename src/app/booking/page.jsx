@@ -400,6 +400,9 @@ function BookingPageInner() {
                       <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
                         Delivery Area *
                       </label>
+                      <p style={{ fontSize: '11.5px', color: 'var(--sharp-muted)', margin: '0 0 10px 0' }}>
+                        Our shop is on Sunset Road, Kuta. Please pick the zone closest to your actual location so the delivery fee is accurate — double-check before confirming.
+                      </p>
                       {deliveryZones.length === 0 ? (
                         <p style={{ fontSize: '12px', color: 'var(--sharp-muted)' }}>Loading areas...</p>
                       ) : (
@@ -423,6 +426,12 @@ function BookingPageInner() {
                               <div style={{ fontSize: '12px', color: 'var(--sharp-accent)', fontWeight: 700 }}>{formatRupiah(zone.fee)}</div>
                             </button>
                           ))}
+                        </div>
+                      )}
+                      {selectedZone && (
+                        <div style={{ marginTop: '10px', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', fontSize: '11.5px', color: 'var(--sharp-ink)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                          <i className="fa-solid fa-circle-exclamation" style={{ color: '#F59E0B', marginTop: '2px' }}></i>
+                          <span>Not sure which zone fits your address? Confirm with us on WhatsApp before booking so the fee shown is correct.</span>
                         </div>
                       )}
                     </div>

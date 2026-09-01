@@ -1700,6 +1700,13 @@ export default function SettingsPage() {
               </button>
             </div>
 
+            <div style={{ padding: '10px 12px', borderRadius: '10px', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.25)', fontSize: '12px', color: 'var(--text-primary)', display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '16px' }}>
+              <i className="fa-solid fa-circle-info" style={{ color: '#3B82F6', marginTop: '2px' }}></i>
+              <span>
+                Toko kita ada di <strong>Sunset Road, Kuta</strong> — biaya tiap zona dihitung dari jarak lokasi itu. Pastikan biayanya masih akurat ya kalau ada area baru atau perubahan jarak.
+              </span>
+            </div>
+
             <div className="table-wrapper">
               {zoneLoading ? (
                 <div className="table-empty"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Memuat data...</div>

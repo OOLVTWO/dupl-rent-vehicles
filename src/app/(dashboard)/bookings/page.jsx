@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { formatRupiah } from '@/lib/finance';
 import { getWhatsAppShareUrl } from '@/lib/countryCodes';
 import { useRole } from '@/lib/RoleContext';
+import { createClient } from '@/lib/supabase/client';
 
 const PAYMENT_META = {
   cash:     { label: 'Cash', icon: 'fa-solid fa-money-bill-wave' },
@@ -250,6 +251,17 @@ function BookingsPageInner() {
   const [error, setError] = useState('');
   const [editingBooking, setEditingBooking] = useState(null);
   const [drivers, setDrivers] = useState([]);
+  const [myUserId, setMyUserId] = useState(null);
+
+  useEffect(() => {
+    Promise.resolve().then(async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        setMyUserId(user?.id || null);
+      } catch { /* ignore */ }
+    });
+  }, []);
 
   const fetchDrivers = useCallback(async () => {
     try {
@@ -331,6 +343,27 @@ function BookingsPageInner() {
       }
     } catch {
       /* ignore */
+    }
+    setBusyId(null);
+  };
+
+  const confirmDelivery = async (id) => {
+    if (!confirm('Konfirmasi motor sudah sampai & diserahkan ke customer?')) return;
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/bookings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'confirm_delivery' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setBookings(prev => prev.map(b => (b.id === id ? data : b)));
+      } else {
+        alert(data.error || 'Gagal konfirmasi delivery.');
+      }
+    } catch {
+      alert('Gagal terhubung ke server.');
     }
     setBusyId(null);
   };
@@ -492,6 +525,28 @@ function BookingsPageInner() {
                               </span>
                             ) : (
                               <span className="badge badge-muted"><i className="fa-solid fa-hourglass-half" style={{ marginRight: '4px' }}></i>Belum ditugaskan</span>
+                            )}
+
+                            {b.assigned_driver_id && (
+                              b.delivered_at ? (
+                                <span style={{ fontSize: '10.5px', color: '#22C55E', fontWeight: 700 }}>
+                                  <i className="fa-solid fa-circle-check" style={{ marginRight: '4px' }}></i>
+                                  Delivered {new Date(b.delivered_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              ) : (role === 'admin' || myUserId === b.assigned_driver_id) && (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm"
+                                  disabled={busyId === b.id}
+                                  onClick={() => confirmDelivery(b.id)}
+                                  style={{
+                                    fontSize: '11px', fontWeight: 700, padding: '5px 10px', width: 'fit-content',
+                                    background: 'rgba(34,197,94,0.12)', color: '#22C55E', border: '1px solid #22C55E',
+                                  }}
+                                >
+                                  <i className="fa-solid fa-check" style={{ marginRight: '4px' }}></i>Confirm Delivered
+                                </button>
+                              )
                             )}
                           </div>
                         )}

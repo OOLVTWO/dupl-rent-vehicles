@@ -312,6 +312,7 @@ ALTER TABLE bookings
   ADD COLUMN IF NOT EXISTS delivery_zone_name VARCHAR(100),
   ADD COLUMN IF NOT EXISTS delivery_fee DECIMAL(12,2) DEFAULT 0,
   ADD COLUMN IF NOT EXISTS assigned_driver_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  ADD COLUMN IF NOT EXISTS assigned_driver_name VARCHAR(100);
+  ADD COLUMN IF NOT EXISTS assigned_driver_name VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_bookings_assigned_driver ON bookings(assigned_driver_id);

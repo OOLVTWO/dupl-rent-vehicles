@@ -1,5 +1,5 @@
-import { createAdminClient } from '@/lib/supabase/server';
-import { requireAdmin } from '@/lib/apiAuth';
+import { createAdminClient, createClient } from '@/lib/supabase/server';
+import { requireAuth, requireAdmin } from '@/lib/apiAuth';
 import { NextResponse } from 'next/server';
 
 const VALID_STATUS = ['pending', 'confirmed', 'cancelled', 'completed'];
@@ -7,15 +7,57 @@ const VALID_FULFILLMENT = ['pickup', 'delivery'];
 const VALID_PAYMENT = ['card', 'transfer', 'cash', 'qris'];
 
 // PATCH /api/bookings/[id] — ubah status dan/atau detail booking (admin only;
-// staff/driver hanya boleh MELIHAT booking, tidak boleh mengedit)
+// staff/driver hanya boleh MELIHAT booking, tidak boleh mengedit) — KECUALI
+// aksi khusus "confirm_delivery" di bawah, yang boleh dipakai driver yang
+// ditugaskan untuk booking itu sendiri (konfirmasi motor sudah diantar).
 export async function PATCH(request, { params }) {
+  const { id } = await params;
+  const body = await request.json().catch(() => null);
+  if (!body) return NextResponse.json({ error: 'Body request bukan JSON valid.' }, { status: 400 });
+
+  if (body.action === 'confirm_delivery') {
+    const authError = await requireAuth(request);
+    if (authError) return authError;
+
+    const sessionClient = await createClient();
+    const { data: { user } } = await sessionClient.auth.getUser();
+    const admin = await createAdminClient();
+
+    const { data: existing } = await admin
+      .from('bookings')
+      .select('assigned_driver_id, fulfillment_method, delivered_at')
+      .eq('id', id)
+      .maybeSingle();
+    if (!existing) return NextResponse.json({ error: 'Booking tidak ditemukan.' }, { status: 404 });
+    if (existing.fulfillment_method !== 'delivery') {
+      return NextResponse.json({ error: 'Booking ini bukan delivery.' }, { status: 400 });
+    }
+
+    const { data: profile } = await sessionClient
+      .from('staff_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+    const role = profile?.role || 'admin';
+
+    if (role !== 'admin' && existing.assigned_driver_id !== user.id) {
+      return NextResponse.json({ error: 'Kamu bukan driver yang ditugaskan untuk booking ini.' }, { status: 403 });
+    }
+
+    const { data, error } = await admin
+      .from('bookings')
+      .update({ delivered_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(data);
+  }
+
   const authError = await requireAdmin(request);
   if (authError) return authError;
 
-  const { id } = await params;
   const supabase = await createAdminClient();
-  const body = await request.json().catch(() => null);
-  if (!body) return NextResponse.json({ error: 'Body request bukan JSON valid.' }, { status: 400 });
 
   const updateData = {};
 

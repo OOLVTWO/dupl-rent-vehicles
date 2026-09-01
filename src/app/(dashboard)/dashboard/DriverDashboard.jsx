@@ -53,6 +53,25 @@ export default function DriverDashboard({ fullName }) {
 
   useEffect(() => { Promise.resolve().then(load); }, [load]);
 
+  const confirmDelivery = async (id) => {
+    if (!confirm('Konfirmasi motor sudah sampai & diserahkan ke customer?')) return;
+    try {
+      const res = await fetch(`/api/bookings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'confirm_delivery' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setMyDeliveries(prev => prev.map(b => (b.id === id ? data : b)));
+      } else {
+        alert(data.error || 'Gagal konfirmasi delivery.');
+      }
+    } catch {
+      alert('Gagal terhubung ke server.');
+    }
+  };
+
   const summary = calcFinancialSummary({ transactions, expenses, vehicles: [] });
   const thisMonthDeliveries = myDeliveries.filter(b => {
     const d = new Date(b.created_at);
@@ -139,10 +158,25 @@ export default function DriverDashboard({ fullName }) {
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 800, color: '#8B5CF6', fontSize: '13px' }}>{formatRupiah(b.delivery_fee)}</div>
-                  <span className="badge" style={{ background: b.status === 'confirmed' ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)', color: b.status === 'confirmed' ? '#22C55E' : '#F59E0B', border: `1px solid ${b.status === 'confirmed' ? '#22C55E' : '#F59E0B'}` }}>
-                    {b.status === 'confirmed' ? 'Confirmed' : 'Pending'}
-                  </span>
+                  <div style={{ fontWeight: 800, color: '#8B5CF6', fontSize: '13px', marginBottom: '4px' }}>{formatRupiah(b.delivery_fee)}</div>
+                  {b.delivered_at ? (
+                    <span style={{ fontSize: '10.5px', color: '#22C55E', fontWeight: 700 }}>
+                      <i className="fa-solid fa-circle-check" style={{ marginRight: '4px' }}></i>Delivered
+                    </span>
+                  ) : b.status === 'confirmed' ? (
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      onClick={() => confirmDelivery(b.id)}
+                      style={{ fontSize: '11px', fontWeight: 700, padding: '5px 10px', background: 'rgba(34,197,94,0.12)', color: '#22C55E', border: '1px solid #22C55E' }}
+                    >
+                      <i className="fa-solid fa-check" style={{ marginRight: '4px' }}></i>Confirm Delivered
+                    </button>
+                  ) : (
+                    <span className="badge" style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B', border: '1px solid #F59E0B' }}>
+                      Pending
+                    </span>
+                  )}
                 </div>
               </div>
             ))}
