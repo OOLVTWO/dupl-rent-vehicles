@@ -429,6 +429,21 @@ function BookingPageInner() {
                         </div>
                       )}
                       {selectedZone && (
+                        <div style={{
+                          marginTop: '10px', padding: '12px 14px', borderRadius: 'var(--radius-md)',
+                          background: `${selectedZone.color}12`, border: `1px solid ${selectedZone.color}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px',
+                        }}>
+                          <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--sharp-ink)' }}>
+                            <i className="fa-solid fa-truck-fast" style={{ marginRight: '6px', color: selectedZone.color }}></i>
+                            Delivery fee ({selectedZone.zone_label})
+                          </span>
+                          <span style={{ fontSize: '16px', fontWeight: 900, color: selectedZone.color }}>
+                            {selectedZone.fee > 0 ? formatRupiah(selectedZone.fee) : 'FREE'}
+                          </span>
+                        </div>
+                      )}
+                      {selectedZone && (
                         <div style={{ marginTop: '10px', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', fontSize: '11.5px', color: 'var(--sharp-ink)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                           <i className="fa-solid fa-circle-exclamation" style={{ color: '#F59E0B', marginTop: '2px' }}></i>
                           <span>Not sure which zone fits your address? Confirm with us on WhatsApp before booking so the fee shown is correct.</span>
