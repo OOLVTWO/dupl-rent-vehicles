@@ -988,8 +988,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .table--stack-mobile tr {
     border: 1px solid var(--bg-border);
     border-radius: var(--radius-md);
-    margin-bottom: var(--space-3);
-    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-4);
+    padding: var(--space-4) var(--space-4);
     background: var(--bg-surface);
   }
   .table--stack-mobile tr:last-child {
@@ -1000,12 +1000,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     justify-content: space-between;
     align-items: center;
     gap: var(--space-3);
-    padding: 7px 0;
+    padding: 11px 0;
     border-bottom: 1px dashed var(--bg-border);
     text-align: right;
     white-space: normal !important;
     overflow-wrap: anywhere !important;
     word-break: break-word;
+    line-height: 1.5;
   }
   .table--stack-mobile td > * {
     min-width: 0;
@@ -1013,10 +1014,14 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   }
   .table--stack-mobile td:last-child {
     border-bottom: none;
+    padding-bottom: 2px;
+  }
+  .table--stack-mobile td:first-child {
+    padding-top: 2px;
   }
   .table--stack-mobile td::before {
     content: attr(data-label);
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -1030,7 +1035,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     text-align: left;
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
+    gap: 6px;
   }
 }
 

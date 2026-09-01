@@ -363,7 +363,7 @@ function BookingsPageInner() {
                         <div style={{ fontWeight: 700, fontSize: '13px' }}>{b.vehicle_name}</div>
                         {b.vehicle_category && <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{b.vehicle_category}</div>}
                       </td>
-                      <td data-label="Tanggal Sewa" style={{ fontSize: '12.5px' }}>
+                      <td data-label="Tanggal Sewa" data-label-align="left" style={{ fontSize: '13px' }}>
                         {formatDate(b.start_date)} — {formatDate(b.end_date)}
                         <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{b.duration_days} hari</div>
                       </td>
