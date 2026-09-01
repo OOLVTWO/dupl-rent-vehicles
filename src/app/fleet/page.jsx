@@ -627,6 +627,39 @@ export default function SharpSquareBusinessWebsitePage() {
         </div>
       </section>
 
+      {/* ── HOW IT WORKS — 3-STEP BOOKING FLOW ── */}
+      <section style={{ padding: '64px 24px', background: 'var(--sharp-surface-2)', borderTop: '1px solid var(--sharp-line)', borderBottom: '1px solid var(--sharp-line)' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          <SectionHeading
+            eyebrow="How It Works"
+            title="Booking In 3 Simple Steps"
+            icon="fa-solid fa-route"
+            style={{ marginBottom: '40px' }}
+          />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+            {[
+              { icon: 'fa-solid fa-calendar-check', title: 'Pick Your Dates', desc: 'Select pickup and return dates — daily, weekly, and monthly rates auto-calculated.' },
+              { icon: 'fa-solid fa-motorcycle', title: 'Choose Your Scooter', desc: 'Browse available scooters for your dates and pick the model that fits your trip.' },
+              { icon: 'fa-brands fa-whatsapp', title: 'Book Via WhatsApp', desc: 'Confirm instantly over WhatsApp. Pay on pickup, no deposit surprises.' },
+            ].map((step, idx) => (
+              <div key={idx} className="sharp-card" style={{ padding: '32px 24px', textAlign: 'center' }}>
+                <div style={{
+                  width: '64px', height: '64px', borderRadius: 'var(--radius-full)',
+                  background: 'var(--sharp-surface)', border: '1px solid var(--sharp-line-strong)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 18px auto', fontSize: '24px', color: 'var(--sharp-accent)',
+                }}>
+                  <i className={step.icon}></i>
+                </div>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sharp-accent)', marginBottom: '6px' }}>STEP {idx + 1}</div>
+                <div style={{ fontSize: '17px', fontWeight: 700, color: 'var(--sharp-ink)', marginBottom: '8px' }}>{step.title}</div>
+                <div style={{ fontSize: '13.5px', color: 'var(--sharp-muted)', lineHeight: 1.6 }}>{step.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── BRANDS WE CARRY — looping trust strip ── */}
       <section style={{ padding: '28px 0', background: 'var(--sharp-surface)', borderBottom: '1px solid var(--sharp-line)', overflow: 'hidden', position: 'relative' }}>
         <div style={{ textAlign: 'center', marginBottom: '14px' }}>
@@ -657,39 +690,6 @@ export default function SharpSquareBusinessWebsitePage() {
               )}
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS — 3-STEP BOOKING FLOW ── */}
-      <section style={{ padding: '64px 24px', background: 'var(--sharp-surface-2)', borderTop: '1px solid var(--sharp-line)', borderBottom: '1px solid var(--sharp-line)' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-          <SectionHeading
-            eyebrow="How It Works"
-            title="Booking In 3 Simple Steps"
-            icon="fa-solid fa-route"
-            style={{ marginBottom: '40px' }}
-          />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
-            {[
-              { icon: 'fa-solid fa-motorcycle', title: 'Choose Your Scooter', desc: 'Browse our clean, well-maintained fleet and pick the model that fits your trip.' },
-              { icon: 'fa-solid fa-calendar-check', title: 'Pick Your Dates', desc: 'Select pickup and return dates — daily, weekly, and monthly rates auto-calculated.' },
-              { icon: 'fa-brands fa-whatsapp', title: 'Book Via WhatsApp', desc: 'Confirm instantly over WhatsApp. Pay on pickup, no deposit surprises.' },
-            ].map((step, idx) => (
-              <div key={idx} className="sharp-card" style={{ padding: '32px 24px', textAlign: 'center' }}>
-                <div style={{
-                  width: '64px', height: '64px', borderRadius: 'var(--radius-full)',
-                  background: 'var(--sharp-surface)', border: '1px solid var(--sharp-line-strong)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  margin: '0 auto 18px auto', fontSize: '24px', color: 'var(--sharp-accent)',
-                }}>
-                  <i className={step.icon}></i>
-                </div>
-                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sharp-accent)', marginBottom: '6px' }}>STEP {idx + 1}</div>
-                <div style={{ fontSize: '17px', fontWeight: 700, color: 'var(--sharp-ink)', marginBottom: '8px' }}>{step.title}</div>
-                <div style={{ fontSize: '13.5px', color: 'var(--sharp-muted)', lineHeight: 1.6 }}>{step.desc}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
