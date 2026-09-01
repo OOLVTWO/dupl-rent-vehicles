@@ -609,16 +609,6 @@ export default function SharpSquareBusinessWebsitePage() {
         </div>
       </section>
 
-      {/* ── STAT ROW ── */}
-      <section style={{ padding: '48px 24px 0 24px', background: 'var(--sharp-surface)' }}>
-        <div style={{ maxWidth: '1180px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
-          <StatCard value={animatedRating} valueColor="var(--sharp-accent)" icon="fa-solid fa-star" iconColor="var(--sharp-star)" label="Google Rating" sublabel="5-Star Verified Score" />
-          <StatCard value={animatedReviews} valueColor="var(--sharp-success)" label="Google Reviews" sublabel="Real Happy Customers" />
-          <StatCard value={`${animatedSatisfaction}%`} valueColor="var(--sharp-info)" label="Customer Satisfaction" sublabel="Best Service Guarantee" />
-          <StatCard value={`${animatedFleet}+`} valueColor="var(--sharp-warning)" label="Clean Scooters" sublabel="Regularly Serviced" />
-        </div>
-      </section>
-
       {/* ── SCHEDULE YOUR RENTAL DATES ── */}
       <section style={{ padding: '48px 24px', background: 'var(--sharp-surface)' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto 28px auto', textAlign: 'center' }}>
@@ -875,6 +865,16 @@ export default function SharpSquareBusinessWebsitePage() {
           </>
         )}
       </main>
+
+      {/* ── STAT ROW ── */}
+      <section style={{ padding: '48px 24px 0 24px', background: 'var(--sharp-surface)' }}>
+        <div style={{ maxWidth: '1180px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+          <StatCard value={animatedRating} valueColor="var(--sharp-accent)" icon="fa-solid fa-star" iconColor="var(--sharp-star)" label="Google Rating" sublabel="5-Star Verified Score" />
+          <StatCard value={animatedReviews} valueColor="var(--sharp-success)" label="Google Reviews" sublabel="Real Happy Customers" />
+          <StatCard value={`${animatedSatisfaction}%`} valueColor="var(--sharp-info)" label="Customer Satisfaction" sublabel="Best Service Guarantee" />
+          <StatCard value={`${animatedFleet}+`} valueColor="var(--sharp-warning)" label="Clean Scooters" sublabel="Regularly Serviced" />
+        </div>
+      </section>
 
       {/* ── BRANDS WE CARRY — looping trust strip ── */}
       <section style={{ padding: '28px 0', background: 'var(--sharp-surface)', borderBottom: '1px solid var(--sharp-line)', overflow: 'hidden', position: 'relative' }}>
