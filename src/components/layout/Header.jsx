@@ -23,7 +23,7 @@ const pageMeta = {
 export default function Header({ onToggleMobile, theme, onToggleTheme }) {
   const pathname = usePathname();
   const matchedKey = Object.keys(pageMeta).find(key => pathname.startsWith(key));
-  const meta = pageMeta[matchedKey] || { title: 'Boss Rent', subtitle: 'Admin Panel' };
+  const meta = pageMeta[matchedKey] || { title: 'Demo Rental Preview', subtitle: 'Admin Panel' };
   const [logoUrl, setLogoUrl] = useState('/images/logoCompany.png');
   const [themeDropOpen, setThemeDropOpen] = useState(false);
   const themeRef = useRef(null);

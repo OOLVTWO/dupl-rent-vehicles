@@ -734,7 +734,7 @@ function VehicleModal({ isOpen, onClose, onSubmit, editData, onOpenAdjuster }) {
                     onChange={e => setForm(p => ({ ...p, owner_type: e.target.value }))}
                     style={{ accentColor: '#A855F7' }}
                   />
-                  <span><i className="fa-solid fa-building" style={{ marginRight: '4px', color: 'var(--brand-primary)' }}></i> Milik Internal Boss Rent</span>
+                  <span><i className="fa-solid fa-building" style={{ marginRight: '4px', color: 'var(--brand-primary)' }}></i> Milik Internal Demo Rental Preview</span>
                 </label>
                 <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--text-primary)', background: 'var(--bg-card)', padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--bg-border)' }}>
                   <input
@@ -800,7 +800,7 @@ function VehicleModal({ isOpen, onClose, onSubmit, editData, onOpenAdjuster }) {
                       onChange={handleChange}
                     />
                     <div style={{ fontSize: '11px', color: '#A855F7', marginTop: '4px', fontWeight: 600 }}>
-                      * {form.revenue_share_percentage || 70}% Investor / {100 - Number(form.revenue_share_percentage || 70)}% Boss Rent
+                      * {form.revenue_share_percentage || 70}% Investor / {100 - Number(form.revenue_share_percentage || 70)}% Demo Rental Preview
                     </div>
                   </div>
                 </div>
@@ -1191,7 +1191,7 @@ export default function VehiclesPage() {
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <span className="badge badge-success" style={{ fontSize: '11.5px', padding: '4px 10px' }}>
-                        {inv.sharePct}% Investor / {100 - Number(inv.sharePct)}% Boss Rent
+                        {inv.sharePct}% Investor / {100 - Number(inv.sharePct)}% Demo Rental Preview
                       </span>
                     </div>
                   </div>

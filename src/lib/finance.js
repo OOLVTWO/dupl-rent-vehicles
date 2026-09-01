@@ -16,7 +16,7 @@
 //     (PERUBAHAN: payout tidak pernah negatif — rugi operasional motor
 //      tidak menjadi "hutang investor" yang mengurangi laba usaha)
 //  3. Klaim denda kerusakan (damage_fee) diakui saat transaksi selesai.
-//  4. Laba Bersih Boss Rent = Total Pemasukan − Pengeluaran − Bagi Hasil Investor
+//  4. Laba Bersih Demo Rental Preview = Total Pemasukan − Pengeluaran − Bagi Hasil Investor
 // ─────────────────────────────────────────────────────────────
 
 // ── Format ──

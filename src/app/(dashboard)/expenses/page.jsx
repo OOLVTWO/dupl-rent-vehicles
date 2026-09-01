@@ -174,7 +174,7 @@ function FinanceModal({ isOpen, onClose, onSubmit, editData, defaultType = 'expe
                 <><i className="fa-solid fa-circle-arrow-up" style={{ marginRight: '6px' }}></i> Tambah Pengeluaran Baru</>
               )}
             </div>
-            <div className="modal-subtitle">Isi data transaksi arus kas usaha Boss Rent</div>
+            <div className="modal-subtitle">Isi data transaksi arus kas usaha Demo Rental Preview</div>
           </div>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
@@ -595,7 +595,7 @@ export default function FinancesPage() {
       <div className="page-header">
         <div>
           <h2><i className="fa-solid fa-wallet" style={{ marginRight: '8px' }}></i> Kelola Keuangan Usaha</h2>
-          <p>Catat dan pantau seluruh arus kas pemasukan, pengeluaran operasional, serta saldo bersih Boss Rent</p>
+          <p>Catat dan pantau seluruh arus kas pemasukan, pengeluaran operasional, serta saldo bersih Demo Rental Preview</p>
         </div>
       </div>
 

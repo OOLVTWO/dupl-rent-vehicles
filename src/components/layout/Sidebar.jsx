@@ -218,7 +218,7 @@ export default function Sidebar({ user, mobileOpen, onClose }) {
           <i className="fa-solid fa-motorcycle"></i>
         </div>
         <div className="sidebar-brand-text">
-          <span className="sidebar-brand-name">Boss Rent</span>
+          <span className="sidebar-brand-name">Demo Rental Preview</span>
           <span className="sidebar-brand-sub">Pererenan, Bali</span>
         </div>
       </div>

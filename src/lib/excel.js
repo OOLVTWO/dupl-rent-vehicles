@@ -276,7 +276,7 @@ export function exportInvestorReportToExcel(investorData, filename = '') {
     ['Nama Investor / Pemilik', invName],
     ['Kontak WhatsApp / HP', investorData.contact || '-'],
     ['Jumlah Unit Motor Titipan', `${investorData.vehicles?.length || 0} Unit`],
-    ['Skema Bagi Hasil', `${sharePct}% Investor / ${bossSharePct}% Boss Rent`],
+    ['Skema Bagi Hasil', `${sharePct}% Investor / ${bossSharePct}% Demo Rental Preview`],
     [''],
     ['RINGKASAN REKAPITULASI FINANSIAL', ''],
     ['Total Omset Kotor Sewa Motor (+)', formatRupiah(investorData.totalRevenue || 0)],
@@ -284,7 +284,7 @@ export function exportInvestorReportToExcel(investorData, filename = '') {
     ['Laba Bersih Operasional Motor', formatRupiah(investorData.netIncome || 0)],
     [''],
     [`TRANSFER NET PAYOUT KE INVESTOR (${sharePct}%)`, formatRupiah(investorData.investorPayout || 0)],
-    [`BAGIAN KOMISI BOSS RENT (${bossSharePct}%)`, formatRupiah(investorData.bossRentShare || 0)],
+    [`BAGIAN KOMISI DEMO RENTAL PREVIEW (${bossSharePct}%)`, formatRupiah(investorData.bossRentShare || 0)],
     [''],
     ['DAFTAR UNIT MOTOR TITIPAN INVESTOR', '', '', '', ''],
     ['No', 'Nama Unit Motor', 'Plat Nomor', 'Tahun', 'Status Bagi Hasil']

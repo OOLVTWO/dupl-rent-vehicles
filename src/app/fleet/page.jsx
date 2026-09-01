@@ -550,7 +550,7 @@ export default function SharpSquareBusinessWebsitePage() {
             }}>
               <img
                 src="/images/boss_rent_customer_bali.png"
-                alt="Happy customers riding a Boss Rent scooter through Pererenan, Bali"
+                alt="Happy customers riding a Demo Rental Preview scooter through Pererenan, Bali"
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             </div>
@@ -997,7 +997,7 @@ export default function SharpSquareBusinessWebsitePage() {
           <div style={{ borderRadius: 'var(--radius-xl)', overflow: 'hidden', boxShadow: 'var(--sharp-shadow-lg)', aspectRatio: '4/3.4' }}>
             <img
               src="/images/boss_rent_customer_bali.png"
-              alt="Happy Boss Rent customers in Bali"
+              alt="Happy Demo Rental Preview customers in Bali"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           </div>

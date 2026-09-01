@@ -581,9 +581,9 @@ export default function ReportsPage() {
                 <i className="fa-solid fa-building"></i>
               </div>
               <div className="stat-info">
-                <div className="stat-label">Komisi Boss Rent ({bossRentSharePct}%)</div>
+                <div className="stat-label">Komisi Demo Rental Preview ({bossRentSharePct}%)</div>
                 <div className="stat-value" style={{ color: '#3B82F6' }}>{formatRupiah(bossRentShare)}</div>
-                <div className="stat-change">Hak Pengelolaan Boss Rent</div>
+                <div className="stat-change">Hak Pengelolaan Demo Rental Preview</div>
               </div>
             </div>
           </div>
