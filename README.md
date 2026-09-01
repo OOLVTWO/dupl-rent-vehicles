@@ -14,11 +14,11 @@ Aplikasi ini dikembangkan menggunakan stack teknologi terbaik: **Next.js 16 (App
 - 🔒 **Akses admin dikelola via Supabase Auth** — kredensial TIDAK disimpan di repo. Hubungi pemilik untuk akun.
 
 ### 🟡 Demo / Preview (repo & deployment duplikat ini)
-- 🌐 **Katalog Publik**: [https://dupl-rent-vehicles-zuef.vercel.app](https://dupl-rent-vehicles-zuef.vercel.app)
-- 🔑 **Login Admin Dashboard**: [https://dupl-rent-vehicles-zuef.vercel.app/login](https://dupl-rent-vehicles-zuef.vercel.app/login)
+- 🌐 **Katalog Publik**: [https://dupl-rent-vehicles.vercel.app](https://dupl-rent-vehicles.vercel.app)
+- 🔑 **Login Panel**: [https://dupl-rent-vehicles.vercel.app/login](https://dupl-rent-vehicles.vercel.app/login) — sekarang ada pilihan masuk sebagai **Admin** atau **Driver** (lihat fitur Role Staff di bawah).
 - 👤 **Akun Demo** (khusus environment preview ini, database Supabase terpisah `boss-rent-demo-preview` — tidak menyentuh data production):
-  - Email: `admin@preview.com`
-  - Password: `Preview!`
+  - **Admin** — Email: `admin@preview.com` / Password: `Preview!`
+  - **Driver** — Email: `driver@preview.com` / Password: `Preview!`
 - ⚠️ Kredensial di atas sengaja ditulis terbuka karena environment ini murni untuk demo/testing. Repo ini bersifat publik, jadi jangan pakai kombinasi email/password yang sama di akun production atau akun penting lainnya.
 
 ---
@@ -83,10 +83,45 @@ Panel kendali khusus pengelola rental yang dilindungi oleh autentikasi **Supabas
 
 ---
 
+---
+
+## 🆕 FITUR TAMBAHAN (Update Terbaru)
+
+### 📥 1. Booking Confirmation — Booking Online Terintegrasi (`/booking` → `/bookings`)
+- Tombol **"Book Now"** di tiap unit motor pada halaman publik (`/fleet`) membuka halaman booking khusus (`/booking`), bukan langsung ke WhatsApp.
+- Customer mengisi form: nama, telepon, pilih **Ambil di Toko** atau **Delivery** (+ alamat), lalu konfirmasi.
+- Setelah submit, booking otomatis tersimpan ke database dan tersedia di menu **Booking Confirmation** pada Admin Panel — lengkap dengan tombol untuk mengirim notifikasi WhatsApp ke pengelola.
+- Admin bisa mengubah status (Pending / Confirmed / Completed / Cancelled) kapan saja secara bebas, serta mengedit detail booking (nama, tanggal, dll.) lewat tombol Edit.
+- Data booking dilindungi Row Level Security: publik hanya bisa **mengirim** booking, tidak bisa membaca data booking milik orang lain.
+
+### 👥 2. Sistem Role Staff — Admin & Driver (`/settings?tab=staff`)
+- Login sekarang punya pilihan peran: **Admin** (akses penuh) atau **Driver** (akses terbatas).
+- Admin bisa membuat, mengedit, dan menghapus akun staff dari **Settings → Akun Staff**.
+- Batasan akses akun **Driver**:
+  | Halaman | Akses Driver |
+  |---|---|
+  | Transaksi | Bisa tambah baru; tidak bisa edit/hapus/tandai lunas |
+  | Booking Confirmation | Lihat saja |
+  | Tracking Sewa & Ketersediaan | Lihat saja |
+  | Keuangan | Kelola pengeluaran penuh; pemasukan hanya bisa dilihat |
+  | Kontrak | Bisa membuat & melihat laporan |
+  | Data Motor, Customer, Laporan, Pengaturan, Maintenance, Galeri | Tidak dapat diakses (otomatis dialihkan) |
+- Proteksi berlapis: selain disembunyikan di UI, setiap endpoint API terkait juga divalidasi ulang di server (`requireAdmin()` di `src/lib/apiAuth.js`) dan proxy Next.js (`src/proxy.js`) memblokir akses langsung lewat URL.
+
+### ✍️ 3. Kontrak Sewa Digital — Tanda Tangan & Foto (`/contracts`, `/contracts/new`)
+- Form kontrak berisi data diri customer (nama, no. KTP/Paspor, telepon, alamat), unit motor, dan tanggal sewa.
+- **Ambil foto langsung dari HP**: foto passport/KTP dan foto customer bersama motor yang disewa.
+- **Tanda tangan digital di layar** (kanvas HTML5, bisa pakai jari di HP atau mouse di desktop) — tidak pakai library eksternal.
+- Bisa dibuka langsung dari baris Transaksi (tombol ungu ✍️) untuk otomatis mengisi data customer & motor dari transaksi terkait.
+- **Laporan Kontrak** menampilkan semua kontrak yang sudah ditandatangani lengkap dengan foto & tanda tangan, bisa diakses Admin maupun Driver.
+
+---
+
 ## 🔒 ASPEK KEAMANAN (SECURITY POSTURE)
 
 - **Supabase Auth Guard**: Rute manajemen terlindungi oleh pengecekan sesi server `supabase.auth.getUser()`. User tanpa login otomatis di-redirect ke `/login`.
-- **API Route Protection**: Semua endpoint `/api/*` (vehicles, transactions, expenses) wajib lolos guard `requireAuth()` (`src/lib/apiAuth.js`). Request tanpa sesi login valid ditolak dengan **HTTP 401** — wajib karena route memakai service role (bypass RLS).
+- **Role-Based Access Control (Admin/Driver)**: Selain login, setiap user punya role di tabel `staff_profiles`. Endpoint sensitif (edit/hapus transaksi & booking, kelola akun staff) wajib lolos guard `requireAdmin()`, sementara `src/proxy.js` mencegah akun Driver membuka halaman admin-only lewat URL langsung.
+- **API Route Protection**: Semua endpoint `/api/*` (vehicles, transactions, expenses, bookings, contracts, staff) wajib lolos guard `requireAuth()` / `requireAdmin()` (`src/lib/apiAuth.js`). Request tanpa sesi login valid ditolak dengan **HTTP 401** — wajib karena route memakai service role (bypass RLS).
 - **HTTP Security Headers**: Ditambahkan pada level Next.js & Vercel edge:
   - `X-Frame-Options: SAMEORIGIN` (Proteksi Clickjacking & iframe embedding ilegal).
   - `X-Content-Type-Options: nosniff` (Proteksi MIME-type sniffing).
@@ -98,7 +133,7 @@ Panel kendali khusus pengelola rental yang dilindungi oleh autentikasi **Supabas
 
 ## 🛠️ STRUKTUR DATABASE SUPABASE (`schema.sql`)
 
-Seluruh skema database tersimpan pada file **`supabase/schema.sql`** (Master Schema v5) yang mencakup tabel `vehicles`, `transactions`, `expenses`, index performa, serta aturan **Row Level Security (RLS)**.
+Seluruh skema database tersimpan pada file **`supabase/schema.sql`** (Master Schema v5) yang mencakup tabel `vehicles`, `transactions`, `expenses`, `bookings`, `staff_profiles`, `contracts`, index performa, serta aturan **Row Level Security (RLS)**.
 
 ---
 
