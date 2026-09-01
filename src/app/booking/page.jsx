@@ -15,6 +15,13 @@ const OWNER_NAME = 'Demo Rental Preview';
 const OWNER_ADDRESS = 'Sample Address, Bali, Indonesia';
 const OWNER_LOGO = '/images/logoCompany.png';
 
+const PAYMENT_METHOD_META = {
+  cash:     { label: 'Cash', icon: 'fa-solid fa-money-bill-wave' },
+  transfer: { label: 'Bank Transfer', icon: 'fa-solid fa-building-columns' },
+  qris:     { label: 'QRIS', icon: 'fa-solid fa-qrcode' },
+  card:     { label: 'Card', icon: 'fa-solid fa-credit-card' },
+};
+
 function formatRupiah(amount) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount || 0);
 }
@@ -121,7 +128,7 @@ function BookingPageInner() {
   const [vehicle, setVehicle] = useState(null);
   const [loadingVehicle, setLoadingVehicle] = useState(true);
   const [step, setStep] = useState('form');
-  const [form, setForm] = useState({ name: '', phone: '', address: '', fulfillment: 'pickup' });
+  const [form, setForm] = useState({ name: '', phone: '', address: '', fulfillment: 'pickup', payment_method: 'cash' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [confirmedBooking, setConfirmedBooking] = useState(null);
@@ -173,6 +180,7 @@ function BookingPageInner() {
       customer_phone: form.phone.trim(),
       customer_address: form.address.trim() || null,
       fulfillment_method: form.fulfillment,
+      payment_method: form.payment_method,
       start_date: startDate,
       end_date: endDate,
       duration_days: days,
@@ -208,8 +216,10 @@ function BookingPageInner() {
     const methodLabel = b.fulfillment_method === 'delivery'
       ? `Delivery ke alamat: ${b.customer_address || '-'}`
       : 'Ambil sendiri di toko (Pererenan / Canggu)';
+    const paymentLabel = PAYMENT_METHOD_META[b.payment_method]?.label || 'Cash';
+    const paymentNote = b.payment_method === 'card' ? ' (bawa mesin EDC)' : '';
 
-    const msg = `🔔 *NEW BOOKING CONFIRMATION* — ${OWNER_NAME}\n\n👤 *Nama:* ${b.customer_name}\n📞 *Telepon:* ${b.customer_phone}\n🏍️ *Motor:* ${b.vehicle_name}\n📅 *Tanggal:* ${formatEnDate(b.start_date)} - ${formatEnDate(b.end_date)} (${b.duration_days} hari)\n📦 *Metode:* ${methodLabel}\n💰 *Estimasi Harga:* ${formatRupiah(b.estimated_price)}\n\n✅ Booking ini sudah otomatis tercatat di Admin Panel (menu Booking Confirmation).`;
+    const msg = `🔔 *NEW BOOKING CONFIRMATION* — ${OWNER_NAME}\n\n👤 *Nama:* ${b.customer_name}\n📞 *Telepon:* ${b.customer_phone}\n🏍️ *Motor:* ${b.vehicle_name}\n📅 *Tanggal:* ${formatEnDate(b.start_date)} - ${formatEnDate(b.end_date)} (${b.duration_days} hari)\n📦 *Metode:* ${methodLabel}\n💳 *Pembayaran:* ${paymentLabel}${paymentNote}\n💰 *Estimasi Harga:* ${formatRupiah(b.estimated_price)}\n\n✅ Booking ini sudah otomatis tercatat di Admin Panel (menu Booking Confirmation).`;
 
     const gateway = getWaGatewayConfig();
     if (gateway.enabled) {
@@ -294,7 +304,7 @@ function BookingPageInner() {
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
                       {[
-                        { key: 'pickup', label: 'Ambil di Toko', icon: 'fa-solid fa-store' },
+                        { key: 'pickup', label: 'Self Pickup', icon: 'fa-solid fa-store' },
                         { key: 'delivery', label: 'Delivery', icon: 'fa-solid fa-truck-fast' },
                       ].map(opt => (
                         <button
@@ -314,6 +324,42 @@ function BookingPageInner() {
                         </button>
                       ))}
                     </div>
+                  </div>
+
+                  <div style={{ marginBottom: '14px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
+                      Payment Method
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '10px' }}>
+                      {[
+                        { key: 'cash', label: 'Cash', icon: 'fa-solid fa-money-bill-wave' },
+                        { key: 'transfer', label: 'Bank Transfer', icon: 'fa-solid fa-building-columns' },
+                        { key: 'qris', label: 'QRIS', icon: 'fa-solid fa-qrcode' },
+                        { key: 'card', label: 'Card', icon: 'fa-solid fa-credit-card' },
+                      ].map(opt => (
+                        <button
+                          type="button"
+                          key={opt.key}
+                          onClick={() => handleChange('payment_method', opt.key)}
+                          style={{
+                            padding: '12px', borderRadius: 'var(--radius-md)', cursor: 'pointer',
+                            border: form.payment_method === opt.key ? '2px solid var(--sharp-accent)' : '1px solid var(--sharp-line)',
+                            background: form.payment_method === opt.key ? 'rgba(184, 112, 63, 0.08)' : 'var(--sharp-surface)',
+                            color: 'var(--sharp-ink)', fontSize: '12px', fontWeight: 700,
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                          }}
+                        >
+                          <i className={opt.icon} style={{ fontSize: '16px', color: form.payment_method === opt.key ? 'var(--sharp-accent)' : 'var(--sharp-muted)' }}></i>
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                    {form.payment_method === 'card' && (
+                      <div style={{ marginTop: '10px', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.25)', fontSize: '12px', color: 'var(--sharp-ink)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                        <i className="fa-solid fa-circle-info" style={{ color: '#3B82F6', marginTop: '2px' }}></i>
+                        <span>Our driver will bring a portable card machine (EDC) with them for card payment.</span>
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ marginBottom: '18px' }}>
@@ -363,12 +409,13 @@ function BookingPageInner() {
                 <div style={{ background: 'var(--sharp-bg)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-md)', padding: '16px', textAlign: 'left', fontSize: '12.5px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div><i className="fa-solid fa-motorcycle" style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {confirmedBooking.vehicle_name}</div>
                   <div><i className="fa-solid fa-calendar-days" style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {formatEnDate(confirmedBooking.start_date)} — {formatEnDate(confirmedBooking.end_date)} ({confirmedBooking.duration_days} day{confirmedBooking.duration_days > 1 ? 's' : ''})</div>
-                  <div><i className={`fa-solid ${confirmedBooking.fulfillment_method === 'delivery' ? 'fa-truck-fast' : 'fa-store'}`} style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {confirmedBooking.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup at store'}</div>
+                  <div><i className={`fa-solid ${confirmedBooking.fulfillment_method === 'delivery' ? 'fa-truck-fast' : 'fa-store'}`} style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {confirmedBooking.fulfillment_method === 'delivery' ? 'Delivery' : 'Self Pickup'}</div>
+                  <div><i className={PAYMENT_METHOD_META[confirmedBooking.payment_method]?.icon || 'fa-solid fa-wallet'} style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {PAYMENT_METHOD_META[confirmedBooking.payment_method]?.label || 'Cash'}{confirmedBooking.payment_method === 'card' && <span style={{ color: 'var(--sharp-muted)' }}> — driver will bring an EDC machine</span>}</div>
                   <div><i className="fa-solid fa-wallet" style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> Est. {formatRupiah(confirmedBooking.estimated_price)}</div>
                 </div>
 
                 <SharpButton variant="whatsapp" block icon="fa-brands fa-whatsapp" onClick={notifyOwnerViaWhatsApp}>
-                  Kirim ke WhatsApp
+                  Notify via WhatsApp
                 </SharpButton>
                 <div style={{ marginTop: '14px' }}>
                   <SharpButton href="/fleet" variant="outline" block>

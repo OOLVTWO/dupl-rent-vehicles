@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 
 const VALID_STATUS = ['pending', 'confirmed', 'cancelled', 'completed'];
 const VALID_FULFILLMENT = ['pickup', 'delivery'];
+const VALID_PAYMENT = ['card', 'transfer', 'cash', 'qris'];
 
 // PATCH /api/bookings/[id] — ubah status dan/atau detail booking (admin only;
 // staff/driver hanya boleh MELIHAT booking, tidak boleh mengedit)
@@ -29,6 +30,12 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: `Metode tidak valid: ${body.fulfillment_method}` }, { status: 400 });
     }
     updateData.fulfillment_method = body.fulfillment_method;
+  }
+  if ('payment_method' in body) {
+    if (!VALID_PAYMENT.includes(body.payment_method)) {
+      return NextResponse.json({ error: `Metode pembayaran tidak valid: ${body.payment_method}` }, { status: 400 });
+    }
+    updateData.payment_method = body.payment_method;
   }
   if ('customer_name' in body) {
     const name = String(body.customer_name || '').trim();

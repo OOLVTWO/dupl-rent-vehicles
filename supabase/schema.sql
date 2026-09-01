@@ -189,6 +189,8 @@ CREATE TABLE IF NOT EXISTS bookings (
   customer_address TEXT,
   fulfillment_method VARCHAR(20) NOT NULL DEFAULT 'pickup'
     CHECK (fulfillment_method IN ('pickup', 'delivery')),
+  payment_method VARCHAR(20) NOT NULL DEFAULT 'cash'
+    CHECK (payment_method IN ('card', 'transfer', 'cash', 'qris')),
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
   duration_days INTEGER DEFAULT 1,

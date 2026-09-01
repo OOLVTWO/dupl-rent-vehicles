@@ -6,6 +6,13 @@ import { formatRupiah } from '@/lib/finance';
 import { getWhatsAppShareUrl } from '@/lib/countryCodes';
 import { useRole } from '@/lib/RoleContext';
 
+const PAYMENT_META = {
+  cash:     { label: 'Cash', icon: 'fa-solid fa-money-bill-wave' },
+  transfer: { label: 'Transfer', icon: 'fa-solid fa-building-columns' },
+  qris:     { label: 'QRIS', icon: 'fa-solid fa-qrcode' },
+  card:     { label: 'Card (EDC)', icon: 'fa-solid fa-credit-card' },
+};
+
 const STATUS_META = {
   pending:   { label: 'Pending',   color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.15)' },
   confirmed: { label: 'Confirmed', color: '#22C55E', bg: 'rgba(34, 197, 94, 0.15)' },
@@ -71,6 +78,7 @@ function EditBookingModal({ booking, onClose, onSaved }) {
     customer_phone: booking.customer_phone || '',
     customer_address: booking.customer_address || '',
     fulfillment_method: booking.fulfillment_method || 'pickup',
+    payment_method: booking.payment_method || 'cash',
     start_date: booking.start_date || '',
     end_date: booking.end_date || '',
     estimated_price: booking.estimated_price || 0,
@@ -163,6 +171,20 @@ function EditBookingModal({ booking, onClose, onSaved }) {
             >
               <option value="pickup">Ambil di Toko</option>
               <option value="delivery">Delivery</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Metode Pembayaran</label>
+            <select
+              className="form-control"
+              value={form.payment_method}
+              onChange={(e) => handleChange('payment_method', e.target.value)}
+            >
+              <option value="cash">Cash</option>
+              <option value="transfer">Bank Transfer</option>
+              <option value="qris">QRIS</option>
+              <option value="card">Card (bawa EDC)</option>
             </select>
           </div>
 
@@ -367,11 +389,17 @@ function BookingsPageInner() {
                         {formatDate(b.start_date)} — {formatDate(b.end_date)}
                         <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{b.duration_days} hari</div>
                       </td>
-                      <td data-label="Metode">
-                        <span className="badge" style={{ background: b.fulfillment_method === 'delivery' ? 'rgba(59,130,246,0.15)' : 'rgba(148,163,184,0.2)', color: b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8', border: `1px solid ${b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8'}` }}>
-                          <i className={`fa-solid ${b.fulfillment_method === 'delivery' ? 'fa-truck-fast' : 'fa-store'}`} style={{ marginRight: '4px' }}></i>
-                          {b.fulfillment_method === 'delivery' ? 'Delivery' : 'Ambil di Toko'}
-                        </span>
+                      <td data-label="Metode" data-label-align="left">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <span className="badge" style={{ background: b.fulfillment_method === 'delivery' ? 'rgba(59,130,246,0.15)' : 'rgba(148,163,184,0.2)', color: b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8', border: `1px solid ${b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8'}` }}>
+                            <i className={`fa-solid ${b.fulfillment_method === 'delivery' ? 'fa-truck-fast' : 'fa-store'}`} style={{ marginRight: '4px' }}></i>
+                            {b.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup'}
+                          </span>
+                          <span className="badge badge-muted">
+                            <i className={PAYMENT_META[b.payment_method]?.icon || 'fa-solid fa-money-bill-wave'} style={{ marginRight: '4px' }}></i>
+                            {PAYMENT_META[b.payment_method]?.label || 'Cash'}
+                          </span>
+                        </div>
                       </td>
                       <td data-label="Estimasi" style={{ fontWeight: 800, fontSize: '13px' }}>{formatRupiah(b.estimated_price)}</td>
                       <td data-label="Status">
