@@ -28,12 +28,188 @@ function formatDate(d) {
   }
 }
 
+function ActionBtn({ active, color, icon, title, onClick, disabled }) {
+  return (
+    <button
+      type="button"
+      className="btn btn-sm"
+      disabled={disabled}
+      onClick={onClick}
+      title={title}
+      style={{
+        background: active ? color : 'transparent',
+        color: active ? '#fff' : color,
+        border: `1px solid ${color}`,
+        width: '30px', height: '30px', padding: 0,
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      }}
+    >
+      <i className={icon}></i>
+    </button>
+  );
+}
+
+function EditBookingModal({ booking, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    customer_name: booking.customer_name || '',
+    customer_phone: booking.customer_phone || '',
+    customer_address: booking.customer_address || '',
+    fulfillment_method: booking.fulfillment_method || 'pickup',
+    start_date: booking.start_date || '',
+    end_date: booking.end_date || '',
+    estimated_price: booking.estimated_price || 0,
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!form.customer_name.trim() || !form.customer_phone.trim()) {
+      setError('Nama dan nomor telepon wajib diisi.');
+      return;
+    }
+    if (!form.start_date || !form.end_date) {
+      setError('Tanggal mulai dan selesai wajib diisi.');
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/bookings/${booking.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || 'Gagal menyimpan perubahan.');
+        setSaving(false);
+        return;
+      }
+      onSaved(data);
+    } catch {
+      setError('Gagal terhubung ke server.');
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <div className="modal-title">Edit Booking</div>
+          <div className="modal-subtitle">{booking.vehicle_name}</div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+
+        <form onSubmit={handleSave}>
+          <div className="form-group">
+            <label className="form-label">Nama Customer</label>
+            <input
+              type="text"
+              className="form-control"
+              value={form.customer_name}
+              onChange={(e) => handleChange('customer_name', e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Nomor Telepon</label>
+            <input
+              type="tel"
+              className="form-control"
+              value={form.customer_phone}
+              onChange={(e) => handleChange('customer_phone', e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Alamat</label>
+            <textarea
+              className="form-control"
+              rows={2}
+              value={form.customer_address}
+              onChange={(e) => handleChange('customer_address', e.target.value)}
+              style={{ resize: 'vertical' }}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Metode</label>
+            <select
+              className="form-control"
+              value={form.fulfillment_method}
+              onChange={(e) => handleChange('fulfillment_method', e.target.value)}
+            >
+              <option value="pickup">Ambil di Toko</option>
+              <option value="delivery">Delivery</option>
+            </select>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="form-group">
+              <label className="form-label">Tanggal Mulai</label>
+              <input
+                type="date"
+                className="form-control"
+                value={form.start_date}
+                onChange={(e) => handleChange('start_date', e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Tanggal Selesai</label>
+              <input
+                type="date"
+                className="form-control"
+                min={form.start_date}
+                value={form.end_date}
+                onChange={(e) => handleChange('end_date', e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Estimasi Harga (Rp)</label>
+            <input
+              type="number"
+              min="0"
+              className="form-control"
+              value={form.estimated_price}
+              onChange={(e) => handleChange('estimated_price', e.target.value)}
+            />
+          </div>
+
+          {error && (
+            <div className="alert alert-danger" style={{ marginBottom: '12px' }}>
+              <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '6px' }}></i>{error}
+            </div>
+          )}
+
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" onClick={onClose}>Batal</button>
+            <button type="submit" className="btn btn-primary" disabled={saving}>
+              {saving ? <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>Menyimpan...</> : 'Simpan Perubahan'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function BookingsPage() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('all');
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState('');
+  const [editingBooking, setEditingBooking] = useState(null);
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
@@ -89,6 +265,11 @@ export default function BookingsPage() {
     setBusyId(null);
   };
 
+  const handleEditSaved = (updated) => {
+    setBookings(prev => prev.map(b => (b.id === updated.id ? updated : b)));
+    setEditingBooking(null);
+  };
+
   const filtered = tab === 'all' ? bookings : bookings.filter(b => b.status === tab);
   const counts = bookings.reduce((acc, b) => {
     acc[b.status] = (acc[b.status] || 0) + 1;
@@ -101,7 +282,7 @@ export default function BookingsPage() {
         <div>
           <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>Booking Confirmation</h1>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
-            Booking masuk dari form &quot;Book via WhatsApp&quot; di website publik (/fleet)
+            Booking masuk dari form &quot;Book Now&quot; di website publik (/fleet)
           </p>
         </div>
         <button className="btn btn-secondary" onClick={fetchBookings} disabled={loading}>
@@ -155,6 +336,7 @@ export default function BookingsPage() {
                   <th>Metode</th>
                   <th>Estimasi</th>
                   <th>Status</th>
+                  <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -195,30 +377,52 @@ export default function BookingsPage() {
                       </td>
                       <td style={{ fontWeight: 800, fontSize: '13px' }}>{formatRupiah(b.estimated_price)}</td>
                       <td>
-                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-                          <select
-                            value={b.status}
+                        <span className="badge" style={{ background: meta.bg, color: meta.color, border: `1px solid ${meta.color}` }}>
+                          {meta.label}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                          <ActionBtn
+                            active={b.status === 'confirmed'}
+                            color="#22C55E"
+                            icon="fa-solid fa-check"
+                            title="Confirm"
                             disabled={busyId === b.id}
-                            onChange={(e) => updateStatus(b.id, e.target.value)}
-                            className="form-control"
-                            style={{
-                              width: 'auto', padding: '6px 10px', fontSize: '12px', fontWeight: 700,
-                              color: meta.color, borderColor: meta.color, background: meta.bg,
-                            }}
-                          >
-                            {Object.entries(STATUS_META).map(([key, m]) => (
-                              <option key={key} value={key}>{m.label}</option>
-                            ))}
-                          </select>
-                          <button
-                            className="btn btn-sm"
+                            onClick={() => updateStatus(b.id, 'confirmed')}
+                          />
+                          <ActionBtn
+                            active={b.status === 'cancelled'}
+                            color="#EF4444"
+                            icon="fa-solid fa-xmark"
+                            title="Tolak / Cancel"
+                            disabled={busyId === b.id}
+                            onClick={() => updateStatus(b.id, 'cancelled')}
+                          />
+                          <ActionBtn
+                            active={b.status === 'completed'}
+                            color="#3B82F6"
+                            icon="fa-solid fa-flag-checkered"
+                            title="Selesai"
+                            disabled={busyId === b.id}
+                            onClick={() => updateStatus(b.id, 'completed')}
+                          />
+                          <ActionBtn
+                            active={false}
+                            color="#94A3B8"
+                            icon="fa-solid fa-pen"
+                            title="Edit nama / tanggal / detail booking"
+                            disabled={busyId === b.id}
+                            onClick={() => setEditingBooking(b)}
+                          />
+                          <ActionBtn
+                            active={false}
+                            color="#64748B"
+                            icon="fa-solid fa-trash"
+                            title="Hapus"
                             disabled={busyId === b.id}
                             onClick={() => deleteBooking(b.id)}
-                            style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--bg-border)' }}
-                            title="Hapus"
-                          >
-                            <i className="fa-solid fa-trash"></i>
-                          </button>
+                          />
                         </div>
                       </td>
                     </tr>
@@ -229,6 +433,14 @@ export default function BookingsPage() {
           )}
         </div>
       </div>
+
+      {editingBooking && (
+        <EditBookingModal
+          booking={editingBooking}
+          onClose={() => setEditingBooking(null)}
+          onSaved={handleEditSaved}
+        />
+      )}
     </div>
   );
 }

@@ -3,8 +3,9 @@ import { requireAuth } from '@/lib/apiAuth';
 import { NextResponse } from 'next/server';
 
 const VALID_STATUS = ['pending', 'confirmed', 'cancelled', 'completed'];
+const VALID_FULFILLMENT = ['pickup', 'delivery'];
 
-// PATCH /api/bookings/[id] — ubah status booking (mis. Pending -> Confirmed)
+// PATCH /api/bookings/[id] — ubah status dan/atau detail booking (nama, tanggal, dll)
 export async function PATCH(request, { params }) {
   const authError = await requireAuth(request);
   if (authError) return authError;
@@ -15,14 +16,54 @@ export async function PATCH(request, { params }) {
   if (!body) return NextResponse.json({ error: 'Body request bukan JSON valid.' }, { status: 400 });
 
   const updateData = {};
+
   if ('status' in body) {
     if (!VALID_STATUS.includes(body.status)) {
       return NextResponse.json({ error: `Status tidak valid: ${body.status}` }, { status: 400 });
     }
     updateData.status = body.status;
   }
+  if ('fulfillment_method' in body) {
+    if (!VALID_FULFILLMENT.includes(body.fulfillment_method)) {
+      return NextResponse.json({ error: `Metode tidak valid: ${body.fulfillment_method}` }, { status: 400 });
+    }
+    updateData.fulfillment_method = body.fulfillment_method;
+  }
+  if ('customer_name' in body) {
+    const name = String(body.customer_name || '').trim();
+    if (!name) return NextResponse.json({ error: 'Nama customer wajib diisi.' }, { status: 400 });
+    updateData.customer_name = name;
+  }
+  if ('customer_phone' in body) {
+    const phone = String(body.customer_phone || '').trim();
+    if (!phone) return NextResponse.json({ error: 'Nomor telepon wajib diisi.' }, { status: 400 });
+    updateData.customer_phone = phone;
+  }
+  if ('customer_address' in body) updateData.customer_address = body.customer_address || null;
   if ('notes' in body) updateData.notes = body.notes;
   if ('wa_notified_at' in body) updateData.wa_notified_at = body.wa_notified_at;
+  if ('estimated_price' in body) {
+    const price = Number(body.estimated_price);
+    updateData.estimated_price = Number.isFinite(price) && price >= 0 ? price : 0;
+  }
+
+  // Tanggal — kalau salah satu diubah, hitung ulang duration_days otomatis.
+  if ('start_date' in body || 'end_date' in body) {
+    const startDate = body.start_date;
+    const endDate = body.end_date;
+    if (!startDate || !endDate) {
+      return NextResponse.json({ error: 'Tanggal mulai dan selesai wajib diisi.' }, { status: 400 });
+    }
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) {
+      return NextResponse.json({ error: 'Rentang tanggal tidak valid.' }, { status: 400 });
+    }
+    updateData.start_date = startDate;
+    updateData.end_date = endDate;
+    updateData.duration_days = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+  }
+
   updateData.updated_at = new Date().toISOString();
 
   const { data, error } = await supabase
