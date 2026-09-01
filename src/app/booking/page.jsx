@@ -408,12 +408,12 @@ function BookingPageInner() {
                         type="button"
                         onClick={() => setShowMapModal(true)}
                         style={{
-                          display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '12px',
-                          background: 'var(--sharp-surface)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-full, 999px)',
-                          padding: '6px 12px', fontSize: '11.5px', fontWeight: 700, color: 'var(--sharp-accent)', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '14px',
+                          width: '100%', background: 'var(--sharp-accent)', border: 'none', borderRadius: 'var(--radius-md)',
+                          padding: '13px 16px', fontSize: '14px', fontWeight: 800, color: '#fff', cursor: 'pointer',
                         }}
                       >
-                        <i className="fa-solid fa-map-location-dot"></i> View zone map
+                        <i className="fa-solid fa-map-location-dot" style={{ fontSize: '16px' }}></i> View Zone Map
                       </button>
                       {deliveryZones.length === 0 ? (
                         <p style={{ fontSize: '12px', color: 'var(--sharp-muted)' }}>Loading areas...</p>
