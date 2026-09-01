@@ -574,13 +574,63 @@ export default function SharpSquareBusinessWebsitePage() {
             </div>
           </div>
         </div>
+      </section>
 
-        {/* ── FLOATING SEARCH / BOOKING BAR — overlaps the hero's bottom edge ── */}
+      {/* ── HOW IT WORKS — 3-STEP BOOKING FLOW ── */}
+      <section style={{ padding: '64px 24px', background: 'var(--sharp-surface-2)', borderTop: '1px solid var(--sharp-line)', borderBottom: '1px solid var(--sharp-line)' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          <SectionHeading
+            eyebrow="How It Works"
+            title="Booking In 3 Simple Steps"
+            icon="fa-solid fa-route"
+            style={{ marginBottom: '40px' }}
+          />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+            {[
+              { icon: 'fa-solid fa-calendar-check', title: 'Pick Your Dates', desc: 'Select pickup and return dates — daily, weekly, and monthly rates auto-calculated.' },
+              { icon: 'fa-solid fa-motorcycle', title: 'Choose Your Scooter', desc: 'Browse available scooters for your dates and pick the model that fits your trip.' },
+              { icon: 'fa-brands fa-whatsapp', title: 'Book Via WhatsApp', desc: 'Confirm instantly over WhatsApp. Pay on pickup, no deposit surprises.' },
+            ].map((step, idx) => (
+              <div key={idx} className="sharp-card" style={{ padding: '32px 24px', textAlign: 'center' }}>
+                <div style={{
+                  width: '64px', height: '64px', borderRadius: 'var(--radius-full)',
+                  background: 'var(--sharp-surface)', border: '1px solid var(--sharp-line-strong)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 18px auto', fontSize: '24px', color: 'var(--sharp-accent)',
+                }}>
+                  <i className={step.icon}></i>
+                </div>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sharp-accent)', marginBottom: '6px' }}>STEP {idx + 1}</div>
+                <div style={{ fontSize: '17px', fontWeight: 700, color: 'var(--sharp-ink)', marginBottom: '8px' }}>{step.title}</div>
+                <div style={{ fontSize: '13.5px', color: 'var(--sharp-muted)', lineHeight: 1.6 }}>{step.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── STAT ROW ── */}
+      <section style={{ padding: '48px 24px 0 24px', background: 'var(--sharp-surface)' }}>
+        <div style={{ maxWidth: '1180px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+          <StatCard value={animatedRating} valueColor="var(--sharp-accent)" icon="fa-solid fa-star" iconColor="var(--sharp-star)" label="Google Rating" sublabel="5-Star Verified Score" />
+          <StatCard value={animatedReviews} valueColor="var(--sharp-success)" label="Google Reviews" sublabel="Real Happy Customers" />
+          <StatCard value={`${animatedSatisfaction}%`} valueColor="var(--sharp-info)" label="Customer Satisfaction" sublabel="Best Service Guarantee" />
+          <StatCard value={`${animatedFleet}+`} valueColor="var(--sharp-warning)" label="Clean Scooters" sublabel="Regularly Serviced" />
+        </div>
+      </section>
+
+      {/* ── SCHEDULE YOUR RENTAL DATES ── */}
+      <section style={{ padding: '48px 24px', background: 'var(--sharp-surface)' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto 28px auto', textAlign: 'center' }}>
+          <SectionHeading
+            eyebrow="Schedule Your Rental"
+            title="Pick Your Dates"
+            icon="fa-solid fa-calendar-days"
+          />
+        </div>
         <div className="sharp-card hero-search-bar" style={{
           maxWidth: '1180px',
-          margin: '44px auto -100px auto',
-          position: 'relative',
-          zIndex: 10,
+          margin: '0 auto',
           padding: '22px 28px',
           boxShadow: 'var(--sharp-shadow-lg)',
         }}>
@@ -618,130 +668,8 @@ export default function SharpSquareBusinessWebsitePage() {
           </SharpButton>
         </div>
 
-        {/* ── STAT ROW ── */}
-        <div style={{ maxWidth: '1180px', margin: '148px auto 0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
-          <StatCard value={animatedRating} valueColor="var(--sharp-accent)" icon="fa-solid fa-star" iconColor="var(--sharp-star)" label="Google Rating" sublabel="5-Star Verified Score" />
-          <StatCard value={animatedReviews} valueColor="var(--sharp-success)" label="Google Reviews" sublabel="Real Happy Customers" />
-          <StatCard value={`${animatedSatisfaction}%`} valueColor="var(--sharp-info)" label="Customer Satisfaction" sublabel="Best Service Guarantee" />
-          <StatCard value={`${animatedFleet}+`} valueColor="var(--sharp-warning)" label="Clean Scooters" sublabel="Regularly Serviced" />
-        </div>
       </section>
 
-      {/* ── HOW IT WORKS — 3-STEP BOOKING FLOW ── */}
-      <section style={{ padding: '64px 24px', background: 'var(--sharp-surface-2)', borderTop: '1px solid var(--sharp-line)', borderBottom: '1px solid var(--sharp-line)' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-          <SectionHeading
-            eyebrow="How It Works"
-            title="Booking In 3 Simple Steps"
-            icon="fa-solid fa-route"
-            style={{ marginBottom: '40px' }}
-          />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
-            {[
-              { icon: 'fa-solid fa-calendar-check', title: 'Pick Your Dates', desc: 'Select pickup and return dates — daily, weekly, and monthly rates auto-calculated.' },
-              { icon: 'fa-solid fa-motorcycle', title: 'Choose Your Scooter', desc: 'Browse available scooters for your dates and pick the model that fits your trip.' },
-              { icon: 'fa-brands fa-whatsapp', title: 'Book Via WhatsApp', desc: 'Confirm instantly over WhatsApp. Pay on pickup, no deposit surprises.' },
-            ].map((step, idx) => (
-              <div key={idx} className="sharp-card" style={{ padding: '32px 24px', textAlign: 'center' }}>
-                <div style={{
-                  width: '64px', height: '64px', borderRadius: 'var(--radius-full)',
-                  background: 'var(--sharp-surface)', border: '1px solid var(--sharp-line-strong)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  margin: '0 auto 18px auto', fontSize: '24px', color: 'var(--sharp-accent)',
-                }}>
-                  <i className={step.icon}></i>
-                </div>
-                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sharp-accent)', marginBottom: '6px' }}>STEP {idx + 1}</div>
-                <div style={{ fontSize: '17px', fontWeight: 700, color: 'var(--sharp-ink)', marginBottom: '8px' }}>{step.title}</div>
-                <div style={{ fontSize: '13.5px', color: 'var(--sharp-muted)', lineHeight: 1.6 }}>{step.desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── BRANDS WE CARRY — looping trust strip ── */}
-      <section style={{ padding: '28px 0', background: 'var(--sharp-surface)', borderBottom: '1px solid var(--sharp-line)', overflow: 'hidden', position: 'relative' }}>
-        <div style={{ textAlign: 'center', marginBottom: '14px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sharp-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Brands We Carry
-          </span>
-        </div>
-
-        <div style={{ position: 'absolute', left: 0, top: '32px', bottom: 0, width: '80px', background: 'linear-gradient(to right, var(--sharp-surface), transparent)', zIndex: 2, pointerEvents: 'none' }}></div>
-        <div style={{ position: 'absolute', right: 0, top: '32px', bottom: 0, width: '80px', background: 'linear-gradient(to left, var(--sharp-surface), transparent)', zIndex: 2, pointerEvents: 'none' }}></div>
-
-        <div className="marquee-track" style={{ alignItems: 'center' }}>
-          {[...Array(2)].flatMap(() => [
-            { name: 'Honda', available: true },
-            { name: 'Yamaha', available: true },
-            { name: 'Suzuki', available: false },
-            { name: 'Kawasaki', available: false },
-            { name: 'Vespa', available: false },
-          ]).map((brand, idx) => (
-            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 32px', flexShrink: 0 }}>
-              <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--sharp-ink-soft)', letterSpacing: '-0.3px', opacity: brand.available ? 0.85 : 0.4, whiteSpace: 'nowrap' }}>
-                {brand.name}
-              </span>
-              {!brand.available && (
-                <span style={{ fontSize: '9px', fontWeight: 800, color: 'var(--sharp-muted)', background: 'var(--sharp-surface-2)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-full)', padding: '2px 8px', textTransform: 'uppercase', letterSpacing: '0.4px', whiteSpace: 'nowrap' }}>
-                  Coming Soon
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── SHARP BENTO GRID CUSTOMER SHOWCASE GALLERY ── */}
-      <section style={{ padding: '52px 24px', maxWidth: '1200px', margin: '0 auto' }}>
-        <SectionHeading
-          eyebrow="Explore Our Fleet & Service"
-          title="Premium Scooter Fleet & Service Gallery"
-          icon="fa-solid fa-images"
-          subtitle="Explore our clean scooters, equipment standards, and professional rental service in Pererenan & Canggu, Bali"
-        />
-
-        {/* CLEAN 6-CARD RESPONSIVE GRID MATRIX (Perfect 3x2 Grid on Desktop) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', width: '100%', boxSizing: 'border-box' }}>
-          {(showAllPhotos ? bentoPhotos : bentoPhotos.slice(0, 6)).map((photo, idx) => (
-            <div
-              key={idx}
-              className="bento-card-sharp"
-              style={{
-                height: '240px',
-                width: '100%',
-                overflow: 'hidden',
-                boxSizing: 'border-box'
-              }}
-            >
-              <img src={photo.url} alt={photo.title} className="bento-img" onError={handleImgError} />
-              <div className="bento-overlay" style={{ boxSizing: 'border-box', padding: '16px', width: '100%' }}>
-                <span style={{ fontSize: '10px', background: 'var(--sharp-ink)', color: 'var(--sharp-bg)', padding: '4px 10px', fontWeight: 800, width: 'fit-content', marginBottom: '6px', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                  <i className={photo.icon} style={{ color: 'var(--sharp-accent)', fontSize: '11px' }}></i>
-                  <span>{photo.tag}</span>
-                </span>
-                <div style={{ fontSize: '15px', fontWeight: 900, lineHeight: 1.2, wordBreak: 'break-word' }}>{photo.title}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* SEE MORE / SHOW LESS BUTTON (Show More triggers when > 6 photos) */}
-        {bentoPhotos.length > 6 && (
-          <div style={{ textAlign: 'center', marginTop: '24px' }}>
-            <SharpButton
-              variant="dark"
-              onClick={() => setShowAllPhotos(!showAllPhotos)}
-              iconTrailing={`fa-solid ${showAllPhotos ? 'fa-chevron-up' : 'fa-chevron-down'}`}
-            >
-              {showAllPhotos ? 'Show Less Photos' : `See More Photos (${bentoPhotos.length - 6} More)`}
-            </SharpButton>
-          </div>
-        )}
-      </section>
-
-      {/* ── SHARP SCOOTER CATALOG GRID ── */}
       <main id="fleet-grid" style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px 24px 60px 24px', scrollMarginTop: '90px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
           <div>
@@ -947,6 +875,89 @@ export default function SharpSquareBusinessWebsitePage() {
           </>
         )}
       </main>
+
+      {/* ── BRANDS WE CARRY — looping trust strip ── */}
+      <section style={{ padding: '28px 0', background: 'var(--sharp-surface)', borderBottom: '1px solid var(--sharp-line)', overflow: 'hidden', position: 'relative' }}>
+        <div style={{ textAlign: 'center', marginBottom: '14px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sharp-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            Brands We Carry
+          </span>
+        </div>
+
+        <div style={{ position: 'absolute', left: 0, top: '32px', bottom: 0, width: '80px', background: 'linear-gradient(to right, var(--sharp-surface), transparent)', zIndex: 2, pointerEvents: 'none' }}></div>
+        <div style={{ position: 'absolute', right: 0, top: '32px', bottom: 0, width: '80px', background: 'linear-gradient(to left, var(--sharp-surface), transparent)', zIndex: 2, pointerEvents: 'none' }}></div>
+
+        <div className="marquee-track" style={{ alignItems: 'center' }}>
+          {[...Array(2)].flatMap(() => [
+            { name: 'Honda', available: true },
+            { name: 'Yamaha', available: true },
+            { name: 'Suzuki', available: false },
+            { name: 'Kawasaki', available: false },
+            { name: 'Vespa', available: false },
+          ]).map((brand, idx) => (
+            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 32px', flexShrink: 0 }}>
+              <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--sharp-ink-soft)', letterSpacing: '-0.3px', opacity: brand.available ? 0.85 : 0.4, whiteSpace: 'nowrap' }}>
+                {brand.name}
+              </span>
+              {!brand.available && (
+                <span style={{ fontSize: '9px', fontWeight: 800, color: 'var(--sharp-muted)', background: 'var(--sharp-surface-2)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-full)', padding: '2px 8px', textTransform: 'uppercase', letterSpacing: '0.4px', whiteSpace: 'nowrap' }}>
+                  Coming Soon
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── SHARP BENTO GRID CUSTOMER SHOWCASE GALLERY ── */}
+      <section style={{ padding: '52px 24px', maxWidth: '1200px', margin: '0 auto' }}>
+        <SectionHeading
+          eyebrow="Explore Our Fleet & Service"
+          title="Premium Scooter Fleet & Service Gallery"
+          icon="fa-solid fa-images"
+          subtitle="Explore our clean scooters, equipment standards, and professional rental service in Pererenan & Canggu, Bali"
+        />
+
+        {/* CLEAN 6-CARD RESPONSIVE GRID MATRIX (Perfect 3x2 Grid on Desktop) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', width: '100%', boxSizing: 'border-box' }}>
+          {(showAllPhotos ? bentoPhotos : bentoPhotos.slice(0, 6)).map((photo, idx) => (
+            <div
+              key={idx}
+              className="bento-card-sharp"
+              style={{
+                height: '240px',
+                width: '100%',
+                overflow: 'hidden',
+                boxSizing: 'border-box'
+              }}
+            >
+              <img src={photo.url} alt={photo.title} className="bento-img" onError={handleImgError} />
+              <div className="bento-overlay" style={{ boxSizing: 'border-box', padding: '16px', width: '100%' }}>
+                <span style={{ fontSize: '10px', background: 'var(--sharp-ink)', color: 'var(--sharp-bg)', padding: '4px 10px', fontWeight: 800, width: 'fit-content', marginBottom: '6px', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <i className={photo.icon} style={{ color: 'var(--sharp-accent)', fontSize: '11px' }}></i>
+                  <span>{photo.tag}</span>
+                </span>
+                <div style={{ fontSize: '15px', fontWeight: 900, lineHeight: 1.2, wordBreak: 'break-word' }}>{photo.title}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* SEE MORE / SHOW LESS BUTTON (Show More triggers when > 6 photos) */}
+        {bentoPhotos.length > 6 && (
+          <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <SharpButton
+              variant="dark"
+              onClick={() => setShowAllPhotos(!showAllPhotos)}
+              iconTrailing={`fa-solid ${showAllPhotos ? 'fa-chevron-up' : 'fa-chevron-down'}`}
+            >
+              {showAllPhotos ? 'Show Less Photos' : `See More Photos (${bentoPhotos.length - 6} More)`}
+            </SharpButton>
+          </div>
+        )}
+      </section>
+
+      {/* ── SHARP SCOOTER CATALOG GRID ── */}
 
       {/* ── FEATURED TESTIMONIAL — large single review with photo ── */}
       <section style={{ padding: '64px 24px', background: 'var(--sharp-surface-2)', borderTop: '1px solid var(--sharp-line)', borderBottom: '1px solid var(--sharp-line)' }}>
