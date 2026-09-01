@@ -1083,7 +1083,7 @@ export default function VehiclesPage() {
 
       <div className="page-header">
         <h2><i className="fa-solid fa-motorcycle" style={{ marginRight: '8px' }}></i> Data Motor</h2>
-        <p>Kelola armada kendaraan rental Boss Rent Pererenan</p>
+        <p>Kelola armada kendaraan rental Demo Rental Preview</p>
       </div>
 
       {/* Current filter indicator — the filter itself is now chosen from the

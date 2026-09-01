@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-// Boss Rent Pererenan — Shared Finance Engine
+// Demo Rental Preview — Shared Finance Engine
 // SATU-SATUNYA sumber kebenaran untuk kalkulasi keuangan.
 // Dipakai oleh: Dashboard, Laporan (Reports), StatCards, Charts.
 //

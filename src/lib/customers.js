@@ -1,5 +1,5 @@
 /**
- * Helper modul data Customer / Client Boss Rent Pererenan
+ * Helper modul data Customer / Client Demo Rental Preview
  * Mendukung Dual-Mode: Supabase `customers` table + Fallback Automatic Aggregation dari `transactions` & localStorage.
  */
 

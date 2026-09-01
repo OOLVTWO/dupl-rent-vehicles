@@ -196,7 +196,7 @@ export default function Sidebar({ user, mobileOpen, onClose }) {
     router.refresh();
   };
 
-  const userEmail = user?.email || 'admin@bossrent.com';
+  const userEmail = user?.email || 'admin@preview.com';
   const userInitial = userEmail.charAt(0).toUpperCase();
 
   return (

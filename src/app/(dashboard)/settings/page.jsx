@@ -108,12 +108,12 @@ export default function SettingsPage() {
 
   // Business & Public Web CMS Settings State
   const [bizForm, setBizForm] = useState({
-    name: 'BOSS RENT PERERENAN',
+    name: 'DEMO RENTAL PREVIEW',
     logoUrl: '/images/logoCompany.png',
     location: 'Jl. Pantai Pererenan No.119, Pererenan, Kec. Mengwi, Kabupaten Badung, Bali 80351',
     phone: '+62 812-3710-9751',
     instagramUrl: 'https://www.instagram.com/bossrentpererenan?igsh=MWFxZzE3eWI2dWlqZA==',
-    instagramHandle: '@bossrentpererenan',
+    instagramHandle: '@demorentalpreview',
     tagline: 'Available Scooter For Rent • Best Service • Best Price • Villa Delivery Available • Clean & Well-Maintained Scooters',
     heroTitle: 'Clean & Reliable Scooter Rental in Pererenan & Canggu',
     heroSubtitle: 'Explore Bali with confidence! Clean helmets, delivery & pickup in Canggu / Pererenan area, transparent daily & weekly rates, and 24/7 WhatsApp support.',
@@ -135,7 +135,7 @@ export default function SettingsPage() {
     uploadedStoragePhotos: DEFAULT_STORAGE_PHOTOS,
     faqs: [
       {
-        q: 'What documents are required to rent a scooter at Boss Rent Pererenan?',
+        q: 'What documents are required to rent a scooter at Demo Rental Preview?',
         a: 'It is very simple! You only need to present a valid ID / Passport and a Driver’s License (or International Driving Permit for overseas tourists). Verification takes only 3 minutes with no complicated original document holding.'
       },
       {
@@ -219,7 +219,7 @@ export default function SettingsPage() {
 
   const handleDownloadGalleryBackup = () => {
     const backupData = {
-      app: 'Boss Rent Pererenan',
+      app: 'Demo Rental Preview',
       type: 'Gallery Photos Storage Backup',
       exported_at: new Date().toISOString(),
       total_photos: bizForm.uploadedStoragePhotos?.length || 0,
@@ -495,7 +495,7 @@ export default function SettingsPage() {
       return;
     }
     setTestingGateway(true);
-    const testMsg = `🛵 *BOSS RENT BALI — WA GATEWAY TEST*\n\nHello! This is a test message sent from Boss Rent Pererenan System Gateway API (${waGatewayForm.provider.toUpperCase()}).\n\n✅ Gateway connection is working properly!`;
+    const testMsg = `🛵 *DEMO RENTAL PREVIEW — WA GATEWAY TEST*\n\nHello! This is a test message sent from Demo Rental Preview System Gateway API (${waGatewayForm.provider.toUpperCase()}).\n\n✅ Gateway connection is working properly!`;
     const res = await sendWhatsAppGateway(testGatewayPhone, testMsg);
     setTestingGateway(false);
 
@@ -529,7 +529,7 @@ export default function SettingsPage() {
       ]);
 
       const backupObject = {
-        app: 'Boss Rent Pererenan',
+        app: 'Demo Rental Preview',
         version: '2.0',
         exported_at: new Date().toISOString(),
         data: {
@@ -1474,7 +1474,7 @@ export default function SettingsPage() {
               Ubah Password Administrator
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px' }}>
-              Perbarui password akun Admin Panel Boss Rent Pererenan untuk menjaga keamanan data
+              Perbarui password akun Admin Panel Demo Rental Preview untuk menjaga keamanan data
             </p>
 
             <form onSubmit={handleChangePassword}>
@@ -1653,7 +1653,7 @@ export default function SettingsPage() {
                         id="biz-ig-handle"
                         type="text"
                         className="form-control"
-                        placeholder="@bossrentpererenan"
+                        placeholder="@demorentalpreview"
                         value={bizForm.instagramHandle}
                         onChange={e => setBizForm(p => ({ ...p, instagramHandle: e.target.value }))}
                       />

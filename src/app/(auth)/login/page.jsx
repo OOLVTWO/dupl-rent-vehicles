@@ -44,7 +44,7 @@ export default function LoginPage() {
           <div className="auth-logo-icon">
             <i className="fa-solid fa-motorcycle"></i>
           </div>
-          <h1>Boss Rent Pererenan</h1>
+          <h1>Demo Rental Preview</h1>
           <p>Masuk ke panel admin</p>
         </div>
 
@@ -65,7 +65,7 @@ export default function LoginPage() {
               id="email"
               type="email"
               className="form-control"
-              placeholder="admin@bossrent.com"
+              placeholder="admin@preview.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

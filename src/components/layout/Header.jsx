@@ -122,7 +122,7 @@ export default function Header({ onToggleMobile, theme, onToggleTheme }) {
           )}
         </div>
 
-        <img src={logoUrl} alt="Boss Rent Pererenan" className="header-logo-img" />
+        <img src={logoUrl} alt="Demo Rental Preview" className="header-logo-img" />
 
         <div className="header-date">
           <i className="fa-regular fa-calendar-days" style={{ marginRight: '6px' }}></i>

@@ -1,6 +1,6 @@
 /**
  * AI Diagnostic & Predictive Maintenance Engine
- * Boss Rent Pererenan
+ * Demo Rental Preview
  */
 
 export function analyzeVehicleHealth(vehicle, transactions = []) {

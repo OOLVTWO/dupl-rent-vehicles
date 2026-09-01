@@ -45,7 +45,7 @@ export function exportTransactionsToExcel(transactions, filename = 'laporan-boss
   const completedTx = transactions.filter(t => t.status === 'completed');
   const totalRevenue = completedTx.reduce((sum, t) => sum + Number(t.total_price), 0);
   const summary = [
-    ['BOSS RENT PERERENAN — LAPORAN PEMASUKAN'],
+    ['DEMO RENTAL PREVIEW — LAPORAN PEMASUKAN'],
     [''],
     ['Total Transaksi', transactions.length],
     ['Transaksi Selesai', completedTx.length],
@@ -169,7 +169,7 @@ export function exportFinancesToExcel(records, mode = 'all', filename = '') {
     XLSX.utils.book_append_sheet(workbook, incomeSheet, 'Laporan Pemasukan');
 
     const summaryData = [
-      ['BOSS RENT PERERENAN — LAPORAN PEMASUKAN KEUANGAN'],
+      ['DEMO RENTAL PREVIEW — LAPORAN PEMASUKAN KEUANGAN'],
       ['Tanggal Export', new Date().toLocaleDateString('id-ID')],
       [''],
       ['Metrik Pemasukan', 'Nilai'],
@@ -193,7 +193,7 @@ export function exportFinancesToExcel(records, mode = 'all', filename = '') {
     XLSX.utils.book_append_sheet(workbook, expenseSheet, 'Laporan Pengeluaran');
 
     const summaryData = [
-      ['BOSS RENT PERERENAN — LAPORAN PENGELUARAN OPERASIONAL'],
+      ['DEMO RENTAL PREVIEW — LAPORAN PENGELUARAN OPERASIONAL'],
       ['Tanggal Export', new Date().toLocaleDateString('id-ID')],
       [''],
       ['Metrik Pengeluaran', 'Nilai'],
@@ -234,7 +234,7 @@ export function exportFinancesToExcel(records, mode = 'all', filename = '') {
 
   // Sheet 4: Ringkasan Saldo Laba Rugi
   const summaryData = [
-    ['BOSS RENT PERERENAN — RINGKASAN ARUS KAS KEUANGAN'],
+    ['DEMO RENTAL PREVIEW — RINGKASAN ARUS KAS KEUANGAN'],
     ['Tanggal Export', new Date().toLocaleDateString('id-ID')],
     [''],
     ['Metrik Keuangan', 'Jumlah Nominal'],
@@ -269,7 +269,7 @@ export function exportInvestorReportToExcel(investorData, filename = '') {
 
   // ── SHEET 1: RINGKASAN & KOP PERUSAHAAN (INVESTOR FINANCIAL STATEMENT) ──
   const summaryAoa = [
-    ['LAPORAN RESMI BAGI HASIL INVESTOR — BOSS RENT PERERENAN'],
+    ['LAPORAN RESMI BAGI HASIL INVESTOR — DEMO RENTAL PREVIEW'],
     ['Tanggal Cetak Laporan', new Date().toLocaleDateString('id-ID')],
     [''],
     ['INFORMASI INVESTOR & SKEMA BAGI HASIL', ''],
@@ -392,7 +392,7 @@ export function exportCustomersToExcel(customers, filename = '') {
   const totalSpendAll = customers.reduce((sum, c) => sum + Number(c.total_spent || 0), 0);
 
   const summaryData = [
-    ['BOSS RENT PERERENAN — DATABASE MASTER CUSTOMER / CLIENT'],
+    ['DEMO RENTAL PREVIEW — DATABASE MASTER CUSTOMER / CLIENT'],
     ['Tanggal Export Data Backup', new Date().toLocaleDateString('id-ID')],
     [''],
     ['STATISTIK PELANGGAN', ''],

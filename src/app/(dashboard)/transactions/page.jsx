@@ -1348,7 +1348,7 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '20px', fontWeight: 800, color: 'var(--brand-primary-light)' }}>
                     <i className="fa-solid fa-motorcycle"></i>
-                    BOSS RENT PERERENAN
+                    DEMO RENTAL PREVIEW
                   </div>
                   <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '2px' }}>
                     Jl. Pantai Pererenan, Canggu, Badung, Bali • WA: +62 812-3456-7890
@@ -1439,7 +1439,7 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: '#94A3B8' }}>
                 <div>Metode Pembayaran: <strong style={{ color: paymentMeta.color }}><i className={paymentMeta.icon}></i> {paymentMeta.label}</strong></div>
-                <div>Thank you for choosing Boss Rent Bali! 🌴</div>
+                <div>Thank you for choosing Demo Rental Preview! 🌴</div>
               </div>
             </div>
 

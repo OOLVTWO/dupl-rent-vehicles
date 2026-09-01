@@ -1,6 +1,6 @@
 /**
  * Complete Worldwide Country Code & International Phone Helper (220+ Countries)
- * Boss Rent Pererenan - Canggu Bali
+ * Demo Rental Preview - Canggu Bali
  */
 
 export const COUNTRY_CODES = [
@@ -360,7 +360,7 @@ export function generateInvoiceText(tx, vehicle, paymentMethodMeta, customTempla
   const startDate = new Date(tx.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
   const endDate = new Date(tx.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  let shopName = 'Boss Rent Pererenan';
+  let shopName = 'Demo Rental Preview';
   let shopLocation = 'Jl. Pantai Pererenan, Canggu, Badung, Bali 80351';
   let shopPhone = '+62 812-3456-7890';
 

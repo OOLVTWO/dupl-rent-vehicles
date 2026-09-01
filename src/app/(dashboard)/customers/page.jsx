@@ -373,7 +373,7 @@ export default function CustomersPage() {
             Database Master Customer
           </h1>
           <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: '14px' }}>
-            Kelola data penyewa, histori transaksi client, dan backup data pelanggan Boss Rent Pererenan.
+            Kelola data penyewa, histori transaksi client, dan backup data pelanggan Demo Rental Preview.
           </p>
         </div>
 

@@ -1,6 +1,6 @@
 /**
  * Dynamic Payment Methods Manager
- * Boss Rent Pererenan
+ * Demo Rental Preview
  */
 
 export const DEFAULT_PAYMENT_METHODS = [

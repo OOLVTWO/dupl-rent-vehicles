@@ -106,7 +106,7 @@ function getBizSettings() {
 
 function generateReminderText(tx, vehicle, type) {
   const biz = getBizSettings();
-  const shopName = biz.name || 'Boss Rent Pererenan';
+  const shopName = biz.name || 'Demo Rental Preview';
   const shopPhone = biz.phone || '+62 812-3456-7890';
   const shopLocation = biz.location || 'Jl. Pantai Pererenan, Canggu, Badung, Bali';
   const daysLeft = getDaysLeft(tx);

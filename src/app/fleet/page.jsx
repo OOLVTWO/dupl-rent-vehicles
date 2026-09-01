@@ -116,7 +116,7 @@ export default function SharpSquareBusinessWebsitePage() {
 
   const [faqs, setFaqs] = useState([
     {
-      q: 'What documents are required to rent a scooter at Boss Rent Pererenan?',
+      q: 'What documents are required to rent a scooter at Demo Rental Preview?',
       a: 'It is very simple! You only need to present a valid ID / Passport and a Driver’s License (or International Driving Permit for overseas tourists). Verification takes only 3 minutes with no complicated original document holding.'
     },
     {
@@ -454,7 +454,7 @@ export default function SharpSquareBusinessWebsitePage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <img
               src={biz.logoUrl || "/images/logoCompany.png"}
-              alt="BOSS RENT PERERENAN Logo"
+              alt="DEMO RENTAL PREVIEW Logo"
               style={{ height: '48px', width: 'auto', objectFit: 'contain' }}
             />
             <div>
@@ -1011,7 +1011,7 @@ export default function SharpSquareBusinessWebsitePage() {
             eyebrow="Real Google Maps Reviews"
             title="Google Reviews & Ratings"
             icon="fa-solid fa-star"
-            subtitle={`5.0 Rating based on ${biz.reviewsCount} Google Maps reviews for Boss Rent Pererenan (Hover to pause)`}
+            subtitle={`5.0 Rating based on ${biz.reviewsCount} Google Maps reviews for Demo Rental Preview (Hover to pause)`}
             style={{ marginBottom: 0 }}
           />
         </div>
@@ -1146,12 +1146,12 @@ export default function SharpSquareBusinessWebsitePage() {
         </div>
       </section>
 
-      {/* ── EMBEDDED INTERACTIVE LIVE GOOGLE MAPS SECTION ("Find Boss Rent Pererenan") ── */}
+      {/* ── EMBEDDED INTERACTIVE LIVE GOOGLE MAPS SECTION ("Find Demo Rental Preview") ── */}
       <section id="location" style={{ padding: '56px 24px', background: 'var(--sharp-surface)', scrollMarginTop: '90px' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <SectionHeading
             eyebrow="Interactive Google Maps Location"
-            title="Find Boss Rent Pererenan"
+            title="Find Demo Rental Preview"
             icon="fa-solid fa-location-dot"
             subtitle={biz.address}
           />
@@ -1213,7 +1213,7 @@ export default function SharpSquareBusinessWebsitePage() {
             {/* Embedded Live Google Maps Iframe */}
             <div className="sharp-card" style={{ overflow: 'hidden' }}>
               <iframe
-                title="Boss Rent Pererenan Google Map"
+                title="Demo Rental Preview Google Map"
                 src={biz.mapsEmbedUrl}
                 width="100%"
                 height="380"
@@ -1235,7 +1235,7 @@ export default function SharpSquareBusinessWebsitePage() {
           rel="noopener noreferrer"
           className="sharp-fab"
           style={{ background: 'linear-gradient(135deg, #833AB4, #FD1D1D, #FCB045)' }}
-          title="Follow Boss Rent Pererenan on Instagram"
+          title="Follow Demo Rental Preview on Instagram"
         >
           <i className="fa-brands fa-instagram"></i>
         </a>
@@ -1246,7 +1246,7 @@ export default function SharpSquareBusinessWebsitePage() {
           rel="noopener noreferrer"
           className="sharp-fab"
           style={{ background: 'var(--sharp-whatsapp)', fontSize: '28px' }}
-          title="Chat with Boss Rent Pererenan on WhatsApp"
+          title="Chat with Demo Rental Preview on WhatsApp"
         >
           <i className="fa-brands fa-whatsapp"></i>
         </a>
