@@ -29,16 +29,28 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Email dan password wajib diisi.' }, { status: 400 });
   }
 
-  const supabase = await createClient();
-  const { error: authError } = await supabase.auth.signInWithPassword({
-    email: body.email,
-    password: body.password,
-  });
+  try {
+    const supabase = await createClient();
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: body.email,
+      password: body.password,
+    });
 
-  if (authError) {
-    // Pesan generik — jangan bocorkan apakah email terdaftar atau tidak.
-    return NextResponse.json({ error: 'Email atau password salah.' }, { status: 401 });
+    if (authError) {
+      // Pesan generik — jangan bocorkan apakah email terdaftar atau tidak.
+      return NextResponse.json({ error: 'Email atau password salah.' }, { status: 401 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    // DEBUG SEMENTARA — hapus blok ini setelah masalah login selesai ditelusuri.
+    return NextResponse.json(
+      {
+        error: 'DEBUG: ' + (err && err.message ? err.message : String(err)),
+        hasUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
+        hasAnonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+      },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ success: true });
 }
