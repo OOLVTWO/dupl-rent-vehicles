@@ -309,7 +309,7 @@ CREATE POLICY "delivery_zones_public_select" ON delivery_zones
 -- Bookings: kolom tambahan zona delivery + penugasan driver
 ALTER TABLE bookings
   ADD COLUMN IF NOT EXISTS delivery_zone_id UUID REFERENCES delivery_zones(id) ON DELETE SET NULL,
-  ADD COLUMN IF NOT EXISTS delivery_zone_name VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS delivery_zone_name VARCHAR(255),
   ADD COLUMN IF NOT EXISTS delivery_fee DECIMAL(12,2) DEFAULT 0,
   ADD COLUMN IF NOT EXISTS assigned_driver_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS assigned_driver_name VARCHAR(100),
