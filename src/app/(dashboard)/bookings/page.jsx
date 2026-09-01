@@ -285,31 +285,31 @@ export default function BookingsPage() {
             Booking masuk dari form &quot;Book Now&quot; di website publik (/fleet)
           </p>
         </div>
-        <button className="btn btn-secondary" onClick={fetchBookings} disabled={loading}>
-          <i className={`fa-solid fa-rotate ${loading ? 'fa-spin' : ''}`} style={{ marginRight: '6px' }}></i> Refresh
-        </button>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ position: 'relative' }}>
+            <select
+              value={tab}
+              onChange={(e) => setTab(e.target.value)}
+              className="form-control"
+              style={{
+                padding: '9px 32px 9px 14px', fontSize: '13px', fontWeight: 700,
+                borderRadius: 'var(--radius-full, 999px)', appearance: 'none', cursor: 'pointer',
+              }}
+            >
+              {TABS.map(t => (
+                <option key={t.key} value={t.key}>
+                  {t.label}{t.key !== 'all' && counts[t.key] ? ` (${counts[t.key]})` : ''}
+                </option>
+              ))}
+            </select>
+            <i className="fa-solid fa-chevron-down" style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', color: 'var(--text-muted)', pointerEvents: 'none' }}></i>
+          </div>
+          <button className="btn btn-secondary" onClick={fetchBookings} disabled={loading}>
+            <i className={`fa-solid fa-rotate ${loading ? 'fa-spin' : ''}`} style={{ marginRight: '6px' }}></i> Refresh
+          </button>
+        </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
-        {TABS.map(t => (
-          <button
-            key={t.key}
-            className="btn"
-            onClick={() => setTab(t.key)}
-            style={{
-              padding: '8px 16px',
-              fontSize: '13px',
-              fontWeight: 700,
-              borderRadius: 'var(--radius-full, 999px)',
-              border: tab === t.key ? '1px solid var(--brand-primary)' : '1px solid var(--bg-border)',
-              background: tab === t.key ? 'var(--brand-primary)' : 'transparent',
-              color: tab === t.key ? '#fff' : 'var(--text-secondary)',
-            }}
-          >
-            {t.label}{t.key !== 'all' && counts[t.key] ? ` (${counts[t.key]})` : ''}
-          </button>
-        ))}
-      </div>
 
       {error && (
         <div className="alert alert-danger" style={{ marginBottom: '16px' }}>
