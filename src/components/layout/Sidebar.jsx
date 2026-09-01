@@ -12,7 +12,20 @@ const NAV_SECTIONS = [
     label: 'Operasional',
     items: [
       { href: '/dashboard',    iconClass: 'fa-solid fa-chart-pie',           label: 'Dashboard' },
-      { href: '/bookings',     iconClass: 'fa-solid fa-inbox',               label: 'Booking Confirmation', badge: 'bookings' },
+      {
+        href: '/bookings',
+        iconClass: 'fa-solid fa-inbox',
+        label: 'Booking Confirmation',
+        badge: 'bookings',
+        isDropdown: true,
+        children: [
+          { href: '/bookings?tab=all',       iconClass: 'fa-solid fa-list',              label: 'Semua' },
+          { href: '/bookings?tab=pending',   iconClass: 'fa-solid fa-hourglass-half',    label: 'Pending' },
+          { href: '/bookings?tab=confirmed', iconClass: 'fa-solid fa-circle-check',      label: 'Confirmed' },
+          { href: '/bookings?tab=completed', iconClass: 'fa-solid fa-flag-checkered',    label: 'Completed' },
+          { href: '/bookings?tab=cancelled', iconClass: 'fa-solid fa-circle-xmark',      label: 'Cancelled' },
+        ],
+      },
       { href: '/transactions', iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi',      badge: null },
       {
         href: '/customers',

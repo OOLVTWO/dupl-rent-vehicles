@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { formatRupiah } from '@/lib/finance';
 import { getWhatsAppShareUrl } from '@/lib/countryCodes';
 
@@ -11,6 +12,8 @@ const STATUS_META = {
   completed: { label: 'Completed', color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.15)' },
 };
 
+const VALID_BOOKING_TABS = ['all', 'pending', 'confirmed', 'completed', 'cancelled'];
+
 const TABS = [
   { key: 'all', label: 'Semua' },
   { key: 'pending', label: 'Pending' },
@@ -18,6 +21,18 @@ const TABS = [
   { key: 'completed', label: 'Completed' },
   { key: 'cancelled', label: 'Cancelled' },
 ];
+
+// Reads ?tab= so the sidebar "Booking Confirmation" dropdown links land on
+// the right filter. Split out because useSearchParams() requires a
+// Suspense boundary.
+function TabFromQuery({ onTab }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && VALID_BOOKING_TABS.includes(tab)) onTab(tab);
+  }, [searchParams, onTab]);
+  return null;
+}
 
 function formatDate(d) {
   if (!d) return '-';
@@ -203,7 +218,7 @@ function EditBookingModal({ booking, onClose, onSaved }) {
   );
 }
 
-export default function BookingsPage() {
+function BookingsPageInner() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('all');
@@ -271,45 +286,26 @@ export default function BookingsPage() {
   };
 
   const filtered = tab === 'all' ? bookings : bookings.filter(b => b.status === tab);
-  const counts = bookings.reduce((acc, b) => {
-    acc[b.status] = (acc[b.status] || 0) + 1;
-    return acc;
-  }, {});
 
   return (
     <div className="page-content">
+      <TabFromQuery onTab={setTab} />
       <div className="page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '18px' }}>
         <div>
-          <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>Booking Confirmation</h1>
+          <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+            Booking Confirmation
+            <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--brand-primary)', background: 'var(--brand-primary-bg, rgba(59,130,246,0.12))', padding: '3px 10px', borderRadius: 'var(--radius-full, 999px)' }}>
+              {TABS.find(t => t.key === tab)?.label || 'Semua'}
+            </span>
+          </h1>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
-            Booking masuk dari form &quot;Book Now&quot; di website publik (/fleet)
+            Booking masuk dari form &quot;Book Now&quot; di website publik (/fleet) — ganti filter status lewat menu sidebar
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <div style={{ position: 'relative' }}>
-            <select
-              value={tab}
-              onChange={(e) => setTab(e.target.value)}
-              className="form-control"
-              style={{
-                padding: '9px 32px 9px 14px', fontSize: '13px', fontWeight: 700,
-                borderRadius: 'var(--radius-full, 999px)', appearance: 'none', cursor: 'pointer',
-              }}
-            >
-              {TABS.map(t => (
-                <option key={t.key} value={t.key}>
-                  {t.label}{t.key !== 'all' && counts[t.key] ? ` (${counts[t.key]})` : ''}
-                </option>
-              ))}
-            </select>
-            <i className="fa-solid fa-chevron-down" style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', color: 'var(--text-muted)', pointerEvents: 'none' }}></i>
-          </div>
-          <button className="btn btn-secondary" onClick={fetchBookings} disabled={loading}>
-            <i className={`fa-solid fa-rotate ${loading ? 'fa-spin' : ''}`} style={{ marginRight: '6px' }}></i> Refresh
-          </button>
-        </div>
+        <button className="btn btn-secondary" onClick={fetchBookings} disabled={loading}>
+          <i className={`fa-solid fa-rotate ${loading ? 'fa-spin' : ''}`} style={{ marginRight: '6px' }}></i> Refresh
+        </button>
       </div>
-
 
       {error && (
         <div className="alert alert-danger" style={{ marginBottom: '16px' }}>
@@ -442,5 +438,13 @@ export default function BookingsPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function BookingsPage() {
+  return (
+    <Suspense fallback={null}>
+      <BookingsPageInner />
+    </Suspense>
   );
 }
