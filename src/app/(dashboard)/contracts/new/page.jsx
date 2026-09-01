@@ -5,6 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { compressImage } from '@/lib/imageCompressor';
 import SignaturePad from '@/components/contracts/SignaturePad';
+import VehicleCombobox from '@/components/shared/VehicleCombobox';
+import CustomerPickerCombobox from '@/components/shared/CustomerPickerCombobox';
 
 function PhotoField({ label, hint, value, onChange }) {
   const [uploading, setUploading] = useState(false);
@@ -25,18 +27,18 @@ function PhotoField({ label, hint, value, onChange }) {
   };
 
   return (
-    <div className="form-group">
+    <div className="form-group" style={{ marginBottom: 0 }}>
       <label className="form-label">{label}</label>
-      {hint && <p style={{ fontSize: '11.5px', color: 'var(--text-muted)', margin: '0 0 8px 0' }}>{hint}</p>}
+      {hint && <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 8px 0' }}>{hint}</p>}
       {value ? (
-        <div style={{ position: 'relative', width: '100%', maxWidth: '260px' }}>
+        <div style={{ position: 'relative', width: '100%' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt={label} style={{ width: '100%', borderRadius: '10px', border: '1px solid var(--bg-border)' }} />
+          <img src={value} alt={label} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '10px', border: '1px solid var(--bg-border)' }} />
           <button
             type="button"
             onClick={() => onChange('')}
             style={{
-              position: 'absolute', top: '8px', right: '8px', width: '28px', height: '28px', borderRadius: '50%',
+              position: 'absolute', top: '8px', right: '8px', width: '26px', height: '26px', borderRadius: '50%',
               background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', cursor: 'pointer',
             }}
           >
@@ -47,17 +49,17 @@ function PhotoField({ label, hint, value, onChange }) {
         <label
           htmlFor={inputId}
           style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px',
-            border: '2px dashed var(--bg-border)', borderRadius: '10px', padding: '28px 16px', cursor: 'pointer',
-            color: 'var(--text-muted)', maxWidth: '260px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px',
+            border: '2px dashed var(--bg-border)', borderRadius: '10px', padding: '18px 12px', cursor: 'pointer',
+            color: 'var(--text-muted)', width: '100%', height: '140px',
           }}
         >
           {uploading ? (
-            <><i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '20px' }}></i> Memproses...</>
+            <><i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '18px' }}></i> Memproses...</>
           ) : (
             <>
-              <i className="fa-solid fa-camera" style={{ fontSize: '20px' }}></i>
-              <span style={{ fontSize: '12.5px', fontWeight: 600 }}>Ambil / Upload Foto</span>
+              <i className="fa-solid fa-camera" style={{ fontSize: '18px' }}></i>
+              <span style={{ fontSize: '12px', fontWeight: 600, textAlign: 'center' }}>Ambil / Upload Foto</span>
             </>
           )}
           <input id={inputId} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: 'none' }} />
@@ -97,7 +99,7 @@ function NewContractInner() {
   useEffect(() => {
     Promise.resolve().then(async () => {
       const supabase = createClient();
-      const { data: vData } = await supabase.from('vehicles').select('id, name, plate_number').order('name');
+      const { data: vData } = await supabase.from('vehicles').select('id, name, plate_number, category, image_url, rate_per_day').order('name');
       setVehicles(vData || []);
 
       if (transactionId) {
@@ -119,6 +121,17 @@ function NewContractInner() {
   }, [transactionId]);
 
   const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleSelectCustomer = (cust) => {
+    setForm(prev => ({
+      ...prev,
+      customer_name: cust.name || prev.customer_name,
+      customer_id_number: cust.id_number || prev.customer_id_number,
+      customer_phone: cust.phone || prev.customer_phone,
+      customer_address: cust.address || prev.customer_address,
+    }));
+    if (cust.customer_image_url) setPassportPhoto(cust.customer_image_url);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -218,6 +231,8 @@ function NewContractInner() {
               Data Diri Customer
             </h3>
 
+            <CustomerPickerCombobox onSelectCustomer={handleSelectCustomer} label="Tamu Repeater? Cari & Auto-Fill Di Sini" />
+
             <div className="form-group">
               <label className="form-label">Nama Lengkap *</label>
               <input type="text" className="form-control" value={form.customer_name} onChange={(e) => handleChange('customer_name', e.target.value)} required />
@@ -245,15 +260,12 @@ function NewContractInner() {
               Detail Sewa
             </h3>
 
-            <div className="form-group">
-              <label className="form-label">Unit Motor</label>
-              <select className="form-control" value={form.vehicle_id} onChange={(e) => handleChange('vehicle_id', e.target.value)}>
-                <option value="">— Pilih motor —</option>
-                {vehicles.map(v => (
-                  <option key={v.id} value={v.id}>{v.name}{v.plate_number ? ` — ${v.plate_number}` : ''}</option>
-                ))}
-              </select>
-            </div>
+            <VehicleCombobox
+              vehicles={vehicles}
+              value={form.vehicle_id}
+              onChange={(id) => handleChange('vehicle_id', id)}
+              required={false}
+            />
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div className="form-group">
@@ -277,7 +289,7 @@ function NewContractInner() {
               <i className="fa-solid fa-camera-retro" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
               Dokumentasi Foto
             </h3>
-            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
               <PhotoField
                 label="Foto Passport / KTP"
                 hint="Pastikan nama & nomor terbaca jelas."

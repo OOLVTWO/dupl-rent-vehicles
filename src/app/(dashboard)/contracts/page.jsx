@@ -13,7 +13,115 @@ function formatDate(d) {
   }
 }
 
-function ContractDetailModal({ contract, onClose, onDelete, canDelete }) {
+function ContractDetailModal({ contract, onClose, onDelete, canDelete, onSaved }) {
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({
+    customer_name: contract.customer_name || '',
+    customer_id_number: contract.customer_id_number || '',
+    customer_phone: contract.customer_phone || '',
+    customer_address: contract.customer_address || '',
+    vehicle_name: contract.vehicle_name || '',
+    start_date: contract.start_date || '',
+    end_date: contract.end_date || '',
+    notes: contract.notes || '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!form.customer_name.trim()) { setError('Nama customer wajib diisi.'); return; }
+    if (!form.start_date || !form.end_date) { setError('Tanggal wajib diisi.'); return; }
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/contracts/${contract.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || 'Gagal menyimpan perubahan.');
+        setSaving(false);
+        return;
+      }
+      onSaved(data);
+      setEditing(false);
+    } catch {
+      setError('Gagal terhubung ke server.');
+    }
+    setSaving(false);
+  };
+
+  if (editing) {
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <div>
+              <div className="modal-title"><i className="fa-solid fa-pen-to-square" style={{ marginRight: '6px' }}></i> Edit Kontrak</div>
+              <div className="modal-subtitle">Foto & tanda tangan tidak bisa diubah — hanya data teksnya.</div>
+            </div>
+            <button className="modal-close" onClick={onClose}>✕</button>
+          </div>
+
+          <form onSubmit={handleSave}>
+            <div className="form-group">
+              <label className="form-label">Nama Customer</label>
+              <input type="text" className="form-control" value={form.customer_name} onChange={(e) => handleChange('customer_name', e.target.value)} required />
+            </div>
+            <div className="form-group">
+              <label className="form-label">No. KTP / Passport</label>
+              <input type="text" className="form-control" value={form.customer_id_number} onChange={(e) => handleChange('customer_id_number', e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Telepon</label>
+              <input type="tel" className="form-control" value={form.customer_phone} onChange={(e) => handleChange('customer_phone', e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Alamat</label>
+              <textarea className="form-control" rows={2} value={form.customer_address} onChange={(e) => handleChange('customer_address', e.target.value)} style={{ resize: 'vertical' }} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Nama Motor</label>
+              <input type="text" className="form-control" value={form.vehicle_name} onChange={(e) => handleChange('vehicle_name', e.target.value)} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="form-group">
+                <label className="form-label">Tanggal Mulai</label>
+                <input type="date" className="form-control" value={form.start_date} onChange={(e) => handleChange('start_date', e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Tanggal Selesai</label>
+                <input type="date" className="form-control" min={form.start_date} value={form.end_date} onChange={(e) => handleChange('end_date', e.target.value)} required />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Catatan</label>
+              <textarea className="form-control" rows={2} value={form.notes} onChange={(e) => handleChange('notes', e.target.value)} style={{ resize: 'vertical' }} />
+            </div>
+
+            {error && (
+              <div className="alert alert-danger" style={{ marginBottom: '12px' }}>
+                <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '6px' }}></i>{error}
+              </div>
+            )}
+
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" onClick={() => setEditing(false)}>Batal</button>
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                {saving ? <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>Menyimpan...</> : 'Simpan Perubahan'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
@@ -97,6 +205,9 @@ function ContractDetailModal({ contract, onClose, onDelete, canDelete }) {
               <i className="fa-solid fa-trash-can" style={{ marginRight: '6px' }}></i> Hapus Kontrak
             </button>
           )}
+          <button className="btn btn-secondary" onClick={() => setEditing(true)}>
+            <i className="fa-solid fa-pen-to-square" style={{ marginRight: '6px' }}></i> Edit
+          </button>
           <button className="btn btn-secondary" onClick={onClose}>Tutup</button>
         </div>
       </div>
@@ -236,6 +347,10 @@ export default function ContractsPage() {
           onClose={() => setSelected(null)}
           onDelete={handleDelete}
           canDelete={role === 'admin'}
+          onSaved={(updated) => {
+            setContracts(prev => prev.map(c => (c.id === updated.id ? updated : c)));
+            setSelected(updated);
+          }}
         />
       )}
     </div>
