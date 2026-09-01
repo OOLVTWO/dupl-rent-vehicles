@@ -449,13 +449,19 @@ export default function SharpSquareBusinessWebsitePage() {
 
     try {
       const supabase = createClient();
-      const { data, error } = await supabase.from('bookings').insert([payload]).select().single();
+      // NOTE: intentionally no .select() here — anonymous visitors are allowed
+      // to INSERT (bookings_public_insert policy) but not to read rows back
+      // (bookings_admin_select requires an authenticated admin session), and
+      // Postgres RLS also gates the RETURNING clause of an insert. So we just
+      // confirm there's no error, then build the confirmation view from the
+      // payload we already have client-side.
+      const { error } = await supabase.from('bookings').insert([payload]);
       if (error) {
         console.error('Booking insert error:', error.message);
         setBookingModal(prev => ({ ...prev, submitting: false, error: 'Gagal mengirim booking. Silakan coba lagi.' }));
         return;
       }
-      setConfirmedBooking(data);
+      setConfirmedBooking(payload);
       setBookingModal(prev => ({ ...prev, submitting: false, step: 'confirmed' }));
     } catch {
       setBookingModal(prev => ({ ...prev, submitting: false, error: 'Gagal terhubung ke server. Periksa koneksi internet.' }));
@@ -913,7 +919,7 @@ export default function SharpSquareBusinessWebsitePage() {
                       icon="fa-brands fa-whatsapp"
                       style={{ marginTop: 'auto' }}
                     >
-                      Book via WhatsApp
+                      Book Now
                     </SharpButton>
                   </div>
                 </div>
