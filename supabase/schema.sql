@@ -290,7 +290,7 @@ CREATE POLICY "contracts_staff_select" ON contracts
 -- =============================================
 CREATE TABLE IF NOT EXISTS delivery_zones (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  name VARCHAR(100) NOT NULL,
+  name VARCHAR(255) NOT NULL,
   zone_label VARCHAR(50) NOT NULL,
   color VARCHAR(20) NOT NULL DEFAULT '#3B82F6',
   fee DECIMAL(12,2) NOT NULL DEFAULT 0,
