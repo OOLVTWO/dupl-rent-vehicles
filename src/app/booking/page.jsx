@@ -133,6 +133,7 @@ function BookingPageInner() {
   const [error, setError] = useState('');
   const [confirmedBooking, setConfirmedBooking] = useState(null);
   const [deliveryZones, setDeliveryZones] = useState([]);
+  const [showMapModal, setShowMapModal] = useState(false);
 
   useEffect(() => {
     Promise.resolve().then(async () => {
@@ -400,9 +401,20 @@ function BookingPageInner() {
                       <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
                         Delivery Area *
                       </label>
-                      <p style={{ fontSize: '11.5px', color: 'var(--sharp-muted)', margin: '0 0 10px 0' }}>
+                      <p style={{ fontSize: '11.5px', color: 'var(--sharp-muted)', margin: '0 0 8px 0' }}>
                         Our shop is on Sunset Road, Kuta. Please pick the zone closest to your actual location so the delivery fee is accurate — double-check before confirming.
                       </p>
+                      <button
+                        type="button"
+                        onClick={() => setShowMapModal(true)}
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '12px',
+                          background: 'var(--sharp-surface)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-full, 999px)',
+                          padding: '6px 12px', fontSize: '11.5px', fontWeight: 700, color: 'var(--sharp-accent)', cursor: 'pointer',
+                        }}
+                      >
+                        <i className="fa-solid fa-map-location-dot"></i> View zone map
+                      </button>
                       {deliveryZones.length === 0 ? (
                         <p style={{ fontSize: '12px', color: 'var(--sharp-muted)' }}>Loading areas...</p>
                       ) : (
@@ -444,11 +456,50 @@ function BookingPageInner() {
                         </div>
                       )}
                       {selectedZone && (
-                        <div style={{ marginTop: '10px', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', fontSize: '11.5px', color: 'var(--sharp-ink)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                          <i className="fa-solid fa-circle-exclamation" style={{ color: '#F59E0B', marginTop: '2px' }}></i>
-                          <span>Not sure which zone fits your address? Confirm with us on WhatsApp before booking so the fee shown is correct.</span>
+                        <div style={{ marginTop: '10px', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', fontSize: '11.5px', color: 'var(--sharp-ink)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                          <span>
+                            <i className="fa-solid fa-map-location-dot" style={{ color: '#F59E0B', marginRight: '6px' }}></i>
+                            Not sure which zone fits your address?
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setShowMapModal(true)}
+                            style={{ background: 'none', border: 'none', color: 'var(--sharp-accent)', fontWeight: 700, fontSize: '11.5px', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                          >
+                            View zone map
+                          </button>
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {showMapModal && (
+                    <div
+                      onClick={() => setShowMapModal(false)}
+                      style={{
+                        position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.75)', zIndex: 300,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px',
+                      }}
+                    >
+                      <div onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px', width: '100%', position: 'relative' }}>
+                        <button
+                          type="button"
+                          onClick={() => setShowMapModal(false)}
+                          aria-label="Close"
+                          style={{
+                            position: 'absolute', top: '-14px', right: '-8px', width: '34px', height: '34px', borderRadius: '50%',
+                            background: '#fff', border: '1px solid var(--sharp-line)', color: 'var(--sharp-ink)', fontSize: '14px', cursor: 'pointer',
+                          }}
+                        >
+                          <i className="fa-solid fa-xmark"></i>
+                        </button>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src="/images/delivery-zone-map.webp"
+                          alt="Delivery zone map — Green: Kerobokan/Seminyak/Legian/Kuta, Blue: Canggu/Uluwatu/Sanur & surrounding coastal areas, Yellow: Ubud"
+                          style={{ width: '100%', borderRadius: 'var(--radius-md)', background: '#fff' }}
+                        />
+                      </div>
                     </div>
                   )}
 
