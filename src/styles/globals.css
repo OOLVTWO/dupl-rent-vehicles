@@ -1003,6 +1003,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     padding: 7px 0;
     border-bottom: 1px dashed var(--bg-border);
     text-align: right;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .table--stack-mobile td > * {
+    min-width: 0;
   }
   .table--stack-mobile td:last-child {
     border-bottom: none;
