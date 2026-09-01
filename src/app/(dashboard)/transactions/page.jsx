@@ -1763,7 +1763,7 @@ const handleSubmit = async (formData) => {
               <p>Tidak ada transaksi ditemukan</p>
             </div>
           ) : (
-            <table className="table">
+            <table className="table table--stack-mobile">
               <thead>
                 <tr>
                   <th>#</th>
@@ -1780,8 +1780,8 @@ const handleSubmit = async (formData) => {
               <tbody>
                 {filtered.map((tx, idx) => (
                   <tr key={tx.id}>
-                    <td style={{ fontWeight: 700, color: 'var(--text-muted)' }}>{idx + 1}</td>
-                    <td>
+                    <td data-label="#" style={{ fontWeight: 700, color: 'var(--text-muted)' }}>{idx + 1}</td>
+                    <td data-label="Customer" data-label-align="left">
                       <div className="tx-customer-cell">
                         <div style={{ display: 'flex', position: 'relative', flexShrink: 0 }}>
                           <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'var(--bg-card-hover)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--bg-border)' }}>
@@ -1797,7 +1797,7 @@ const handleSubmit = async (formData) => {
                             </div>
                           )}
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0, width: '100%' }}>
                           <strong style={{ fontSize: '14px', color: 'var(--text-primary)' }}>{tx.renter_name}</strong>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                             <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}><i className="fa-solid fa-phone" style={{ marginRight: '4px', fontSize: '10px' }}></i>{tx.renter_phone}</span>
@@ -1809,7 +1809,7 @@ const handleSubmit = async (formData) => {
                             )}
                           </div>
                           {tx.renter_address && (
-                            <div style={{ fontSize: '11px', color: 'var(--brand-primary-light)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '220px' }} title={tx.renter_address}>
+                            <div style={{ fontSize: '11px', color: 'var(--brand-primary-light)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }} title={tx.renter_address}>
                               <i className="fa-solid fa-location-dot" style={{ marginRight: '4px' }}></i>
                               {tx.renter_address}
                             </div>
@@ -1817,8 +1817,8 @@ const handleSubmit = async (formData) => {
                         </div>
                       </div>
                     </td>
-                    <td>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '180px' }}>
+                    <td data-label="Motor" data-label-align="left">
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <strong style={{ fontSize: '13.5px', color: 'var(--text-primary)', lineHeight: 1.35 }}>
                           {tx.vehicles?.name || '-'}
                         </strong>
@@ -1830,7 +1830,7 @@ const handleSubmit = async (formData) => {
                         </div>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Mulai / Selesai" data-label-align="left">
                       <div className="tx-date-cell">
                         <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>
                           <i className="fa-solid fa-calendar-plus" style={{ marginRight: '6px', fontSize: '11px', color: '#22C55E' }}></i>
@@ -1845,13 +1845,13 @@ const handleSubmit = async (formData) => {
                         </div>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="KM Odometer">
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '12px' }}>
                         <div>Start: <strong>{tx.km_start ? `${tx.km_start} KM` : '-'}</strong></div>
                         <div>End: <strong>{tx.km_end ? `${tx.km_end} KM` : '-'}</strong></div>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Total & Diskon">
                       <div className="tx-price-cell">
                         <strong style={{ fontSize: '14px', color: '#22C55E' }}>{formatRupiah(tx.total_price)}</strong>
                         {tx.discount > 0 && (
@@ -1863,7 +1863,7 @@ const handleSubmit = async (formData) => {
                         )}
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Denda / Deposit">
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '12px' }}>
                         <div>Dep: <strong>{formatRupiah(tx.deposit)}</strong></div>
                         {tx.damage_fee > 0 && (
@@ -1875,7 +1875,7 @@ const handleSubmit = async (formData) => {
                         )}
                       </div>
                     </td>
-                    <td style={{ verticalAlign: 'middle' }}>
+                    <td data-label="Status" style={{ verticalAlign: 'middle' }}>
                       {statusBadge(tx.status, tx.payment_status)}
                       {tx.status === 'active' && tx.payment_status !== 'unpaid' && (
                         <div style={{ marginTop: '4px' }}>
@@ -1885,7 +1885,7 @@ const handleSubmit = async (formData) => {
                         </div>
                       )}
                     </td>
-                    <td style={{ verticalAlign: 'middle' }}>
+                    <td data-label="Aksi" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       <div className="tx-actions-cell">
                         {/* WhatsApp Invoice Button */}
                         <button

@@ -740,7 +740,7 @@ export default function FinancesPage() {
               <p>{needsMigration ? 'Jalankan SQL migration untuk mengaktifkan fitur ini.' : 'Belum ada pencatatan transaksi keuangan'}</p>
             </div>
           ) : (
-            <table className="table">
+            <table className="table table--stack-mobile">
               <thead>
                 <tr>
                   <th>#</th>
@@ -760,15 +760,15 @@ export default function FinancesPage() {
 
                   return (
                     <tr key={item.id}>
-                      <td style={{ fontWeight: 700, color: 'var(--text-muted)' }}>{idx + 1}</td>
-                      <td>
+                      <td data-label="#" style={{ fontWeight: 700, color: 'var(--text-muted)' }}>{idx + 1}</td>
+                      <td data-label="Jenis Arus Kas">
                         <span className={`tx-status-pill ${isInc ? 'completed' : 'cancelled'}`}>
                           <i className={`fa-solid ${isInc ? 'fa-arrow-down-left' : 'fa-arrow-up-right'}`} style={{ fontSize: '11px' }}></i>
                           {isInc ? 'Pemasukan (+)' : 'Pengeluaran (-)'}
                         </span>
                       </td>
-                      <td style={{ fontSize: '12.5px', whiteSpace: 'nowrap' }}>{new Date(item.expense_date).toLocaleDateString('id-ID')}</td>
-                      <td>
+                      <td data-label="Tanggal" style={{ fontSize: '12.5px' }}>{new Date(item.expense_date).toLocaleDateString('id-ID')}</td>
+                      <td data-label="Keterangan" data-label-align="left">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                           <strong style={{ fontSize: '13.5px', color: 'var(--text-primary)' }}>{item.title}</strong>
                           {item.isAutoTransaction && (
@@ -780,19 +780,19 @@ export default function FinancesPage() {
                           )}
                         </div>
                       </td>
-                      <td>
+                      <td data-label="Kategori">
                         <span className="badge badge-muted" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                           <i className={meta.icon} style={{ color: meta.color }}></i>
                           {meta.label}
                         </span>
                       </td>
-                      <td>
+                      <td data-label="Nominal">
                         <strong style={{ fontSize: '14px', color: isInc ? '#22C55E' : '#EF4444' }}>
                           {isInc ? '+' : '-'}{formatRupiah(item.amount)}
                         </strong>
                       </td>
-                      <td style={{ fontSize: '12px', color: 'var(--text-muted)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.notes || ''}>{item.notes || '-'}</td>
-                      <td>
+                      <td data-label="Catatan" data-label-align="left" style={{ fontSize: '12px', color: 'var(--text-muted)', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.notes || ''}>{item.notes || '-'}</td>
+                      <td data-label="Aksi" data-label-align="left">
                         <div className="flex gap-2">
                           {item.isAutoTransaction ? (
                             <span className="badge badge-muted" title="Otomatis terhubung dengan fitur transaksi sewa" style={{ fontSize: '11px', padding: '6px 10px' }}>
