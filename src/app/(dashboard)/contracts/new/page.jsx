@@ -6,7 +6,15 @@ import { createClient } from '@/lib/supabase/client';
 import { compressImage } from '@/lib/imageCompressor';
 import SignaturePad from '@/components/contracts/SignaturePad';
 import VehicleCombobox from '@/components/shared/VehicleCombobox';
-import CustomerPickerCombobox from '@/components/shared/CustomerPickerCombobox';
+
+function formatDate(d) {
+  if (!d) return '-';
+  try {
+    return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch {
+    return d;
+  }
+}
 
 function PhotoField({ label, hint, value, onChange }) {
   const [uploading, setUploading] = useState(false);
@@ -69,12 +77,25 @@ function PhotoField({ label, hint, value, onChange }) {
   );
 }
 
+function RecapRow({ icon, label, value }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '9px 0', borderBottom: '1px dashed var(--bg-border)' }}>
+      <i className={icon} style={{ width: '16px', color: 'var(--brand-primary)', marginTop: '2px', fontSize: '12px' }}></i>
+      <div>
+        <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{label}</div>
+        <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)' }}>{value || '-'}</div>
+      </div>
+    </div>
+  );
+}
+
 function NewContractInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const transactionId = searchParams.get('transactionId') || '';
   const vehicleIdParam = searchParams.get('vehicleId') || '';
   const bookingId = searchParams.get('bookingId') || '';
+  const isFromBooking = !!bookingId;
 
   const [vehicles, setVehicles] = useState([]);
   const [loadingContext, setLoadingContext] = useState(true);
@@ -85,6 +106,7 @@ function NewContractInner() {
 
   const [form, setForm] = useState({
     vehicle_id: vehicleIdParam,
+    vehicle_label: '',
     customer_name: '',
     customer_id_number: '',
     customer_phone: '',
@@ -97,7 +119,9 @@ function NewContractInner() {
   const [vehiclePhoto, setVehiclePhoto] = useState('');
   const [signature, setSignature] = useState('');
 
-  // Muat daftar motor (buat dropdown) + prefill dari transaksi kalau datang dari tombol "Buat Kontrak" di halaman Transaksi.
+  // Prefill dari Transaksi atau Booking — kalau dari booking, data diri &
+  // detail sewa sudah pasti lengkap, jadi driver tinggal isi yang belum
+  // ada: no. KTP/Passport, 2 foto, dan tanda tangan.
   useEffect(() => {
     Promise.resolve().then(async () => {
       const supabase = createClient();
@@ -105,11 +129,12 @@ function NewContractInner() {
       setVehicles(vData || []);
 
       if (transactionId) {
-        const { data: tx } = await supabase.from('transactions').select('*').eq('id', transactionId).maybeSingle();
+        const { data: tx } = await supabase.from('transactions').select('*, vehicles(name, plate_number)').eq('id', transactionId).maybeSingle();
         if (tx) {
           setForm(prev => ({
             ...prev,
             vehicle_id: tx.vehicle_id || prev.vehicle_id,
+            vehicle_label: tx.vehicles ? `${tx.vehicles.name}${tx.vehicles.plate_number ? ' — ' + tx.vehicles.plate_number : ''}` : '',
             customer_name: tx.renter_name || '',
             customer_phone: tx.renter_phone || '',
             customer_address: tx.renter_address || '',
@@ -123,6 +148,7 @@ function NewContractInner() {
           setForm(prev => ({
             ...prev,
             vehicle_id: booking.vehicle_id || prev.vehicle_id,
+            vehicle_label: booking.vehicle_name || '',
             customer_name: booking.customer_name || '',
             customer_phone: booking.customer_phone || '',
             customer_address: booking.customer_address || '',
@@ -137,17 +163,6 @@ function NewContractInner() {
 
   const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
-  const handleSelectCustomer = (cust) => {
-    setForm(prev => ({
-      ...prev,
-      customer_name: cust.name || prev.customer_name,
-      customer_id_number: cust.id_number || prev.customer_id_number,
-      customer_phone: cust.phone || prev.customer_phone,
-      customer_address: cust.address || prev.customer_address,
-    }));
-    if (cust.customer_image_url) setPassportPhoto(cust.customer_image_url);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.customer_name.trim()) { setError('Nama customer wajib diisi.'); return; }
@@ -158,6 +173,7 @@ function NewContractInner() {
     setError('');
 
     const selectedVehicle = vehicles.find(v => v.id === form.vehicle_id);
+    const vehicleName = form.vehicle_label || (selectedVehicle ? `${selectedVehicle.name}${selectedVehicle.plate_number ? ' — ' + selectedVehicle.plate_number : ''}` : null);
 
     try {
       const res = await fetch('/api/contracts', {
@@ -167,7 +183,7 @@ function NewContractInner() {
           transaction_id: transactionId || null,
           booking_id: bookingId || null,
           vehicle_id: form.vehicle_id || null,
-          vehicle_name: selectedVehicle ? `${selectedVehicle.name}${selectedVehicle.plate_number ? ' — ' + selectedVehicle.plate_number : ''}` : null,
+          vehicle_name: vehicleName,
           customer_name: form.customer_name.trim(),
           customer_id_number: form.customer_id_number.trim() || null,
           customer_phone: form.customer_phone.trim() || null,
@@ -197,54 +213,51 @@ function NewContractInner() {
   if (success) {
     return (
       <div className="page-content">
-        <div className="card" style={{ maxWidth: '480px', margin: '40px auto', padding: '36px 28px', textAlign: 'center' }}>
+        <div className="card" style={{ maxWidth: '440px', margin: '32px auto', padding: '32px 26px', textAlign: 'center' }}>
           <div style={{
-            width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(34,197,94,0.15)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', fontSize: '28px', color: '#22C55E',
+            width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(34,197,94,0.15)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', fontSize: '26px', color: '#22C55E',
           }}>
             <i className="fa-solid fa-check"></i>
           </div>
-          <h2 style={{ margin: '0 0 8px 0' }}>Kontrak Tersimpan!</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
-            Kontrak sewa untuk {form.customer_name} sudah tercatat lengkap dengan tanda tangan & foto.
+          <h2 style={{ margin: '0 0 6px 0', fontSize: '19px' }}>Kontrak Tersimpan!</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '26px' }}>
+            Kontrak sewa untuk <strong>{form.customer_name}</strong> sudah tercatat lengkap dengan tanda tangan &amp; foto.
           </p>
 
-          {createdContract?.id && (
-            <a
-              href={`/api/contracts/${createdContract.id}/pdf`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary"
-              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '12px' }}
-            >
-              <i className="fa-solid fa-file-pdf" style={{ marginRight: '6px' }}></i> Download / Share PDF ke Customer
-            </a>
-          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {createdContract?.id && (
+              <a
+                href={`/api/contracts/${createdContract.id}/pdf`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <i className="fa-solid fa-file-pdf" style={{ marginRight: '6px' }}></i> Download / Share PDF ke Customer
+              </a>
+            )}
 
-          {bookingId && (
-            <button
-              className="btn btn-secondary"
-              style={{ width: '100%', marginBottom: '12px' }}
-              onClick={() => router.push(`/bookings?tab=confirmed`)}
-            >
-              <i className="fa-solid fa-arrow-left" style={{ marginRight: '6px' }}></i> Kembali ke Booking Confirmation
-            </button>
-          )}
-
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-            <button className="btn btn-secondary" onClick={() => router.push('/contracts')}>
-              <i className="fa-solid fa-list" style={{ marginRight: '6px' }}></i> Lihat Laporan Kontrak
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                setForm({ vehicle_id: '', customer_name: '', customer_id_number: '', customer_phone: '', customer_address: '', start_date: '', end_date: '', notes: '' });
-                setPassportPhoto(''); setVehiclePhoto(''); setSignature(''); setSuccess(false); setCreatedContract(null);
-              }}
-            >
-              <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Buat Kontrak Lain
-            </button>
+            {isFromBooking ? (
+              <button className="btn btn-secondary" onClick={() => router.push('/bookings?tab=confirmed')}>
+                <i className="fa-solid fa-arrow-left" style={{ marginRight: '6px' }}></i> Kembali ke Booking Confirmation
+              </button>
+            ) : (
+              <button className="btn btn-secondary" onClick={() => router.push('/contracts')}>
+                <i className="fa-solid fa-list" style={{ marginRight: '6px' }}></i> Lihat Laporan Kontrak
+              </button>
+            )}
           </div>
+
+          <button
+            style={{ marginTop: '18px', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '12px', textDecoration: 'underline', cursor: 'pointer' }}
+            onClick={() => {
+              setForm({ vehicle_id: '', vehicle_label: '', customer_name: '', customer_id_number: '', customer_phone: '', customer_address: '', start_date: '', end_date: '', notes: '' });
+              setPassportPhoto(''); setVehiclePhoto(''); setSignature(''); setSuccess(false); setCreatedContract(null);
+            }}
+          >
+            Buat kontrak lain
+          </button>
         </div>
       </div>
     );
@@ -255,7 +268,9 @@ function NewContractInner() {
       <div className="page-header-row" style={{ marginBottom: '18px' }}>
         <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>Buat Kontrak Baru</h1>
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
-          Isi data diri customer, ambil foto, lalu minta customer tanda tangan langsung di layar ini.
+          {isFromBooking
+            ? 'Data booking sudah otomatis terisi — tinggal lengkapi no. ID, foto, dan tanda tangan customer.'
+            : 'Isi data diri customer, ambil foto, lalu minta customer tanda tangan langsung di layar ini.'}
         </p>
       </div>
 
@@ -265,64 +280,68 @@ function NewContractInner() {
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
-          <div className="card" style={{ marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0, marginBottom: '18px' }}>
-              <i className="fa-solid fa-id-card" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
-              Data Diri Customer
-            </h3>
-
-            <div style={{ marginBottom: '20px' }}>
-              <CustomerPickerCombobox onSelectCustomer={handleSelectCustomer} label="Tamu Repeater? Auto-Fill Di Sini" />
+          {isFromBooking ? (
+            <div className="card" style={{ marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0, marginBottom: '4px' }}>
+                <i className="fa-solid fa-clipboard-check" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
+                Ringkasan Booking
+              </h3>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 0, marginBottom: '10px' }}>Otomatis dari data booking, tidak perlu diisi ulang.</p>
+              <RecapRow icon="fa-solid fa-user" label="Nama Customer" value={form.customer_name} />
+              <RecapRow icon="fa-solid fa-phone" label="Telepon / WhatsApp" value={form.customer_phone} />
+              <RecapRow icon="fa-solid fa-location-dot" label="Alamat" value={form.customer_address} />
+              <RecapRow icon="fa-solid fa-motorcycle" label="Motor" value={form.vehicle_label} />
+              <RecapRow icon="fa-solid fa-calendar-days" label="Tanggal Sewa" value={`${formatDate(form.start_date)} — ${formatDate(form.end_date)}`} />
             </div>
+          ) : (
+            <>
+              <div className="card" style={{ marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0, marginBottom: '18px' }}>
+                  <i className="fa-solid fa-id-card" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
+                  Data Diri Customer
+                </h3>
+                <div className="form-group">
+                  <label className="form-label">Nama Lengkap *</label>
+                  <input type="text" className="form-control" value={form.customer_name} onChange={(e) => handleChange('customer_name', e.target.value)} required />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Nomor Telepon / WhatsApp</label>
+                  <input type="tel" className="form-control" value={form.customer_phone} onChange={(e) => handleChange('customer_phone', e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Alamat (di Bali / domisili)</label>
+                  <textarea className="form-control" rows={2} value={form.customer_address} onChange={(e) => handleChange('customer_address', e.target.value)} style={{ resize: 'vertical' }} />
+                </div>
+              </div>
 
-            <div className="form-group">
-              <label className="form-label">Nama Lengkap *</label>
-              <input type="text" className="form-control" value={form.customer_name} onChange={(e) => handleChange('customer_name', e.target.value)} required />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Nomor KTP / Passport</label>
-              <input type="text" className="form-control" value={form.customer_id_number} onChange={(e) => handleChange('customer_id_number', e.target.value)} />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Nomor Telepon / WhatsApp</label>
-              <input type="tel" className="form-control" value={form.customer_phone} onChange={(e) => handleChange('customer_phone', e.target.value)} />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Alamat (di Bali / domisili)</label>
-              <textarea className="form-control" rows={2} value={form.customer_address} onChange={(e) => handleChange('customer_address', e.target.value)} style={{ resize: 'vertical' }} />
-            </div>
-          </div>
+              <div className="card" style={{ marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0 }}>
+                  <i className="fa-solid fa-motorcycle" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
+                  Detail Sewa
+                </h3>
+                <VehicleCombobox vehicles={vehicles} value={form.vehicle_id} onChange={(id) => handleChange('vehicle_id', id)} required={false} />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+                  <div className="form-group">
+                    <label className="form-label">Tanggal Mulai *</label>
+                    <input type="date" className="form-control" value={form.start_date} onChange={(e) => handleChange('start_date', e.target.value)} required />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Tanggal Selesai *</label>
+                    <input type="date" className="form-control" min={form.start_date} value={form.end_date} onChange={(e) => handleChange('end_date', e.target.value)} required />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="card" style={{ marginBottom: '16px' }}>
             <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0 }}>
-              <i className="fa-solid fa-motorcycle" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
-              Detail Sewa
+              <i className="fa-solid fa-id-card-clip" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
+              Nomor Identitas
             </h3>
-
-            <VehicleCombobox
-              vehicles={vehicles}
-              value={form.vehicle_id}
-              onChange={(id) => handleChange('vehicle_id', id)}
-              required={false}
-            />
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
-              <div className="form-group">
-                <label className="form-label">Tanggal Mulai *</label>
-                <input type="date" className="form-control" value={form.start_date} onChange={(e) => handleChange('start_date', e.target.value)} required />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Tanggal Selesai *</label>
-                <input type="date" className="form-control" min={form.start_date} value={form.end_date} onChange={(e) => handleChange('end_date', e.target.value)} required />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Catatan (opsional)</label>
-              <textarea className="form-control" rows={2} value={form.notes} onChange={(e) => handleChange('notes', e.target.value)} style={{ resize: 'vertical' }} />
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Nomor KTP / Passport</label>
+              <input type="text" className="form-control" value={form.customer_id_number} onChange={(e) => handleChange('customer_id_number', e.target.value)} placeholder="Ketik sesuai KTP / Passport customer" />
             </div>
           </div>
 
@@ -332,18 +351,8 @@ function NewContractInner() {
               Dokumentasi Foto
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
-              <PhotoField
-                label="Foto Passport / KTP"
-                hint="Pastikan nama & nomor terbaca jelas."
-                value={passportPhoto}
-                onChange={setPassportPhoto}
-              />
-              <PhotoField
-                label="Foto Customer + Motor"
-                hint="Customer berdiri di samping motor yang disewa."
-                value={vehiclePhoto}
-                onChange={setVehiclePhoto}
-              />
+              <PhotoField label="Foto Passport / KTP" hint="Pastikan nama & nomor terbaca jelas." value={passportPhoto} onChange={setPassportPhoto} />
+              <PhotoField label="Foto Customer + Motor" hint="Customer berdiri di samping motor yang disewa." value={vehiclePhoto} onChange={setVehiclePhoto} />
             </div>
           </div>
 
@@ -357,6 +366,15 @@ function NewContractInner() {
             </p>
             <SignaturePad onChange={setSignature} />
           </div>
+
+          {!isFromBooking && (
+            <div className="card" style={{ marginBottom: '16px' }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Catatan (opsional)</label>
+                <textarea className="form-control" rows={2} value={form.notes} onChange={(e) => handleChange('notes', e.target.value)} style={{ resize: 'vertical' }} />
+              </div>
+            </div>
+          )}
 
           {error && (
             <div className="alert alert-danger" style={{ marginBottom: '16px' }}>

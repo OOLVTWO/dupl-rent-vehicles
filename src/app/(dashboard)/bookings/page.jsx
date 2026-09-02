@@ -7,6 +7,7 @@ import { formatRupiah } from '@/lib/finance';
 import { getWhatsAppShareUrl } from '@/lib/countryCodes';
 import { useRole } from '@/lib/RoleContext';
 import { createClient } from '@/lib/supabase/client';
+import { getPaymentMethods } from '@/lib/paymentMethods';
 
 const BUSINESS_NAME = 'Demo Rental Preview';
 
@@ -245,6 +246,141 @@ function EditBookingModal({ booking, onClose, onSaved }) {
   );
 }
 
+function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
+  const [deposit, setDeposit] = useState('');
+  const [kmStart, setKmStart] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [paymentStatus, setPaymentStatus] = useState('paid');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const paymentMethods = getPaymentMethods().filter(m => m.active !== false);
+
+  const handleConfirm = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          booking_id: booking.id,
+          vehicle_id: booking.vehicle_id,
+          renter_name: booking.customer_name,
+          renter_phone: booking.customer_phone,
+          renter_address: booking.customer_address,
+          renter_id_number: contract?.customer_id_number || null,
+          customer_image_url: contract?.passport_photo_url || null,
+          handover_image_url: contract?.customer_vehicle_photo_url || null,
+          start_date: booking.start_date,
+          end_date: booking.end_date,
+          deposit: Number(deposit) || 0,
+          km_start: Number(kmStart) || 0,
+          total_price: Number(booking.estimated_price) || 0,
+          payment_method: paymentMethod,
+          payment_status: paymentStatus,
+          status: 'active',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || 'Gagal konfirmasi transaksi.');
+        setSaving(false);
+        return;
+      }
+      onConfirmed();
+    } catch {
+      setError('Gagal terhubung ke server.');
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <div>
+            <div className="modal-title">Konfirmasi Transaksi</div>
+            <div className="modal-subtitle">Data booking &amp; kontrak sudah otomatis dipakai — tinggal lengkapi ini</div>
+          </div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+
+        <div style={{ background: 'var(--bg-elevated)', borderRadius: '10px', padding: '12px 14px', marginBottom: '16px', fontSize: '12.5px' }}>
+          <div style={{ fontWeight: 700, marginBottom: '4px' }}>{booking.customer_name} — {booking.vehicle_name}</div>
+          <div style={{ color: 'var(--text-muted)' }}>{booking.customer_phone} · {formatDate(booking.start_date)} — {formatDate(booking.end_date)}</div>
+          {contract?.customer_id_number && (
+            <div style={{ color: 'var(--text-muted)' }}>ID: {contract.customer_id_number}</div>
+          )}
+          {!contract && (
+            <div style={{ color: '#F59E0B', marginTop: '4px' }}>
+              <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '4px' }}></i>
+              Belum ada kontrak terhubung — no. ID customer tidak terisi otomatis.
+            </div>
+          )}
+        </div>
+
+        <form onSubmit={handleConfirm}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+            <div className="form-group">
+              <label className="form-label">Deposit (Rp)</label>
+              <input type="number" min="0" className="form-control" value={deposit} onChange={(e) => setDeposit(e.target.value)} placeholder="0" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">KM Awal</label>
+              <input type="number" min="0" className="form-control" value={kmStart} onChange={(e) => setKmStart(e.target.value)} placeholder="0" />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Metode Pembayaran</label>
+            <select className="form-control" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
+              {paymentMethods.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Status Pembayaran</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              {[
+                { key: 'paid', label: 'Sudah Lunas', color: '#22C55E' },
+                { key: 'unpaid', label: 'Belum Bayar', color: '#F59E0B' },
+              ].map(opt => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setPaymentStatus(opt.key)}
+                  style={{
+                    padding: '10px', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px',
+                    border: paymentStatus === opt.key ? `2px solid ${opt.color}` : '1px solid var(--bg-border)',
+                    background: paymentStatus === opt.key ? `${opt.color}22` : 'transparent',
+                    color: paymentStatus === opt.key ? opt.color : 'var(--text-secondary)',
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {error && (
+            <div className="alert alert-danger" style={{ marginBottom: '12px' }}>
+              <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '6px' }}></i>{error}
+            </div>
+          )}
+
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" onClick={onClose}>Batal</button>
+            <button type="submit" className="btn btn-primary" disabled={saving}>
+              {saving ? <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>Menyimpan...</> : <><i className="fa-solid fa-check" style={{ marginRight: '6px' }}></i>Konfirmasi Transaksi</>}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function BookingsPageInner() {
   const role = useRole();
   const [bookings, setBookings] = useState([]);
@@ -253,9 +389,10 @@ function BookingsPageInner() {
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState('');
   const [editingBooking, setEditingBooking] = useState(null);
+  const [confirmTxBooking, setConfirmTxBooking] = useState(null);
   const [drivers, setDrivers] = useState([]);
   const [myUserId, setMyUserId] = useState(null);
-  const [contractedBookingIds, setContractedBookingIds] = useState(new Set());
+  const [contractsByBookingId, setContractsByBookingId] = useState(new Map());
 
   useEffect(() => {
     Promise.resolve().then(async () => {
@@ -267,17 +404,20 @@ function BookingsPageInner() {
     });
   }, []);
 
-  useEffect(() => {
-    Promise.resolve().then(async () => {
-      try {
-        const res = await fetch('/api/contracts');
-        const data = await res.json().catch(() => []);
-        if (res.ok) {
-          setContractedBookingIds(new Set((Array.isArray(data) ? data : []).map(c => c.booking_id).filter(Boolean)));
-        }
-      } catch { /* ignore */ }
-    });
+  const fetchContracts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/contracts');
+      const data = await res.json().catch(() => []);
+      if (res.ok) {
+        const map = new Map();
+        (Array.isArray(data) ? data : []).forEach(c => { if (c.booking_id) map.set(c.booking_id, c); });
+        setContractsByBookingId(map);
+      }
+    } catch { /* ignore */ }
   }, []);
+
+  useEffect(() => { Promise.resolve().then(fetchContracts); }, [fetchContracts]);
+
 
   const fetchDrivers = useCallback(async () => {
     try {
@@ -563,7 +703,7 @@ function BookingsPageInner() {
                                   Delivered {new Date(b.delivered_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                 </span>
                               ) : (role === 'driver' && myUserId === b.assigned_driver_id) && (
-                                contractedBookingIds.has(b.id) ? (
+                                contractsByBookingId.has(b.id) ? (
                                   <button
                                     type="button"
                                     disabled={busyId === b.id}
@@ -591,9 +731,9 @@ function BookingsPageInner() {
                               )
                             )}
                             {b.assigned_driver_id && role === 'admin' && !b.delivered_at && (
-                              <span style={{ fontSize: '10.5px', color: contractedBookingIds.has(b.id) ? '#8B5CF6' : '#94A3B8' }}>
-                                <i className={`fa-solid ${contractedBookingIds.has(b.id) ? 'fa-file-signature' : 'fa-hourglass-half'}`} style={{ marginRight: '4px' }}></i>
-                                {contractedBookingIds.has(b.id) ? 'Kontrak sudah dibuat' : 'Menunggu driver'}
+                              <span style={{ fontSize: '10.5px', color: contractsByBookingId.has(b.id) ? '#8B5CF6' : '#94A3B8' }}>
+                                <i className={`fa-solid ${contractsByBookingId.has(b.id) ? 'fa-file-signature' : 'fa-hourglass-half'}`} style={{ marginRight: '4px' }}></i>
+                                {contractsByBookingId.has(b.id) ? 'Kontrak sudah dibuat' : 'Menunggu driver'}
                               </span>
                             )}
                           </div>
@@ -607,19 +747,20 @@ function BookingsPageInner() {
                       <td data-label="Aksi" data-label-align="left">
                         <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                           {role === 'admin' && b.status === 'confirmed' && (b.fulfillment_method !== 'delivery' || b.delivered_at) && (
-                            <Link
-                              href={`/transactions?bookingId=${b.id}`}
-                              title="Buat Transaksi dari booking ini"
+                            <button
+                              type="button"
+                              onClick={() => setConfirmTxBooking(b)}
+                              title="Konfirmasi Transaksi dari booking ini"
                               style={{
                                 display: 'inline-flex', alignItems: 'center', gap: '5px',
                                 fontSize: '11px', fontWeight: 800, padding: '7px 10px',
                                 background: 'rgba(37,99,235,0.12)', color: 'var(--brand-primary-light, #3B82F6)',
                                 border: '1px solid var(--brand-primary-light, #3B82F6)', borderRadius: 'var(--radius-md)',
-                                textDecoration: 'none',
+                                cursor: 'pointer',
                               }}
                             >
-                              <i className="fa-solid fa-file-invoice-dollar"></i> Buat Transaksi
-                            </Link>
+                              <i className="fa-solid fa-file-invoice-dollar"></i> Konfirmasi Transaksi
+                            </button>
                           )}
                           {role === 'admin' ? (
                             <>
@@ -695,6 +836,19 @@ function BookingsPageInner() {
           booking={editingBooking}
           onClose={() => setEditingBooking(null)}
           onSaved={handleEditSaved}
+        />
+      )}
+
+      {confirmTxBooking && (
+        <ConfirmTransactionModal
+          booking={confirmTxBooking}
+          contract={contractsByBookingId.get(confirmTxBooking.id) || null}
+          onClose={() => setConfirmTxBooking(null)}
+          onConfirmed={() => {
+            setConfirmTxBooking(null);
+            fetchBookings();
+            fetchContracts();
+          }}
         />
       )}
     </div>
