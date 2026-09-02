@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { getPaymentMethods, savePaymentMethods, DEFAULT_PAYMENT_METHODS } from '@/lib/paymentMethods';
 import {
   getWaTemplate,
   saveWaTemplate,
@@ -37,27 +36,6 @@ function formatRupiah(amount) {
     minimumFractionDigits: 0,
   }).format(amount || 0);
 }
-
-const FA_ICON_OPTIONS = [
-  { icon: 'fa-solid fa-money-bill-wave', label: 'Uang Tunai' },
-  { icon: 'fa-solid fa-building-columns', label: 'Bank / Transfer' },
-  { icon: 'fa-solid fa-qrcode', label: 'QRIS / Barcode' },
-  { icon: 'fa-solid fa-credit-card', label: 'Kartu Kredit / Debit' },
-  { icon: 'fa-solid fa-globe', label: 'Wise / International' },
-  { icon: 'fa-solid fa-wallet', label: 'E-Wallet' },
-  { icon: 'fa-solid fa-receipt', label: 'Faktur / Invoice' },
-  { icon: 'fa-solid fa-vault', label: 'Deposit Jaminan' },
-];
-
-const COLOR_OPTIONS = [
-  { hex: '#22C55E', label: 'Hijau' },
-  { hex: '#3B82F6', label: 'Biru' },
-  { hex: '#8B5CF6', label: 'Ungu' },
-  { hex: '#F59E0B', label: 'Kuning' },
-  { hex: '#EF4444', label: 'Merah' },
-  { hex: '#06B6D4', label: 'Cyan' },
-  { hex: '#EC4899', label: 'Pink' },
-];
 
 const DEFAULT_STORAGE_PHOTOS = [
   { id: 'logo-company', title: 'Company Official Logo (logoCompany.png)', url: '/images/logoCompany.png', date: 'System Asset' },
@@ -343,12 +321,6 @@ export default function SettingsPage() {
   // Statistics State
   const [stats, setStats] = useState({ vehicles: 0, transactions: 0, expenses: 0 });
   const [loadingStats, setLoadingStats] = useState(true);
-
-  // Payment Methods State
-  const [paymentMethods, setPaymentMethodsState] = useState([]);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [editPayment, setEditPayment] = useState(null);
-  const [paymentForm, setPaymentForm] = useState({ id: '', label: '', icon: 'fa-solid fa-building-columns', color: '#3B82F6', active: true });
 
   // Security / Password State
   const [passForm, setPassForm] = useState({ currentPass: '', newPass: '', confirmPass: '' });
@@ -945,7 +917,6 @@ export default function SettingsPage() {
     // Defer ke microtask: hindari setState sinkron di dalam effect
     Promise.resolve().then(() => {
       fetchStats();
-      setPaymentMethodsState(getPaymentMethods());
 
       // Load business settings from local storage if available, and merge all default storage photos
       try {
@@ -984,52 +955,6 @@ export default function SettingsPage() {
     } catch {
       showAlert(`Gagal mengeksport data ${type}.`, 'danger');
     }
-  };
-
-  // Save Payment Method (Add / Edit)
-  const handleSavePaymentMethod = (e) => {
-    e.preventDefault();
-    const id = paymentForm.id ? paymentForm.id : paymentForm.label.toLowerCase().replace(/[^a-z0-9]/g, '_');
-    const newMethod = { ...paymentForm, id };
-
-    let updated;
-    if (editPayment) {
-      updated = paymentMethods.map(m => m.id === editPayment.id ? newMethod : m);
-    } else {
-      updated = [...paymentMethods, newMethod];
-    }
-
-    setPaymentMethodsState(updated);
-    savePaymentMethods(updated);
-    setShowPaymentModal(false);
-    setEditPayment(null);
-    showAlert('Metode pembayaran berhasil disimpan!');
-  };
-
-  // Toggle Payment Method Active Status
-  const handleTogglePaymentActive = (id) => {
-    const updated = paymentMethods.map(m => m.id === id ? { ...m, active: !m.active } : m);
-    setPaymentMethodsState(updated);
-    savePaymentMethods(updated);
-  };
-
-  // Delete Payment Method
-  const handleDeletePaymentMethod = (id) => {
-    if (paymentMethods.length <= 1) {
-      showAlert('Minimal harus ada 1 metode pembayaran aktif.', 'danger');
-      return;
-    }
-    const updated = paymentMethods.filter(m => m.id !== id);
-    setPaymentMethodsState(updated);
-    savePaymentMethods(updated);
-    showAlert('Metode pembayaran dihapus.');
-  };
-
-  // Reset Payment Methods to Default
-  const handleResetPaymentMethods = () => {
-    setPaymentMethodsState(DEFAULT_PAYMENT_METHODS);
-    savePaymentMethods(DEFAULT_PAYMENT_METHODS);
-    showAlert('Metode pembayaran dikembalikan ke default.');
   };
 
   // Change Password
@@ -1312,87 +1237,52 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* TAB 2: METODE PEMBAYARAN (DYNAMIC PAYMENT ADJUSTER) */}
+      {/* TAB 2: METODE PEMBAYARAN */}
       {activeTab === 'payment' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
-              <div>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>
-                  <i className="fa-solid fa-credit-card" style={{ marginRight: '8px', color: 'var(--brand-primary-light)' }}></i>
-                  Pengaturan Metode Pembayaran
-                </h3>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                  Tambah, edit, atau nonaktifkan pilihan metode pembayaran yang tampil saat membuat transaksi sewa
-                </p>
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button className="btn btn-secondary btn-sm" onClick={handleResetPaymentMethods}>
-                  <i className="fa-solid fa-rotate-left" style={{ marginRight: '4px' }}></i> Reset Default
-                </button>
-                <button className="btn btn-primary" onClick={() => { setEditPayment(null); setPaymentForm({ id: '', label: '', icon: 'fa-solid fa-building-columns', color: '#3B82F6', active: true }); setShowPaymentModal(true); }}>
-                  <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Tambah Metode Baru
-                </button>
-              </div>
+            <div style={{ marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>
+                <i className="fa-solid fa-credit-card" style={{ marginRight: '8px', color: 'var(--brand-primary-light)' }}></i>
+                Metode Pembayaran
+              </h3>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                4 pilihan ini sama persis dengan yang dilihat customer saat booking di /fleet, dan otomatis dipakai
+                di seluruh alur (booking, kontrak, transaksi) — biar datanya selalu konsisten dan nggak beda-beda sendiri.
+                Nggak bisa ditambah/dihapus supaya semua bagian tetap nyambung.
+              </p>
             </div>
 
-            {/* Payment Methods List */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {paymentMethods.map((method) => (
+              {[
+                { id: 'cash',     label: 'Cash / Tunai',    icon: 'fa-solid fa-money-bill-wave',    color: '#22C55E' },
+                { id: 'transfer', label: 'Bank Transfer',   icon: 'fa-solid fa-building-columns',   color: '#3B82F6' },
+                { id: 'qris',     label: 'QRIS',             icon: 'fa-solid fa-qrcode',              color: '#8B5CF6' },
+                { id: 'card',     label: 'Kartu (EDC)',      icon: 'fa-solid fa-credit-card',         color: '#F59E0B' },
+              ].map((method) => (
                 <div
                   key={method.id}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '14px 18px',
-                    borderRadius: '10px',
-                    border: `1px solid ${method.active ? 'var(--bg-border)' : 'rgba(239, 68, 68, 0.2)'}`,
-                    background: method.active ? 'var(--bg-elevated)' : 'rgba(0,0,0,0.2)',
-                    opacity: method.active ? 1 : 0.6,
-                    transition: 'all 0.15s ease'
+                    display: 'flex', alignItems: 'center', gap: '14px',
+                    padding: '14px 18px', borderRadius: '10px',
+                    border: '1px solid var(--bg-border)', background: 'var(--bg-elevated)',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <div style={{
-                      width: '40px', height: '40px', borderRadius: '10px',
-                      background: `${method.color}20`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: method.color, fontSize: '18px'
-                    }}>
-                      <i className={method.icon}></i>
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)' }}>
-                        {method.label}
-                      </div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                        ID System: <code>{method.id}</code> | Status: {method.active ? <span style={{ color: '#22C55E' }}>Aktif ✓</span> : <span style={{ color: '#EF4444' }}>Non-Aktif ✕</span>}
-                      </div>
-                    </div>
+                  <div style={{
+                    width: '40px', height: '40px', borderRadius: '10px',
+                    background: `${method.color}20`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: method.color, fontSize: '18px'
+                  }}>
+                    <i className={method.icon}></i>
                   </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <button
-                      className={`btn btn-${method.active ? 'secondary' : 'success'} btn-sm`}
-                      onClick={() => handleTogglePaymentActive(method.id)}
-                      title={method.active ? 'Nonaktifkan' : 'Aktifkan'}
-                    >
-                      <i className={`fa-solid ${method.active ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                      {method.active ? ' Sembunyikan' : ' Tampilkan'}
-                    </button>
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => { setEditPayment(method); setPaymentForm(method); setShowPaymentModal(true); }}
-                    >
-                      <i className="fa-solid fa-pen-to-square"></i>
-                    </button>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDeletePaymentMethod(method.id)}
-                    >
-                      <i className="fa-solid fa-trash-can"></i>
-                    </button>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)' }}>
+                      {method.label}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      ID System: <code>{method.id}</code> · Selalu aktif di semua alur
+                    </div>
                   </div>
                 </div>
               ))}
@@ -2806,95 +2696,6 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* MODAL TAMBAH / EDIT METODE PEMBAYARAN */}
-      {showPaymentModal && (
-        <div className="modal-overlay" onClick={() => setShowPaymentModal(false)}>
-          <div className="modal modal-md" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <div className="modal-title">
-                <i className="fa-solid fa-credit-card" style={{ marginRight: '6px', color: 'var(--brand-primary-light)' }}></i>
-                {editPayment ? 'Edit Metode Pembayaran' : 'Tambah Metode Pembayaran Baru'}
-              </div>
-              <button className="modal-close" onClick={() => setShowPaymentModal(false)}>✕</button>
-            </div>
-
-            <form onSubmit={handleSavePaymentMethod}>
-              <div className="form-group">
-                <label className="form-label" htmlFor="pm-label">
-                  <i className="fa-solid fa-tag" style={{ marginRight: '6px' }}></i> Nama Metode Pembayaran <span className="required">*</span>
-                </label>
-                <input
-                  id="pm-label"
-                  type="text"
-                  className="form-control"
-                  placeholder="e.g. Bank BRI, Wise Transfer, PayPal..."
-                  value={paymentForm.label}
-                  onChange={e => setPaymentForm(p => ({ ...p, label: e.target.value }))}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">
-                  <i className="fa-solid fa-icons" style={{ marginRight: '6px' }}></i> Pilih Ikon Font Awesome
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-                  {FA_ICON_OPTIONS.map((item) => (
-                    <button
-                      key={item.icon}
-                      type="button"
-                      onClick={() => setPaymentForm(p => ({ ...p, icon: item.icon }))}
-                      style={{
-                        padding: '10px',
-                        borderRadius: '8px',
-                        border: `1px solid ${paymentForm.icon === item.icon ? 'var(--brand-primary)' : 'var(--bg-border)'}`,
-                        background: paymentForm.icon === item.icon ? 'rgba(37, 99, 235, 0.15)' : 'var(--bg-elevated)',
-                        color: paymentForm.icon === item.icon ? 'var(--brand-primary-light)' : 'var(--text-secondary)',
-                        fontSize: '16px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <i className={item.icon}></i>
-                      <span style={{ fontSize: '10px' }}>{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">
-                  <i className="fa-solid fa-palette" style={{ marginRight: '6px' }}></i> Warna Aksentuasi Badge
-                </label>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  {COLOR_OPTIONS.map(c => (
-                    <div
-                      key={c.hex}
-                      onClick={() => setPaymentForm(p => ({ ...p, color: c.hex }))}
-                      style={{
-                        width: '32px', height: '32px', borderRadius: '50%',
-                        background: c.hex, cursor: 'pointer',
-                        border: paymentForm.color === c.hex ? '3px solid #fff' : 'none',
-                        boxShadow: paymentForm.color === c.hex ? '0 0 10px rgba(255,255,255,0.5)' : 'none'
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowPaymentModal(false)}>Batal</button>
-                <button type="submit" className="btn btn-primary">
-                  <i className="fa-solid fa-floppy-disk" style={{ marginRight: '6px' }}></i> Simpan Metode
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* RESTORE CONFIRMATION MODAL */}
       {restoreModalData && (
