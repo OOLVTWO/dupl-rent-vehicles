@@ -2,6 +2,8 @@ import { createAdminClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/apiAuth';
 import PDFDocument from 'pdfkit';
 
+export const runtime = 'nodejs';
+
 const BUSINESS_NAME = 'Demo Rental Preview';
 const BUSINESS_ADDRESS = 'Sample Address, Bali, Indonesia';
 const ACCENT = '#B8703F';

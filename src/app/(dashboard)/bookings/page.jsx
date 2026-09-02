@@ -260,6 +260,10 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
 
   const handleConfirm = async (e) => {
     e.preventDefault();
+    if (!booking.vehicle_id) {
+      setError('Booking ini tidak punya data motor (vehicle_id kosong) — tidak bisa dibuatkan transaksi. Coba edit booking-nya dulu untuk pilih motor.');
+      return;
+    }
     setSaving(true);
     setError('');
     try {

@@ -5,9 +5,9 @@
  *  1. Refresh session Supabase (access token) di setiap request.
  *  2. Proteksi login — user belum login diarahkan ke /login.
  *  3. Proteksi ROLE — akun Driver hanya boleh buka halaman yang diizinkan
- *     (Transaksi, Booking, Tracking, Ketersediaan, Pengeluaran, Kontrak).
- *     Selain itu (Data Motor, Customer, Laporan, Pengaturan, Maintenance,
- *     Gallery, Dashboard) otomatis diarahkan balik ke /transactions.
+ *     (Dashboard, Booking, Tracking, Ketersediaan, Pengeluaran, Kontrak).
+ *     Selain itu (Transaksi, Data Motor, Customer, Laporan, Pengaturan,
+ *     Maintenance, Gallery) otomatis diarahkan balik ke /dashboard.
  *
  * Sebelum file ini ada, token tidak pernah di-refresh: setelah ±1 jam
  * halaman client (vehicles, transactions, dll.) gagal fetch diam-diam
@@ -19,7 +19,6 @@ import { NextResponse } from 'next/server';
 // Prefix path yang boleh diakses akun Driver.
 const DRIVER_ALLOWED_PREFIXES = [
   '/dashboard',
-  '/transactions',
   '/bookings',
   '/tracking',
   '/availability',
@@ -100,7 +99,7 @@ export async function proxy(request) {
       const allowed = DRIVER_ALLOWED_PREFIXES.some(p => pathname.startsWith(p));
       if (!allowed) {
         const url = request.nextUrl.clone();
-        url.pathname = '/transactions';
+        url.pathname = '/dashboard';
         return NextResponse.redirect(url);
       }
     }

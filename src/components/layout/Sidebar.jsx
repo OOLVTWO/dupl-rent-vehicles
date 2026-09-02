@@ -29,7 +29,7 @@ const NAV_SECTIONS = [
           { href: '/bookings?tab=cancelled', iconClass: 'fa-solid fa-circle-xmark',      label: 'Cancelled' },
         ],
       },
-      { href: '/transactions', iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi',      badge: null, driverAllowed: true },
+      { href: '/transactions', iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi',      badge: null },
       {
         href: '/contracts',
         iconClass: 'fa-solid fa-file-signature',

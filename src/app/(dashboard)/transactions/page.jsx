@@ -7,7 +7,7 @@ import { useRole } from '@/lib/RoleContext';
 import VehicleCombobox from '@/components/shared/VehicleCombobox';
 import CustomerPickerCombobox from '@/components/shared/CustomerPickerCombobox';
 import { compressImage } from '@/lib/imageCompressor';
-import { getPaymentMethods, getPaymentMethodMeta } from '@/lib/paymentMethods';
+import { getPaymentMethodMeta } from '@/lib/paymentMethods';
 import { COUNTRY_CODES, getWhatsAppShareUrl, generateInvoiceText, getFlagImageUrl } from '@/lib/countryCodes';
 import { createClient } from '@/lib/supabase/client';
 import { fetchCustomers, upsertCustomer } from '@/lib/customers';
@@ -719,9 +719,10 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
                 <i className="fa-solid fa-credit-card" style={{ marginRight: '6px' }}></i> Metode Bayar
               </label>
               <select id="tx-payment" name="payment_method" className="form-control" value={form.payment_method} onChange={handleChange}>
-                {getPaymentMethods().filter(m => m.active).map(m => (
-                  <option key={m.id} value={m.id}>{m.label}</option>
-                ))}
+                <option value="cash">Cash</option>
+                <option value="transfer">Bank Transfer</option>
+                <option value="qris">QRIS</option>
+                <option value="card">Kartu (EDC)</option>
               </select>
             </div>
           </div>

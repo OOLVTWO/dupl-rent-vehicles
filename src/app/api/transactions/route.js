@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/server';
-import { requireAuth, readJsonBody, missingFields, toNonNegativeNumber } from '@/lib/apiAuth';
+import { requireAdmin, readJsonBody, missingFields, toNonNegativeNumber } from '@/lib/apiAuth';
 import { NextResponse } from 'next/server';
 
 const VALID_STATUS = ['active', 'completed', 'cancelled'];
@@ -7,7 +7,7 @@ const VALID_PAYMENT = ['paid', 'unpaid'];
 
 // GET /api/transactions
 export async function GET(request) {
-  const authError = await requireAuth(request);
+  const authError = await requireAdmin(request);
   if (authError) return authError;
 
   const supabase = await createAdminClient();
@@ -36,9 +36,10 @@ export async function GET(request) {
   return NextResponse.json(Array.isArray(data) ? data : []);
 }
 
-// POST /api/transactions
+// POST /api/transactions — admin only. Driver sudah tidak lagi mengelola
+// transaksi sama sekali — fokus driver adalah Kontrak & Booking Confirmation.
 export async function POST(request) {
-  const authError = await requireAuth(request);
+  const authError = await requireAdmin(request);
   if (authError) return authError;
 
   const supabase = await createAdminClient();

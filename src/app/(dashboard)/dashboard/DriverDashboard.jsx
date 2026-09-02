@@ -138,9 +138,9 @@ export default function DriverDashboard({ fullName }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '10px', marginBottom: '20px' }}>
         {[
-          { href: '/transactions', icon: 'fa-solid fa-plus', label: 'Tambah Transaksi', color: '#3B82F6' },
-          { href: '/expenses', icon: 'fa-solid fa-wallet', label: 'Kelola Pengeluaran', color: '#22C55E' },
+          { href: '/bookings', icon: 'fa-solid fa-clipboard-list', label: 'Booking Confirmation', color: '#3B82F6' },
           { href: '/contracts/new', icon: 'fa-solid fa-file-signature', label: 'Buat Kontrak', color: '#8B5CF6' },
+          { href: '/expenses', icon: 'fa-solid fa-wallet', label: 'Kelola Pengeluaran', color: '#22C55E' },
         ].map(action => (
           <Link
             key={action.href}

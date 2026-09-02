@@ -198,6 +198,10 @@ export default function DashboardClient({ transactions, vehicles }) {
   const pendingBookings = bookings.filter(b => b.status === 'pending');
   const todaysBookings = bookings.filter(b => b.status === 'confirmed' && b.start_date === today);
   const unassignedDeliveriesToday = todaysBookings.filter(b => b.fulfillment_method === 'delivery' && !b.assigned_driver_id);
+  const tomorrowDate = new Date(`${today}T00:00:00`);
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrowStr = getLocalDateStr(tomorrowDate);
+  const tomorrowBookings = bookings.filter(b => (b.status === 'confirmed' || b.status === 'pending') && b.start_date === tomorrowStr);
   const activeBookings = bookings
     .filter(b => b.status === 'pending' || b.status === 'confirmed')
     .sort((a, b) => (a.start_date || '').localeCompare(b.start_date || ''));
@@ -253,7 +257,7 @@ export default function DashboardClient({ transactions, vehicles }) {
   return (
     <div className="dashboard-v2 fade-in">
 
-      {(unpaidTx.length > 0 || urgentVehicles.length > 0 || pendingBookings.length > 0 || todaysBookings.length > 0) && (
+      {(unpaidTx.length > 0 || urgentVehicles.length > 0 || pendingBookings.length > 0 || todaysBookings.length > 0 || tomorrowBookings.length > 0) && (
         <div className="dash-alerts">
           {pendingBookings.length > 0 && (
             <Link href="/bookings?tab=pending" className="dash-alert-bar" style={{ background: 'rgba(245, 158, 11, 0.12)', borderColor: 'rgba(245, 158, 11, 0.4)', color: '#F59E0B' }}>
@@ -269,6 +273,13 @@ export default function DashboardClient({ transactions, vehicles }) {
                 {todaysBookings.length} jadwal booking hari ini
                 {unassignedDeliveriesToday.length > 0 && ` — ${unassignedDeliveriesToday.length} delivery belum ada driver!`}
               </span>
+              <span className="alert-cta">Lihat Jadwal &rarr;</span>
+            </Link>
+          )}
+          {tomorrowBookings.length > 0 && (
+            <Link href="/bookings" className="dash-alert-bar" style={{ background: 'rgba(139, 92, 246, 0.12)', borderColor: 'rgba(139, 92, 246, 0.4)', color: '#8B5CF6' }}>
+              <i className="fa-solid fa-calendar-plus"></i>
+              <span>{tomorrowBookings.length} booking untuk besok — siap-siap dari sekarang</span>
               <span className="alert-cta">Lihat Jadwal &rarr;</span>
             </Link>
           )}
