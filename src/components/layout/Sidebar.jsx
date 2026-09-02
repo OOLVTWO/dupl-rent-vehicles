@@ -173,7 +173,7 @@ const DRIVER_NAV_SECTIONS = [
       { href: '/dashboard', iconClass: 'fa-solid fa-chart-pie', label: 'Dashboard' },
       {
         href: '/bookings',
-        iconClass: 'fa-solid fa-truck-fast',
+        iconClass: 'fa-solid fa-user-tie',
         label: 'Layanan Driver',
         badge: 'bookings',
         isDropdown: true,
