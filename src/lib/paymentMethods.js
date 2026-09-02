@@ -43,6 +43,7 @@ export function getPaymentMethodMeta(id) {
   if (id === 'cash') return { id: 'cash', label: 'Tunai', icon: 'fa-solid fa-money-bill-wave', color: '#22C55E' };
   if (id === 'transfer') return { id: 'transfer', label: 'Transfer Bank', icon: 'fa-solid fa-building-columns', color: '#3B82F6' };
   if (id === 'qris') return { id: 'qris', label: 'QRIS', icon: 'fa-solid fa-qrcode', color: '#8B5CF6' };
+  if (id === 'card') return { id: 'card', label: 'Kartu (EDC)', icon: 'fa-solid fa-credit-card', color: '#F59E0B' };
 
   return { id, label: id, icon: 'fa-solid fa-credit-card', color: 'var(--brand-primary-light)' };
 }

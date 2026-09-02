@@ -7,7 +7,6 @@ import { formatRupiah } from '@/lib/finance';
 import { getWhatsAppShareUrl } from '@/lib/countryCodes';
 import { useRole } from '@/lib/RoleContext';
 import { createClient } from '@/lib/supabase/client';
-import { getPaymentMethods } from '@/lib/paymentMethods';
 
 const BUSINESS_NAME = 'Demo Rental Preview';
 
@@ -246,27 +245,15 @@ function EditBookingModal({ booking, onClose, onSaved }) {
   );
 }
 
-// Booking pakai skema sederhana (cash/transfer/qris/card), sedangkan daftar
-// metode pembayaran admin lebih rinci (mis. transfer_bca, transfer_mandiri,
-// wise). Cocokkan otomatis ke opsi admin yang paling sesuai.
+// Metode pembayaran di sini SAMA PERSIS dengan pilihan di form booking
+// publik (/fleet) — cash/transfer/qris/card — biar konsisten dan otomatis
+// nyambung tanpa perlu pemetaan/konversi.
 const BOOKING_PAYMENT_LABEL = { cash: 'Cash', transfer: 'Bank Transfer', qris: 'QRIS', card: 'Kartu (EDC)' };
-
-function mapBookingPaymentMethod(bookingMethod, availableMethods) {
-  if (!bookingMethod) return availableMethods[0]?.id || 'cash';
-  const exact = availableMethods.find(m => m.id === bookingMethod);
-  if (exact) return exact.id;
-  if (bookingMethod === 'transfer') {
-    const match = availableMethods.find(m => m.id.startsWith('transfer'));
-    if (match) return match.id;
-  }
-  return availableMethods[0]?.id || 'cash';
-}
 
 function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
   const [deposit, setDeposit] = useState('');
   const [kmStart, setKmStart] = useState('');
-  const paymentMethods = getPaymentMethods().filter(m => m.active !== false);
-  const [paymentMethod, setPaymentMethod] = useState(() => mapBookingPaymentMethod(booking.payment_method, paymentMethods));
+  const [paymentMethod, setPaymentMethod] = useState(booking.payment_method || 'cash');
   const [paymentStatus, setPaymentStatus] = useState('paid');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -356,9 +343,25 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
 
           <div className="form-group">
             <label className="form-label">Metode Pembayaran</label>
-            <select className="form-control" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
-              {paymentMethods.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
-            </select>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px' }}>
+              {Object.entries(PAYMENT_META).map(([key, meta]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setPaymentMethod(key)}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                    padding: '10px 8px', borderRadius: '10px', cursor: 'pointer', fontSize: '12px', fontWeight: 700,
+                    border: paymentMethod === key ? '2px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+                    background: paymentMethod === key ? 'rgba(37,99,235,0.1)' : 'transparent',
+                    color: paymentMethod === key ? 'var(--brand-primary-light)' : 'var(--text-secondary)',
+                  }}
+                >
+                  <i className={meta.icon} style={{ fontSize: '15px' }}></i>
+                  {meta.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="form-group">

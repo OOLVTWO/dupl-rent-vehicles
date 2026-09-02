@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRole } from '@/lib/RoleContext';
+import { sharePdfFile } from '@/lib/shareFile';
 
 function formatDate(d) {
   if (!d) return '-';
@@ -26,6 +27,7 @@ function ContractDetailModal({ contract, onClose, onDelete, canDelete, onSaved }
     notes: contract.notes || '',
   });
   const [saving, setSaving] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
@@ -209,10 +211,32 @@ function ContractDetailModal({ contract, onClose, onDelete, canDelete, onSaved }
             href={`/api/contracts/${contract.id}/pdf`}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-primary"
+            className="btn btn-secondary"
+            title="Buka / download PDF"
           >
-            <i className="fa-solid fa-file-pdf" style={{ marginRight: '6px' }}></i> Download PDF
+            <i className="fa-solid fa-file-pdf"></i>
           </a>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={sharing}
+            onClick={async () => {
+              setSharing(true);
+              await sharePdfFile(
+                `/api/contracts/${contract.id}/pdf`,
+                `contract-${contract.customer_name}.pdf`,
+                'Kontrak Sewa',
+                `Kontrak sewa untuk ${contract.customer_name} — Demo Rental Preview`
+              );
+              setSharing(false);
+            }}
+          >
+            {sharing ? (
+              <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>Menyiapkan...</>
+            ) : (
+              <><i className="fa-brands fa-whatsapp" style={{ marginRight: '6px' }}></i>Kirim PDF</>
+            )}
+          </button>
           <button className="btn btn-secondary" onClick={() => setEditing(true)}>
             <i className="fa-solid fa-pen-to-square" style={{ marginRight: '6px' }}></i> Edit
           </button>

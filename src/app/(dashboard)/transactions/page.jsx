@@ -946,7 +946,7 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
         </div>
 
         {/* Tab Selector */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
           <button
             className={`btn btn-${activeTab === 'text' ? 'primary' : 'secondary'} btn-sm`}
             onClick={() => setActiveTab('text')}
@@ -976,7 +976,7 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
               />
             </div>
 
-            <div className="modal-footer" style={{ justifyContent: 'space-between' }}>
+            <div className="modal-footer" style={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
               <button className="btn btn-secondary" onClick={handleCopy}>
                 <i className={`fa-solid ${copied ? 'fa-check' : 'fa-copy'}`} style={{ marginRight: '6px' }}></i>
                 {copied ? 'Tercopy!' : 'Copy Text Invoice'}
@@ -1005,9 +1005,9 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
               boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)'
             }}>
               {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '20px' }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '20px', fontWeight: 800, color: 'var(--brand-primary-light)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '20px' }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: 800, color: 'var(--brand-primary-light)', flexWrap: 'wrap' }}>
                     <i className="fa-solid fa-motorcycle"></i>
                     DEMO RENTAL PREVIEW
                   </div>
@@ -1015,7 +1015,7 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
                     Jl. Pantai Pererenan, Canggu, Badung, Bali • WA: +62 812-3456-7890
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <span className="badge" style={{ background: tx.status === 'completed' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(59, 130, 246, 0.2)', color: tx.status === 'completed' ? '#22C55E' : '#3B82F6', border: `1px solid ${tx.status === 'completed' ? '#22C55E' : '#3B82F6'}`, padding: '6px 12px', fontSize: '12px' }}>
                     {tx.status === 'completed' ? 'PAID / LUNAS ✓' : 'ACTIVE RENTAL 🛵'}
                   </span>
@@ -1065,7 +1065,7 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
               )}
 
               {/* Dates & Pricing Table */}
-              <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse', marginBottom: '20px', whiteSpace: 'nowrap' }}>
+              <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse', marginBottom: '20px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#94A3B8', textAlign: 'left' }}>
                     <th style={{ padding: '8px 0' }}>DESKRIPSI</th>
@@ -1098,13 +1098,13 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
                 </tbody>
               </table>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: '#94A3B8' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', fontSize: '11px', color: '#94A3B8' }}>
                 <div>Metode Pembayaran: <strong style={{ color: paymentMeta.color }}><i className={paymentMeta.icon}></i> {paymentMeta.label}</strong></div>
                 <div>Thank you for choosing Demo Rental Preview! 🌴</div>
               </div>
             </div>
 
-            <div className="modal-footer" style={{ marginTop: '16px', justifyContent: 'space-between' }}>
+            <div className="modal-footer" style={{ marginTop: '16px', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
               <button className="btn btn-secondary" onClick={handlePrint}>
                 <i className="fa-solid fa-print" style={{ marginRight: '6px' }}></i> Cetak / Print PDF
               </button>

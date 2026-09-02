@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { compressImage } from '@/lib/imageCompressor';
 import SignaturePad from '@/components/contracts/SignaturePad';
 import VehicleCombobox from '@/components/shared/VehicleCombobox';
+import { sharePdfFile } from '@/lib/shareFile';
 
 function formatDate(d) {
   if (!d) return '-';
@@ -103,6 +104,7 @@ function NewContractInner() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [createdContract, setCreatedContract] = useState(null);
+  const [sharing, setSharing] = useState(false);
 
   const [form, setForm] = useState({
     vehicle_id: vehicleIdParam,
@@ -227,15 +229,28 @@ function NewContractInner() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {createdContract?.id && (
-              <a
-                href={`/api/contracts/${createdContract.id}/pdf`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
                 className="btn btn-primary"
+                disabled={sharing}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                onClick={async () => {
+                  setSharing(true);
+                  await sharePdfFile(
+                    `/api/contracts/${createdContract.id}/pdf`,
+                    `contract-${form.customer_name}.pdf`,
+                    'Kontrak Sewa',
+                    `Kontrak sewa untuk ${form.customer_name} — Demo Rental Preview`
+                  );
+                  setSharing(false);
+                }}
               >
-                <i className="fa-solid fa-file-pdf" style={{ marginRight: '6px' }}></i> Download / Share PDF ke Customer
-              </a>
+                {sharing ? (
+                  <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i> Menyiapkan PDF...</>
+                ) : (
+                  <><i className="fa-brands fa-whatsapp" style={{ marginRight: '6px' }}></i> Kirim PDF ke Customer</>
+                )}
+              </button>
             )}
 
             {isFromBooking ? (
