@@ -287,6 +287,19 @@ CREATE POLICY "contracts_staff_select" ON contracts
   FOR SELECT
   USING (auth.role() = 'authenticated');
 
+-- Sebelumnya cuma ada policy SELECT — INSERT/UPDATE/DELETE nggak ke-cover,
+-- jadi kalau ada koneksi yang bukan true service role, perubahan data akan
+-- senyap gagal (0 baris ke-update) tanpa error jelas ke user.
+DROP POLICY IF EXISTS "contracts_staff_insert" ON contracts;
+CREATE POLICY "contracts_staff_insert" ON contracts
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "contracts_staff_update" ON contracts;
+CREATE POLICY "contracts_staff_update" ON contracts
+  FOR UPDATE USING (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "contracts_staff_delete" ON contracts;
+CREATE POLICY "contracts_staff_delete" ON contracts
+  FOR DELETE USING (auth.role() = 'authenticated');
+
 -- =============================================
 -- DELIVERY ZONES (zona & biaya antar motor)
 -- =============================================

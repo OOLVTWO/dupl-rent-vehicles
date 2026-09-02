@@ -382,6 +382,7 @@ export default function ContractsPage() {
           onSaved={(updated) => {
             setContracts(prev => prev.map(c => (c.id === updated.id ? updated : c)));
             setSelected(updated);
+            fetchContracts();
           }}
         />
       )}

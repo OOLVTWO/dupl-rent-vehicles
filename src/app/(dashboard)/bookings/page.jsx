@@ -581,6 +581,7 @@ function BookingsPageInner() {
   const handleEditSaved = (updated) => {
     setBookings(prev => prev.map(b => (b.id === updated.id ? updated : b)));
     setEditingBooking(null);
+    fetchBookings();
   };
 
   const filtered = tab === 'all' ? bookings : bookings.filter(b => b.status === tab);
