@@ -198,6 +198,9 @@ export default function DashboardClient({ transactions, vehicles }) {
   const pendingBookings = bookings.filter(b => b.status === 'pending');
   const todaysBookings = bookings.filter(b => b.status === 'confirmed' && b.start_date === today);
   const unassignedDeliveriesToday = todaysBookings.filter(b => b.fulfillment_method === 'delivery' && !b.assigned_driver_id);
+  const activeBookings = bookings
+    .filter(b => b.status === 'pending' || b.status === 'confirmed')
+    .sort((a, b) => (a.start_date || '').localeCompare(b.start_date || ''));
 
   const recentTx    = filteredTx.slice(0, 5);
   const fleetPreview = safeVehicles.slice(0, 6);
@@ -581,6 +584,76 @@ export default function DashboardClient({ transactions, vehicles }) {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="dash-card" style={{ marginTop: '20px' }}>
+        <div className="dash-card-header">
+          <div>
+            <div className="dash-card-title">
+              <i className="fa-solid fa-motorcycle" style={{ color: 'var(--brand-primary)' }}></i>
+              Motor yang Sudah Di-booking
+            </div>
+            <div className="dash-card-sub">{activeBookings.length} booking aktif (pending + confirmed)</div>
+          </div>
+          <Link href="/bookings" className="btn btn-secondary btn-sm">
+            Lihat Semua <i className="fa-solid fa-arrow-right" style={{ marginLeft: '4px' }}></i>
+          </Link>
+        </div>
+
+        {activeBookings.length === 0 ? (
+          <div className="table-empty" style={{ padding: '32px 16px' }}>
+            <div className="table-empty-icon"><i className="fa-solid fa-inbox"></i></div>
+            <p>Belum ada booking aktif saat ini.</p>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+            <table className="table table--stack-mobile" style={{ minWidth: '620px' }}>
+              <thead>
+                <tr>
+                  <th>Motor</th>
+                  <th>Customer</th>
+                  <th>Tanggal Sewa</th>
+                  <th>Metode</th>
+                  <th>Driver</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activeBookings.slice(0, 8).map((b) => (
+                  <tr key={b.id}>
+                    <td data-label="Motor" data-label-align="left">
+                      <div style={{ fontWeight: 700, fontSize: '13px' }}>{b.vehicle_name || '\u2014'}</div>
+                    </td>
+                    <td data-label="Customer" data-label-align="left">
+                      <div style={{ fontSize: '13px', fontWeight: 600 }}>{b.customer_name}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{b.customer_phone}</div>
+                    </td>
+                    <td data-label="Tanggal Sewa" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                      {b.start_date} &rarr; {b.end_date}
+                    </td>
+                    <td data-label="Metode">
+                      <span className="badge" style={{ background: b.fulfillment_method === 'delivery' ? 'rgba(59,130,246,0.15)' : 'rgba(148,163,184,0.2)', color: b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8', border: `1px solid ${b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8'}` }}>
+                        {b.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup'}
+                      </span>
+                    </td>
+                    <td data-label="Driver" style={{ fontSize: '12px' }}>
+                      {b.fulfillment_method === 'delivery' ? (b.assigned_driver_name || <span style={{ color: '#F59E0B' }}>Belum ada</span>) : '\u2014'}
+                    </td>
+                    <td data-label="Status">
+                      <span className="badge" style={{
+                        background: b.status === 'confirmed' ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)',
+                        color: b.status === 'confirmed' ? '#22C55E' : '#F59E0B',
+                        border: `1px solid ${b.status === 'confirmed' ? '#22C55E' : '#F59E0B'}`,
+                      }}>
+                        {b.status === 'confirmed' ? 'Confirmed' : 'Pending'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
