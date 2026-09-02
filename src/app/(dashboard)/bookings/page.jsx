@@ -7,6 +7,8 @@ import { getWhatsAppShareUrl } from '@/lib/countryCodes';
 import { useRole } from '@/lib/RoleContext';
 import { createClient } from '@/lib/supabase/client';
 
+const BUSINESS_NAME = 'Demo Rental Preview';
+
 const PAYMENT_META = {
   cash:     { label: 'Cash', icon: 'fa-solid fa-money-bill-wave' },
   transfer: { label: 'Transfer', icon: 'fa-solid fa-building-columns' },
@@ -368,6 +370,19 @@ function BookingsPageInner() {
     setBusyId(null);
   };
 
+  const sendBookingConfirmationToCustomer = (b) => {
+    const methodLine = b.fulfillment_method === 'delivery'
+      ? `📦 *Method:* Delivery (${b.delivery_zone_name || '-'}) to ${b.customer_address || 'your address'}`
+      : '📦 *Method:* Self pickup at our shop (Pererenan / Canggu)';
+    const driverLine = b.fulfillment_method === 'delivery' && b.assigned_driver_name
+      ? `\n🧑‍✈️ *Your Driver:* ${b.assigned_driver_name}`
+      : '';
+
+    const msg = `Hi ${b.customer_name}! 🛵\n\nGreat news — your booking with ${BUSINESS_NAME} is *confirmed*! ✅\n\n🏍️ *Scooter:* ${b.vehicle_name}\n📅 *Dates:* ${formatDate(b.start_date)} - ${formatDate(b.end_date)} (${b.duration_days} day${b.duration_days > 1 ? 's' : ''})\n${methodLine}${driverLine}\n💳 *Payment:* ${PAYMENT_META[b.payment_method]?.label || 'Cash'}\n💰 *Total:* ${formatRupiah(b.estimated_price)}\n\n${b.fulfillment_method === 'delivery' ? 'Our driver will contact you shortly before arrival.' : 'Please come to our shop at your scheduled pickup time.'}\n\nThank you for choosing us, see you soon! 🙏`;
+
+    window.open(getWhatsAppShareUrl(b.customer_phone, msg), '_blank');
+  };
+
   const deleteBooking = async (id) => {
     if (!confirm('Hapus booking ini secara permanen?')) return;
     setBusyId(id);
@@ -533,7 +548,7 @@ function BookingsPageInner() {
                                   <i className="fa-solid fa-circle-check" style={{ marginRight: '4px' }}></i>
                                   Delivered {new Date(b.delivered_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                 </span>
-                              ) : (role === 'admin' || myUserId === b.assigned_driver_id) && (
+                              ) : (role === 'driver' && myUserId === b.assigned_driver_id) && (
                                 <button
                                   type="button"
                                   disabled={busyId === b.id}
@@ -568,6 +583,16 @@ function BookingsPageInner() {
                                 disabled={busyId === b.id}
                                 onClick={() => updateStatus(b.id, 'confirmed')}
                               />
+                              {b.status === 'confirmed' && (b.fulfillment_method !== 'delivery' || b.assigned_driver_id) && (
+                                <ActionBtn
+                                  active={false}
+                                  color="#25D366"
+                                  icon="fa-brands fa-whatsapp"
+                                  title="Kirim Booking Confirmation ke Customer (WA)"
+                                  disabled={busyId === b.id}
+                                  onClick={() => sendBookingConfirmationToCustomer(b)}
+                                />
+                              )}
                               <ActionBtn
                                 active={b.status === 'cancelled'}
                                 color="#EF4444"
