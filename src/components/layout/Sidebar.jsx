@@ -60,16 +60,7 @@ const NAV_SECTIONS = [
           { href: '/reports',   iconClass: 'fa-solid fa-chart-line',     label: 'Laporan Keuangan' },
         ],
       },
-      {
-        href: '/settings?tab=staff',
-        iconClass: 'fa-solid fa-user-tie',
-        label: 'Employee',
-        isGroup: true,
-        children: [
-          { href: '/settings?tab=staff',    iconClass: 'fa-solid fa-user-tie',   label: 'Akun Staff' },
-          { href: '/settings?tab=delivery', iconClass: 'fa-solid fa-truck-fast', label: 'Zona Delivery' },
-        ],
-      },
+      { href: '/settings?tab=staff', iconClass: 'fa-solid fa-user-tie', label: 'Employee' },
     ],
   },
   {
@@ -78,6 +69,7 @@ const NAV_SECTIONS = [
       { href: '/maintenance',          iconClass: 'fa-solid fa-robot',  label: 'AI Diagnostic' },
       { href: '/gallery',              iconClass: 'fa-solid fa-images', label: 'Galeri Foto' },
       { href: '/settings?tab=payment', iconClass: 'fa-solid fa-gear',   label: 'Pengaturan' },
+      { href: '/settings?tab=delivery', iconClass: 'fa-solid fa-truck-fast', label: 'Zona Delivery' },
       { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'Website Publik', driverAllowed: true },
     ],
   },

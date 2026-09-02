@@ -1004,11 +1004,10 @@ export default function SettingsPage() {
 
       {(() => {
         const headerMap = {
-          storage:  { icon: 'fa-solid fa-database',  title: 'Database & Storage', sub: 'Kelola koneksi database dan backup data.' },
-          staff:    { icon: 'fa-solid fa-user-tie',   title: 'Employee',           sub: 'Kelola akun admin & driver, plus konfirmasi pembayaran mereka.' },
-          delivery: { icon: 'fa-solid fa-truck-fast', title: 'Employee',           sub: 'Atur zona & ongkos delivery untuk driver.' },
+          storage: { icon: 'fa-solid fa-database', title: 'Database & Storage', sub: 'Kelola koneksi database dan backup data.' },
+          staff:   { icon: 'fa-solid fa-user-tie',  title: 'Employee',           sub: 'Kelola akun admin & driver, plus konfirmasi pembayaran mereka.' },
         };
-        const h = headerMap[activeTab] || { icon: 'fa-solid fa-gear', title: 'Pengaturan', sub: 'Metode pembayaran, keamanan akun, template WA, dan konfigurasi rental.' };
+        const h = headerMap[activeTab] || { icon: 'fa-solid fa-gear', title: 'Pengaturan', sub: 'Metode pembayaran, keamanan akun, template WA, zona delivery, dan konfigurasi rental.' };
         return (
           <div className="page-header">
             <h2><i className={h.icon} style={{ marginRight: '8px' }}></i> {h.title}</h2>
@@ -1083,12 +1082,13 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {(() => {
+      {['payment', 'wacustom', 'security', 'business', 'delivery'].includes(activeTab) && (() => {
         const TABS = [
           { id: 'payment', label: 'Metode Pembayaran', icon: 'fa-solid fa-credit-card' },
           { id: 'wacustom', label: 'Template Invoice WA', icon: 'fa-brands fa-whatsapp' },
           { id: 'security', label: 'Keamanan & Password', icon: 'fa-solid fa-shield-halved' },
           { id: 'business', label: 'Operasional Rental', icon: 'fa-solid fa-sliders' },
+          { id: 'delivery', label: 'Zona Delivery', icon: 'fa-solid fa-truck-fast' },
         ];
         return (
           <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px', marginBottom: '20px', WebkitOverflowScrolling: 'touch' }}>
@@ -1686,30 +1686,6 @@ export default function SettingsPage() {
               </div>
             </form>
           </div>
-        </div>
-      )}
-
-      {(activeTab === 'delivery' || activeTab === 'staff') && (
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-          {[
-            { id: 'staff', label: 'Akun Staff', icon: 'fa-solid fa-user-tie' },
-            { id: 'delivery', label: 'Zona Delivery', icon: 'fa-solid fa-truck-fast' },
-          ].map(t => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setActiveTab(t.id)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '7px',
-                padding: '10px 16px', borderRadius: '10px', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer',
-                border: activeTab === t.id ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
-                background: activeTab === t.id ? 'var(--brand-primary)' : 'var(--bg-elevated)',
-                color: activeTab === t.id ? '#fff' : 'var(--text-secondary)',
-              }}
-            >
-              <i className={t.icon}></i>{t.label}
-            </button>
-          ))}
         </div>
       )}
 
