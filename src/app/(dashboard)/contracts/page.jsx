@@ -14,7 +14,7 @@ function formatDate(d) {
   }
 }
 
-function ContractDetailModal({ contract, onClose, onDelete, canDelete, onSaved }) {
+function ContractDetailModal({ contract, onClose, onDelete, canDelete, canEdit, onSaved }) {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     customer_name: contract.customer_name || '',
@@ -237,9 +237,11 @@ function ContractDetailModal({ contract, onClose, onDelete, canDelete, onSaved }
               <><i className="fa-brands fa-whatsapp" style={{ marginRight: '6px' }}></i>Kirim PDF</>
             )}
           </button>
-          <button className="btn btn-secondary" onClick={() => setEditing(true)}>
-            <i className="fa-solid fa-pen-to-square" style={{ marginRight: '6px' }}></i> Edit
-          </button>
+          {canEdit && (
+            <button className="btn btn-secondary" onClick={() => setEditing(true)}>
+              <i className="fa-solid fa-pen-to-square" style={{ marginRight: '6px' }}></i> Edit
+            </button>
+          )}
           <button className="btn btn-secondary" onClick={onClose}>Tutup</button>
         </div>
       </div>
@@ -379,6 +381,7 @@ export default function ContractsPage() {
           onClose={() => setSelected(null)}
           onDelete={handleDelete}
           canDelete={role === 'admin'}
+          canEdit={role === 'admin'}
           onSaved={(updated) => {
             setContracts(prev => prev.map(c => (c.id === updated.id ? updated : c)));
             setSelected(updated);

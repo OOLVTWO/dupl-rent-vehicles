@@ -105,6 +105,10 @@ function NewContractInner() {
   const [success, setSuccess] = useState(false);
   const [createdContract, setCreatedContract] = useState(null);
   const [sharing, setSharing] = useState(false);
+  const [bookingFulfillment, setBookingFulfillment] = useState('');
+  const [confirmingDelivery, setConfirmingDelivery] = useState(false);
+  const [deliveryConfirmed, setDeliveryConfirmed] = useState(false);
+  const [deliveryError, setDeliveryError] = useState('');
 
   const [form, setForm] = useState({
     vehicle_id: vehicleIdParam,
@@ -147,6 +151,7 @@ function NewContractInner() {
       } else if (bookingId) {
         const { data: booking } = await supabase.from('bookings').select('*').eq('id', bookingId).maybeSingle();
         if (booking) {
+          setBookingFulfillment(booking.fulfillment_method || '');
           setForm(prev => ({
             ...prev,
             vehicle_id: booking.vehicle_id || prev.vehicle_id,
@@ -164,6 +169,28 @@ function NewContractInner() {
   }, [transactionId, bookingId]);
 
   const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleConfirmDeliveryNow = async () => {
+    setConfirmingDelivery(true);
+    setDeliveryError('');
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'confirm_delivery' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setDeliveryError(data.error || 'Gagal konfirmasi delivery.');
+        setConfirmingDelivery(false);
+        return;
+      }
+      setDeliveryConfirmed(true);
+    } catch {
+      setDeliveryError('Gagal terhubung ke server.');
+    }
+    setConfirmingDelivery(false);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -251,6 +278,41 @@ function NewContractInner() {
                   <><i className="fa-brands fa-whatsapp" style={{ marginRight: '6px' }}></i> Kirim PDF ke Customer</>
                 )}
               </button>
+            )}
+
+            {isFromBooking && bookingFulfillment === 'delivery' && (
+              deliveryConfirmed ? (
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  padding: '13px 16px', borderRadius: 'var(--radius-md)', background: 'rgba(34,197,94,0.12)',
+                  color: '#22C55E', fontWeight: 800, fontSize: '14px', border: '1px solid #22C55E',
+                }}>
+                  <i className="fa-solid fa-circle-check" style={{ fontSize: '18px' }}></i> Delivery Dikonfirmasi!
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleConfirmDeliveryNow}
+                  disabled={confirmingDelivery}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    width: '100%', padding: '13px 16px', fontSize: '14px', fontWeight: 800,
+                    background: '#22C55E', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer',
+                  }}
+                >
+                  {confirmingDelivery ? (
+                    <><i className="fa-solid fa-spinner fa-spin"></i> Memproses...</>
+                  ) : (
+                    <><i className="fa-solid fa-circle-check" style={{ fontSize: '18px' }}></i> CONFIRM DELIVERED SEKARANG</>
+                  )}
+                </button>
+              )
+            )}
+
+            {deliveryError && (
+              <div className="alert alert-danger" style={{ textAlign: 'left' }}>
+                <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '6px' }}></i>{deliveryError}
+              </div>
             )}
 
             {isFromBooking ? (

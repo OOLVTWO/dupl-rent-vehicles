@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getWhatsAppShareUrl, getWaReminderTemplate } from '@/lib/countryCodes';
+import { useRole } from '@/lib/RoleContext';
 
 const VALID_TRACKING_TABS = ['all', 'overdue', 'critical', 'upcoming'];
 
@@ -219,7 +220,7 @@ function CountdownTimer({ tx }) {
 }
 
 // ─── Tracking Card ──────────────────────────────────────────────────────────
-function TrackingCard({ tx, vehicle, onComplete }) {
+function TrackingCard({ tx, vehicle, onComplete, role }) {
   const [copied, setCopied] = useState(false);
   const [confirmSelesai, setConfirmSelesai] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -348,8 +349,8 @@ function TrackingCard({ tx, vehicle, onComplete }) {
         </button>
       </div>
 
-      {/* Selesai Sewa Button */}
-      {!confirmSelesai ? (
+      {/* Selesai Sewa Button — admin only, sama kayak aksi tulis lain di app ini */}
+      {role === 'admin' && (!confirmSelesai ? (
         <button
           onClick={() => setConfirmSelesai(true)}
           style={{
@@ -403,7 +404,7 @@ function TrackingCard({ tx, vehicle, onComplete }) {
             </button>
           </div>
         </div>
-      )}
+      ))}
 
       {/* Preview message on hover (expandable) */}
       <details className="tracking-msg-preview">
@@ -419,6 +420,7 @@ function TrackingCard({ tx, vehicle, onComplete }) {
 
 // ─── Main Page ──────────────────────────────────────────────────────────────
 export default function TrackingPage() {
+  const role = useRole();
   const [transactions, setTransactions] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -648,7 +650,7 @@ export default function TrackingPage() {
           </div>
           <div className="tracking-grid">
             {filtered.map(({ tx, vehicle }) => (
-              <TrackingCard key={tx.id} tx={tx} vehicle={vehicle} onComplete={handleCompleteTracking} />
+              <TrackingCard key={tx.id} tx={tx} vehicle={vehicle} onComplete={handleCompleteTracking} role={role} />
             ))}
           </div>
         </>

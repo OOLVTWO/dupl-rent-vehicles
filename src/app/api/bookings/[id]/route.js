@@ -172,6 +172,18 @@ export async function PATCH(request, { params }) {
     }
   }
 
+  // Kalau booking ini sudah punya Transaksi terkait (dibuat lewat tombol
+  // "Konfirmasi Transaksi"), sinkronkan perubahan info customer supaya
+  // datanya nggak beda sendiri antara Booking Confirmation dan Transaksi.
+  const contactFields = ['customer_name', 'customer_phone', 'customer_address'];
+  if (contactFields.some(f => f in body)) {
+    const txUpdate = {};
+    if ('customer_name' in body) txUpdate.renter_name = updateData.customer_name;
+    if ('customer_phone' in body) txUpdate.renter_phone = updateData.customer_phone;
+    if ('customer_address' in body) txUpdate.renter_address = updateData.customer_address;
+    await supabase.from('transactions').update(txUpdate).eq('booking_id', id);
+  }
+
   return NextResponse.json(data);
 }
 

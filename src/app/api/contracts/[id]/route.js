@@ -1,12 +1,12 @@
 import { createAdminClient } from '@/lib/supabase/server';
-import { requireAuth, requireAdmin } from '@/lib/apiAuth';
+import { requireAdmin } from '@/lib/apiAuth';
 import { NextResponse } from 'next/server';
 
 // PATCH /api/contracts/[id] — ubah detail kontrak (nama, tanggal, motor, dll).
 // Foto & tanda tangan sengaja TIDAK bisa diubah lewat sini — itu bukti asli
 // yang sudah ditandatangani, kalau perlu revisi total sebaiknya buat kontrak baru.
 export async function PATCH(request, { params }) {
-  const authError = await requireAuth(request);
+  const authError = await requireAdmin(request);
   if (authError) return authError;
 
   const { id } = await params;
