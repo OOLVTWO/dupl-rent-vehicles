@@ -28,14 +28,15 @@ const NAV_SECTIONS = [
       {
         href: '/bookings',
         iconClass: 'fa-solid fa-clipboard-list',
-        label: 'Booking & Sewa',
+        label: 'Layanan Admin',
         isGroup: true,
         children: [
-          { href: '/bookings',      iconClass: 'fa-solid fa-inbox',            label: 'Booking Confirmation', badge: 'bookings' },
+          { href: '/bookings',      iconClass: 'fa-solid fa-inbox',            label: 'Booking', badge: 'bookings' },
           { href: '/transactions',  iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi' },
-          { href: '/contracts/new', iconClass: 'fa-solid fa-file-pen',         label: 'Buat Kontrak Baru' },
+          { href: '/contracts/new', iconClass: 'fa-solid fa-file-pen',         label: 'Kontrak' },
           { href: '/tracking',      iconClass: 'fa-solid fa-clock-rotate-left', label: 'Tracking Sewa', badge: 'tracking' },
           { href: '/availability',  iconClass: 'fa-solid fa-circle-half-stroke', label: 'Ketersediaan', badge: 'availability' },
+          { href: '/expenses',      iconClass: 'fa-solid fa-wallet',           label: 'Keuangan' },
         ],
       },
       {
@@ -46,7 +47,6 @@ const NAV_SECTIONS = [
         children: [
           { href: '/customers',            iconClass: 'fa-solid fa-users',       label: 'Data Customer' },
           { href: '/vehicles',             iconClass: 'fa-solid fa-motorcycle',  label: 'Data Motor' },
-          { href: '/expenses',             iconClass: 'fa-solid fa-wallet',      label: 'Keuangan' },
           { href: '/settings?tab=storage', iconClass: 'fa-solid fa-database',    label: 'Database & Storage' },
         ],
       },
@@ -63,7 +63,7 @@ const NAV_SECTIONS = [
       {
         href: '/settings?tab=staff',
         iconClass: 'fa-solid fa-user-tie',
-        label: 'Staff & Driver',
+        label: 'Employee',
         isGroup: true,
         children: [
           { href: '/settings?tab=staff',    iconClass: 'fa-solid fa-user-tie',   label: 'Akun Staff' },
@@ -75,17 +75,9 @@ const NAV_SECTIONS = [
   {
     label: 'Lainnya',
     items: [
-      {
-        href: '/maintenance',
-        iconClass: 'fa-solid fa-toolbox',
-        label: 'Tools & Pengaturan',
-        isGroup: true,
-        children: [
-          { href: '/maintenance',          iconClass: 'fa-solid fa-robot',  label: 'AI Diagnostic' },
-          { href: '/gallery',              iconClass: 'fa-solid fa-images', label: 'Galeri Foto' },
-          { href: '/settings?tab=payment', iconClass: 'fa-solid fa-gear',   label: 'Pengaturan' },
-        ],
-      },
+      { href: '/maintenance',          iconClass: 'fa-solid fa-robot',  label: 'AI Diagnostic' },
+      { href: '/gallery',              iconClass: 'fa-solid fa-images', label: 'Galeri Foto' },
+      { href: '/settings?tab=payment', iconClass: 'fa-solid fa-gear',   label: 'Pengaturan' },
       { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'Website Publik', driverAllowed: true },
     ],
   },
@@ -106,8 +98,8 @@ const DRIVER_NAV_SECTIONS = [
         badge: 'bookings',
         isDropdown: true,
         children: [
-          { href: '/bookings',      iconClass: 'fa-solid fa-inbox',           label: 'Booking Confirmation' },
-          { href: '/contracts/new', iconClass: 'fa-solid fa-file-signature',  label: 'Buat Kontrak Baru' },
+          { href: '/bookings',      iconClass: 'fa-solid fa-inbox',           label: 'Booking' },
+          { href: '/contracts/new', iconClass: 'fa-solid fa-file-signature',  label: 'Kontrak' },
           { href: '/driver-income', iconClass: 'fa-solid fa-sack-dollar',     label: 'History Pendapatan' },
           { href: '/tracking',      iconClass: 'fa-solid fa-clock-rotate-left', label: 'Tracking Sewa' },
         ],

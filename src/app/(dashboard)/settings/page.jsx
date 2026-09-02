@@ -1002,10 +1002,20 @@ export default function SettingsPage() {
         <TabFromQuery onTab={setActiveTab} />
       </Suspense>
 
-      <div className="page-header">
-        <h2><i className="fa-solid fa-gear" style={{ marginRight: '8px' }}></i> Pengaturan Sistem & Operasional</h2>
-        <p>Kelola koneksi database, metode pembayaran, keamanan akun, dan konfigurasi rental</p>
-      </div>
+      {(() => {
+        const headerMap = {
+          storage:  { icon: 'fa-solid fa-database',  title: 'Database & Storage', sub: 'Kelola koneksi database dan backup data.' },
+          staff:    { icon: 'fa-solid fa-user-tie',   title: 'Employee',           sub: 'Kelola akun admin & driver, plus konfirmasi pembayaran mereka.' },
+          delivery: { icon: 'fa-solid fa-truck-fast', title: 'Employee',           sub: 'Atur zona & ongkos delivery untuk driver.' },
+        };
+        const h = headerMap[activeTab] || { icon: 'fa-solid fa-gear', title: 'Pengaturan', sub: 'Metode pembayaran, keamanan akun, template WA, dan konfigurasi rental.' };
+        return (
+          <div className="page-header">
+            <h2><i className={h.icon} style={{ marginRight: '8px' }}></i> {h.title}</h2>
+            <p>{h.sub}</p>
+          </div>
+        );
+      })()}
 
       {/* INTERACTIVE MODAL NOTIFICATION POP-UP WITH OK BUTTON */}
       {alert && (
