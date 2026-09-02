@@ -20,43 +20,12 @@ const NAV_SECTIONS = [
         label: 'Booking & Sewa',
         isGroup: true,
         children: [
-          {
-            href: '/bookings', iconClass: 'fa-solid fa-inbox', label: 'Booking Confirmation', badge: 'bookings', isDropdown: true,
-            children: [
-              { href: '/bookings?tab=all',       iconClass: 'fa-solid fa-list',              label: 'Semua' },
-              { href: '/bookings?tab=pending',   iconClass: 'fa-solid fa-hourglass-half',    label: 'Pending' },
-              { href: '/bookings?tab=confirmed', iconClass: 'fa-solid fa-circle-check',      label: 'Confirmed' },
-              { href: '/bookings?tab=completed', iconClass: 'fa-solid fa-flag-checkered',    label: 'Completed' },
-              { href: '/bookings?tab=cancelled', iconClass: 'fa-solid fa-circle-xmark',      label: 'Cancelled' },
-            ],
-          },
-          { href: '/transactions', iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi' },
-          {
-            href: '/contracts', iconClass: 'fa-solid fa-file-signature', label: 'Kontrak', isDropdown: true,
-            children: [
-              { href: '/contracts',     iconClass: 'fa-solid fa-list',     label: 'Laporan Kontrak' },
-              { href: '/contracts/new', iconClass: 'fa-solid fa-file-pen', label: 'Buat Kontrak Baru' },
-            ],
-          },
-          {
-            href: '/tracking', iconClass: 'fa-solid fa-clock-rotate-left', label: 'Tracking Sewa', badge: 'tracking', isDropdown: true,
-            children: [
-              { href: '/tracking?tab=all',      iconClass: 'fa-solid fa-list',              label: 'Semua' },
-              { href: '/tracking?tab=overdue',  iconClass: 'fa-solid fa-circle-exclamation', label: 'Overdue' },
-              { href: '/tracking?tab=critical', iconClass: 'fa-solid fa-bell',               label: 'Kritis' },
-              { href: '/tracking?tab=upcoming', iconClass: 'fa-solid fa-calendar-days',      label: 'Akan Datang' },
-            ],
-          },
-          {
-            href: '/availability', iconClass: 'fa-solid fa-circle-half-stroke', label: 'Ketersediaan', badge: 'availability', isDropdown: true,
-            children: [
-              { href: '/availability?tab=all',         iconClass: 'fa-solid fa-grip',              label: 'Semua Armada' },
-              { href: '/availability?tab=available',   iconClass: 'fa-solid fa-circle-check',      label: 'Tersedia' },
-              { href: '/availability?tab=rented',      iconClass: 'fa-solid fa-key',                label: 'Disewa' },
-              { href: '/availability?tab=overdue',     iconClass: 'fa-solid fa-circle-exclamation', label: 'Overdue' },
-              { href: '/availability?tab=maintenance', iconClass: 'fa-solid fa-wrench',             label: 'Perawatan' },
-            ],
-          },
+          { href: '/bookings',      iconClass: 'fa-solid fa-inbox',            label: 'Booking Confirmation', badge: 'bookings' },
+          { href: '/transactions',  iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi' },
+          { href: '/contracts',     iconClass: 'fa-solid fa-file-signature',   label: 'Laporan Kontrak' },
+          { href: '/contracts/new', iconClass: 'fa-solid fa-file-pen',         label: 'Buat Kontrak Baru' },
+          { href: '/tracking',      iconClass: 'fa-solid fa-clock-rotate-left', label: 'Tracking Sewa', badge: 'tracking' },
+          { href: '/availability',  iconClass: 'fa-solid fa-circle-half-stroke', label: 'Ketersediaan', badge: 'availability' },
         ],
       },
       {
@@ -65,23 +34,8 @@ const NAV_SECTIONS = [
         label: 'Data Master',
         isGroup: true,
         children: [
-          {
-            href: '/customers', iconClass: 'fa-solid fa-users', label: 'Data Customer', isDropdown: true,
-            children: [
-              { href: '/customers?tab=all',    iconClass: 'fa-solid fa-users',      label: 'Semua Customer' },
-              { href: '/customers?tab=repeat', iconClass: 'fa-solid fa-crown',      label: 'Repeat Customer' },
-              { href: '/customers?tab=new',    iconClass: 'fa-solid fa-user-plus',  label: 'Customer Baru' },
-            ],
-          },
-          {
-            href: '/vehicles', iconClass: 'fa-solid fa-motorcycle', label: 'Data Motor', isDropdown: true,
-            children: [
-              { href: '/vehicles?tab=all',            iconClass: 'fa-solid fa-motorcycle',    label: 'Semua Unit Armada' },
-              { href: '/vehicles?tab=internal',       iconClass: 'fa-solid fa-building',      label: 'Milik Internal' },
-              { href: '/vehicles?tab=investor',       iconClass: 'fa-solid fa-crown',         label: 'Milik Investor' },
-              { href: '/vehicles?tab=investor_recap', iconClass: 'fa-solid fa-address-card',  label: 'Directory & Rekap Investor' },
-            ],
-          },
+          { href: '/customers', iconClass: 'fa-solid fa-users',      label: 'Data Customer' },
+          { href: '/vehicles',  iconClass: 'fa-solid fa-motorcycle', label: 'Data Motor' },
         ],
       },
     ],
@@ -95,23 +49,8 @@ const NAV_SECTIONS = [
         label: 'Keuangan & Laporan',
         isGroup: true,
         children: [
-          {
-            href: '/expenses', iconClass: 'fa-solid fa-wallet', label: 'Keuangan', isDropdown: true,
-            children: [
-              { href: '/expenses?tab=all',     iconClass: 'fa-solid fa-list-check',        label: 'Semua Arus Kas' },
-              { href: '/expenses?tab=income',  iconClass: 'fa-solid fa-circle-arrow-down', label: 'Pemasukan (+)' },
-              { href: '/expenses?tab=expense', iconClass: 'fa-solid fa-circle-arrow-up',   label: 'Pengeluaran (-)' },
-            ],
-          },
-          {
-            href: '/reports', iconClass: 'fa-solid fa-chart-line', label: 'Laporan', isDropdown: true,
-            children: [
-              { href: '/reports?tab=income',      iconClass: 'fa-solid fa-sack-dollar',         label: 'Pemasukan (Sewa)' },
-              { href: '/reports?tab=expenses',    iconClass: 'fa-solid fa-money-bill-transfer', label: 'Pengeluaran' },
-              { href: '/reports?tab=profit_loss', iconClass: 'fa-solid fa-calculator',          label: 'Laba Rugi' },
-              { href: '/reports?tab=investor',    iconClass: 'fa-solid fa-crown',               label: 'Bagi Hasil Investor' },
-            ],
-          },
+          { href: '/expenses', iconClass: 'fa-solid fa-wallet',     label: 'Keuangan' },
+          { href: '/reports',  iconClass: 'fa-solid fa-chart-line', label: 'Laporan' },
         ],
       },
     ],
@@ -125,27 +64,9 @@ const NAV_SECTIONS = [
         label: 'Tools & Pengaturan',
         isGroup: true,
         children: [
-          {
-            href: '/maintenance', iconClass: 'fa-solid fa-robot', label: 'AI Diagnostic', isDropdown: true,
-            children: [
-              { href: '/maintenance?tab=diagnostics', iconClass: 'fa-solid fa-robot',              label: 'Skor Kesehatan' },
-              { href: '/maintenance?tab=history',     iconClass: 'fa-solid fa-clock-rotate-left',  label: 'Riwayat Servis' },
-              { href: '/maintenance?tab=reports',     iconClass: 'fa-solid fa-clipboard-list',     label: 'Keluhan Pelanggan' },
-            ],
-          },
-          { href: '/gallery', iconClass: 'fa-solid fa-images', label: 'Galeri Foto' },
-          {
-            href: '/settings', iconClass: 'fa-solid fa-gear', label: 'Pengaturan', isDropdown: true,
-            children: [
-              { href: '/settings?tab=storage',  iconClass: 'fa-solid fa-database',       label: 'Database & Storage' },
-              { href: '/settings?tab=payment',  iconClass: 'fa-solid fa-credit-card',    label: 'Metode Pembayaran' },
-              { href: '/settings?tab=wacustom', iconClass: 'fa-brands fa-whatsapp',      label: 'Template Invoice WA' },
-              { href: '/settings?tab=security', iconClass: 'fa-solid fa-shield-halved', label: 'Keamanan & Password' },
-              { href: '/settings?tab=business', iconClass: 'fa-solid fa-sliders',        label: 'Operasional Rental' },
-              { href: '/settings?tab=staff',    iconClass: 'fa-solid fa-user-tie',       label: 'Akun Staff' },
-              { href: '/settings?tab=delivery', iconClass: 'fa-solid fa-truck-fast',     label: 'Zona Delivery' },
-            ],
-          },
+          { href: '/maintenance', iconClass: 'fa-solid fa-robot',  label: 'AI Diagnostic' },
+          { href: '/gallery',     iconClass: 'fa-solid fa-images', label: 'Galeri Foto' },
+          { href: '/settings', iconClass: 'fa-solid fa-gear', label: 'Pengaturan' },
         ],
       },
       { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'Website Publik', driverAllowed: true },

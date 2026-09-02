@@ -657,16 +657,28 @@ export default function FinancesPage() {
       {/* Filter Tabs & Actions */}
       <div className="bento-card bento-table-card mb-6" style={{ padding: '16px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
-          {/* Current filter indicator — filter is now chosen from the sidebar
-              "Keuangan" dropdown, this just confirms what's showing */}
-          <span className="badge" style={{
-            background: 'var(--bg-elevated)', color: 'var(--brand-primary)', border: '1px solid var(--bg-border)',
-            fontSize: '12.5px', padding: '6px 14px', fontWeight: 600,
-          }}>
-            {typeFilter === 'all' && <><i className="fa-solid fa-list-check" style={{ marginRight: '6px' }}></i>Semua Arus Kas ({records.length})</>}
-            {typeFilter === 'income' && <><i className="fa-solid fa-circle-arrow-down" style={{ marginRight: '6px', color: '#22C55E' }}></i>Pemasukan (+)</>}
-            {typeFilter === 'expense' && <><i className="fa-solid fa-circle-arrow-up" style={{ marginRight: '6px', color: '#EF4444' }}></i>Pengeluaran (-)</>}
-          </span>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {[
+              { key: 'all', label: `Semua Arus Kas (${records.length})`, icon: 'fa-solid fa-list-check', color: 'var(--brand-primary)' },
+              { key: 'income', label: 'Pemasukan (+)', icon: 'fa-solid fa-circle-arrow-down', color: '#22C55E' },
+              { key: 'expense', label: 'Pengeluaran (-)', icon: 'fa-solid fa-circle-arrow-up', color: '#EF4444' },
+            ].map(t => (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => { setTypeFilter(t.key); setCategoryFilter('all'); }}
+                className="badge"
+                style={{
+                  background: typeFilter === t.key ? 'var(--bg-elevated)' : 'transparent',
+                  color: typeFilter === t.key ? t.color : 'var(--text-muted)',
+                  border: `1px solid ${typeFilter === t.key ? 'var(--bg-border)' : 'var(--bg-border)'}`,
+                  fontSize: '12.5px', padding: '6px 14px', fontWeight: 600, cursor: 'pointer',
+                }}
+              >
+                <i className={t.icon} style={{ marginRight: '6px', color: typeFilter === t.key ? t.color : undefined }}></i>{t.label}
+              </button>
+            ))}
+          </div>
 
           {/* DUAL ACTION BUTTONS & EXPORT (2-COLUMN GRID ON MOBILE) */}
           <div className="fin-actions-wrap">

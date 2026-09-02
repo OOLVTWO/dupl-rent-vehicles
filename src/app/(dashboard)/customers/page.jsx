@@ -411,6 +411,29 @@ export default function CustomersPage() {
         </div>
       </div>
 
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+        {[
+          { key: 'all', label: 'Semua Customer', icon: 'fa-solid fa-users' },
+          { key: 'repeat', label: 'Repeat Customer', icon: 'fa-solid fa-crown' },
+          { key: 'new', label: 'Customer Baru', icon: 'fa-solid fa-user-plus' },
+        ].map(t => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setActiveTab(t.key)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              padding: '7px 14px', borderRadius: 'var(--radius-full, 999px)', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer',
+              border: activeTab === t.key ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+              background: activeTab === t.key ? 'var(--brand-primary-bg, rgba(59,130,246,0.12))' : 'transparent',
+              color: activeTab === t.key ? 'var(--brand-primary)' : 'var(--text-secondary)',
+            }}
+          >
+            <i className={t.icon}></i>{t.label}
+          </button>
+        ))}
+      </div>
+
       {/* Metrics Row */}
       <div style={{
         display: 'grid',

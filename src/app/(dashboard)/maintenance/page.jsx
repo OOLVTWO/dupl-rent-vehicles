@@ -576,6 +576,29 @@ export default function MaintenancePage() {
 
       {alert && <div className={`alert alert-${alert.type}`}>{alert.message}</div>}
 
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+        {[
+          { key: 'diagnostics', label: 'Skor Kesehatan', icon: 'fa-solid fa-robot' },
+          { key: 'history', label: 'Riwayat Servis', icon: 'fa-solid fa-clock-rotate-left' },
+          { key: 'reports', label: 'Keluhan Pelanggan', icon: 'fa-solid fa-clipboard-list' },
+        ].map(t => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setActiveTab(t.key)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              padding: '7px 14px', borderRadius: 'var(--radius-full, 999px)', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer',
+              border: activeTab === t.key ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+              background: activeTab === t.key ? 'var(--brand-primary-bg, rgba(59,130,246,0.12))' : 'transparent',
+              color: activeTab === t.key ? 'var(--brand-primary)' : 'var(--text-secondary)',
+            }}
+          >
+            <i className={t.icon}></i>{t.label}
+          </button>
+        ))}
+      </div>
+
       {/* KPI Cards */}
       <div className="grid-3 mb-6">
         <div className="stat-card" onClick={() => { setFilterStatus('healthy'); setActiveTab('diagnostics'); }} style={{ cursor: 'pointer' }}>

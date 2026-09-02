@@ -220,6 +220,30 @@ export default function ReportsPage() {
         <p>Analisis terpisah antara Pemasukan, Pengeluaran, Laba Bersih & Bagi Hasil Investor</p>
       </div>
 
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+        {[
+          { key: 'income', label: 'Pemasukan (Sewa)', icon: 'fa-solid fa-sack-dollar' },
+          { key: 'expenses', label: 'Pengeluaran', icon: 'fa-solid fa-money-bill-transfer' },
+          { key: 'profit_loss', label: 'Laba Rugi', icon: 'fa-solid fa-calculator' },
+          { key: 'investor', label: 'Bagi Hasil Investor', icon: 'fa-solid fa-crown' },
+        ].map(t => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setActiveReportTab(t.key)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              padding: '7px 14px', borderRadius: 'var(--radius-full, 999px)', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer',
+              border: activeReportTab === t.key ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+              background: activeReportTab === t.key ? 'var(--brand-primary-bg, rgba(59,130,246,0.12))' : 'transparent',
+              color: activeReportTab === t.key ? 'var(--brand-primary)' : 'var(--text-secondary)',
+            }}
+          >
+            <i className={t.icon}></i>{t.label}
+          </button>
+        ))}
+      </div>
+
       {/* Filter */}
       <div className="card mb-6">
         <div className="card-header">

@@ -1086,18 +1086,28 @@ export default function VehiclesPage() {
         <p>Kelola armada kendaraan rental Demo Rental Preview</p>
       </div>
 
-      {/* Current filter indicator — the filter itself is now chosen from the
-          sidebar "Data Motor" dropdown, this just confirms what's showing */}
-      <div style={{ marginBottom: '16px' }}>
-        <span className="badge" style={{
-          background: 'var(--bg-elevated)', color: 'var(--brand-primary)', border: '1px solid var(--bg-border)',
-          fontSize: '12.5px', padding: '6px 14px', fontWeight: 600,
-        }}>
-          {ownershipFilter === 'all' && <><i className="fa-solid fa-motorcycle" style={{ marginRight: '6px' }}></i>Semua Unit Armada ({safeVehicles.length})</>}
-          {ownershipFilter === 'internal' && <><i className="fa-solid fa-building" style={{ marginRight: '6px' }}></i>Milik Internal ({internalVehicles.length})</>}
-          {ownershipFilter === 'investor' && <><i className="fa-solid fa-crown" style={{ marginRight: '6px', color: '#A855F7' }}></i>Milik Investor ({investorVehicles.length})</>}
-          {ownershipFilter === 'investor_recap' && <><i className="fa-solid fa-address-card" style={{ marginRight: '6px', color: '#A855F7' }}></i>Directory & Rekap Investor ({investorList.length})</>}
-        </span>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+        {[
+          { key: 'all',             label: `Semua Unit Armada (${safeVehicles.length})`,     icon: 'fa-solid fa-motorcycle' },
+          { key: 'internal',        label: `Milik Internal (${internalVehicles.length})`,     icon: 'fa-solid fa-building' },
+          { key: 'investor',        label: `Milik Investor (${investorVehicles.length})`,     icon: 'fa-solid fa-crown' },
+          { key: 'investor_recap',  label: `Directory & Rekap Investor (${investorList.length})`, icon: 'fa-solid fa-address-card' },
+        ].map(t => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setOwnershipFilter(t.key)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              padding: '6px 14px', borderRadius: 'var(--radius-full, 999px)', fontSize: '12.5px', fontWeight: 600, cursor: 'pointer',
+              border: ownershipFilter === t.key ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+              background: ownershipFilter === t.key ? 'var(--bg-elevated)' : 'transparent',
+              color: ownershipFilter === t.key ? 'var(--brand-primary)' : 'var(--text-muted)',
+            }}
+          >
+            <i className={t.icon}></i>{t.label}
+          </button>
+        ))}
       </div>
 
       {alert && <div className={`alert alert-${alert.type}`}>{alert.message}</div>}
