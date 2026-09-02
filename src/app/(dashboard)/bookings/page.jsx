@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { formatRupiah } from '@/lib/finance';
 import { getWhatsAppShareUrl } from '@/lib/countryCodes';
 import { useRole } from '@/lib/RoleContext';
@@ -573,6 +574,21 @@ function BookingsPageInner() {
                       </td>
                       <td data-label="Aksi" data-label-align="left">
                         <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                          {b.status === 'confirmed' && (b.fulfillment_method !== 'delivery' || b.delivered_at) && (
+                            <Link
+                              href={`/transactions?bookingId=${b.id}`}
+                              title="Buat Transaksi dari booking ini"
+                              style={{
+                                display: 'inline-flex', alignItems: 'center', gap: '5px',
+                                fontSize: '11px', fontWeight: 800, padding: '7px 10px',
+                                background: 'rgba(37,99,235,0.12)', color: 'var(--brand-primary-light, #3B82F6)',
+                                border: '1px solid var(--brand-primary-light, #3B82F6)', borderRadius: 'var(--radius-md)',
+                                textDecoration: 'none',
+                              }}
+                            >
+                              <i className="fa-solid fa-file-invoice-dollar"></i> Buat Transaksi
+                            </Link>
+                          )}
                           {role === 'admin' ? (
                             <>
                               <ActionBtn

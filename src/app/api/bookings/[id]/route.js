@@ -148,7 +148,12 @@ export async function PATCH(request, { params }) {
   if (data.vehicle_id && 'status' in body) {
     if (body.status === 'confirmed') {
       await supabase.from('vehicles').update({ status: 'booked' }).eq('id', data.vehicle_id).eq('status', 'available');
-    } else if (body.status === 'cancelled' || body.status === 'completed') {
+    } else if (body.status === 'cancelled') {
+      await supabase.from('vehicles').update({ status: 'available' }).eq('id', data.vehicle_id).in('status', ['booked', 'rented']);
+    } else if (body.status === 'completed' && !body.skip_vehicle_sync) {
+      // skip_vehicle_sync: dipakai saat booking auto-"completed" karena baru
+      // saja dikonversi jadi Transaksi — motor sudah benar berstatus
+      // "rented" lewat endpoint transaksi, jangan ditimpa balik "available".
       await supabase.from('vehicles').update({ status: 'available' }).eq('id', data.vehicle_id).in('status', ['booked', 'rented']);
     }
   }

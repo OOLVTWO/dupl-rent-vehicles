@@ -189,5 +189,16 @@ export async function POST(request) {
     .update({ status: 'rented' })
     .eq('id', insertData.vehicle_id);
 
+  // Kalau transaksi ini dibuat dari sebuah booking (lihat tombol "Buat
+  // Transaksi" di Booking Confirmation), tandai booking itu selesai supaya
+  // tidak dibuatkan transaksi dobel. Vehicle sudah benar "rented" di atas,
+  // jadi skip_vehicle_sync biar tidak ditimpa balik "available".
+  if (insertData.booking_id) {
+    await supabase
+      .from('bookings')
+      .update({ status: 'completed' })
+      .eq('id', insertData.booking_id);
+  }
+
   return NextResponse.json(tx, { status: 201 });
 }

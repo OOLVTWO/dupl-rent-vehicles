@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useRole } from '@/lib/RoleContext';
 import VehicleCombobox from '@/components/shared/VehicleCombobox';
@@ -1527,8 +1528,9 @@ function ConfirmDeleteModal({ isOpen, onClose, onConfirm }) {
 }
 
 // ===== MAIN TRANSACTIONS PAGE =====
-export default function TransactionsPage() {
+function TransactionsPageInner() {
   const role = useRole();
+  const searchParams = useSearchParams();
   const [transactions, setTransactions] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1536,6 +1538,7 @@ export default function TransactionsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [sourceBookingId, setSourceBookingId] = useState(null);
   const [completeModal, setCompleteModal] = useState({ open: false, tx: null });
   const [waModal, setWaModal] = useState({ open: false, tx: null });
   const [deleteModal, setDeleteModal] = useState({ open: false, txId: null });
@@ -1605,10 +1608,39 @@ export default function TransactionsPage() {
 
   useEffect(() => { Promise.resolve().then(fetchAll); }, [fetchAll]);
 
+  useEffect(() => {
+    const bookingId = searchParams.get('bookingId');
+    if (!bookingId) return;
+    Promise.resolve().then(async () => {
+      try {
+        const supabase = createClient();
+        const { data: booking } = await supabase.from('bookings').select('*').eq('id', bookingId).maybeSingle();
+        if (!booking) return;
+        setSourceBookingId(bookingId);
+        setEditData({
+          vehicle_id: booking.vehicle_id || '',
+          renter_name: booking.customer_name || '',
+          renter_phone: booking.customer_phone || '',
+          renter_address: booking.customer_address || '',
+          start_date: booking.start_date || '',
+          end_date: booking.end_date || '',
+          payment_method: booking.payment_method || 'cash',
+        });
+        setShowModal(true);
+      } catch { /* ignore, admin can still fill the form manually */ }
+    });
+  }, [searchParams]);
+
 const handleSubmit = async (formData) => {
-    const isEdit = !!editData;
+    const isEdit = !!editData?.id;
     const url = isEdit ? `/api/transactions/${editData.id}` : '/api/transactions';
     const method = isEdit ? 'PUT' : 'POST';
+
+    // Kalau transaksi ini dibuat dari booking (prefill), tautkan & tandai
+    // booking-nya selesai supaya tidak dibuatkan transaksi dobel.
+    if (!isEdit && sourceBookingId) {
+      formData = { ...formData, booking_id: sourceBookingId };
+    }
 
     const res = await fetch(url, {
       method,
@@ -1627,6 +1659,10 @@ const handleSubmit = async (formData) => {
           customer_image_url: formData.customer_image_url,
         });
       } catch { /* ignore */ }
+
+      if (!isEdit && sourceBookingId) {
+        setSourceBookingId(null);
+      }
 
       setShowModal(false);
       setEditData(null);
@@ -1964,7 +2000,7 @@ const handleSubmit = async (formData) => {
       {/* Modals */}
       <TransactionModal
         isOpen={showModal}
-        onClose={() => { setShowModal(false); setEditData(null); }}
+        onClose={() => { setShowModal(false); setEditData(null); setSourceBookingId(null); }}
         onSubmit={handleSubmit}
         vehicles={vehicles}
         editData={editData}
@@ -2022,5 +2058,13 @@ const handleSubmit = async (formData) => {
         onConfirm={() => handleDelete(deleteModal.txId)}
       />
     </div>
+  );
+}
+
+export default function TransactionsPage() {
+  return (
+    <Suspense fallback={<div className="page-content" />}>
+      <TransactionsPageInner />
+    </Suspense>
   );
 }

@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
 CREATE TABLE IF NOT EXISTS transactions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   vehicle_id UUID NOT NULL REFERENCES vehicles(id) ON DELETE RESTRICT,
+  booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL,
   renter_name VARCHAR(100) NOT NULL,
   renter_phone VARCHAR(20) NOT NULL,
   renter_id_number VARCHAR(50),
