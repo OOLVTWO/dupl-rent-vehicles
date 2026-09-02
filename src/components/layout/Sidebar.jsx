@@ -13,83 +13,75 @@ const NAV_SECTIONS = [
   {
     label: 'Operasional',
     items: [
-      { href: '/dashboard',    iconClass: 'fa-solid fa-chart-pie',           label: 'Dashboard', driverAllowed: true },
+      { href: '/dashboard', iconClass: 'fa-solid fa-chart-pie', label: 'Dashboard', driverAllowed: true },
       {
         href: '/bookings',
-        iconClass: 'fa-solid fa-inbox',
-        label: 'Booking Confirmation',
-        badge: 'bookings',
-        isDropdown: true,
-        driverAllowed: true,
+        iconClass: 'fa-solid fa-clipboard-list',
+        label: 'Booking & Sewa',
+        isGroup: true,
         children: [
-          { href: '/bookings?tab=all',       iconClass: 'fa-solid fa-list',              label: 'Semua' },
-          { href: '/bookings?tab=pending',   iconClass: 'fa-solid fa-hourglass-half',    label: 'Pending' },
-          { href: '/bookings?tab=confirmed', iconClass: 'fa-solid fa-circle-check',      label: 'Confirmed' },
-          { href: '/bookings?tab=completed', iconClass: 'fa-solid fa-flag-checkered',    label: 'Completed' },
-          { href: '/bookings?tab=cancelled', iconClass: 'fa-solid fa-circle-xmark',      label: 'Cancelled' },
-        ],
-      },
-      { href: '/transactions', iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi',      badge: null },
-      {
-        href: '/contracts',
-        iconClass: 'fa-solid fa-file-signature',
-        label: 'Kontrak',
-        driverAllowed: true,
-        isDropdown: true,
-        children: [
-          { href: '/contracts',     iconClass: 'fa-solid fa-list',        label: 'Laporan Kontrak', driverAllowed: false },
-          { href: '/contracts/new', iconClass: 'fa-solid fa-file-pen',    label: 'Buat Kontrak Baru' },
+          {
+            href: '/bookings', iconClass: 'fa-solid fa-inbox', label: 'Booking Confirmation', badge: 'bookings', isDropdown: true,
+            children: [
+              { href: '/bookings?tab=all',       iconClass: 'fa-solid fa-list',              label: 'Semua' },
+              { href: '/bookings?tab=pending',   iconClass: 'fa-solid fa-hourglass-half',    label: 'Pending' },
+              { href: '/bookings?tab=confirmed', iconClass: 'fa-solid fa-circle-check',      label: 'Confirmed' },
+              { href: '/bookings?tab=completed', iconClass: 'fa-solid fa-flag-checkered',    label: 'Completed' },
+              { href: '/bookings?tab=cancelled', iconClass: 'fa-solid fa-circle-xmark',      label: 'Cancelled' },
+            ],
+          },
+          { href: '/transactions', iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi' },
+          {
+            href: '/contracts', iconClass: 'fa-solid fa-file-signature', label: 'Kontrak', isDropdown: true,
+            children: [
+              { href: '/contracts',     iconClass: 'fa-solid fa-list',     label: 'Laporan Kontrak' },
+              { href: '/contracts/new', iconClass: 'fa-solid fa-file-pen', label: 'Buat Kontrak Baru' },
+            ],
+          },
+          {
+            href: '/tracking', iconClass: 'fa-solid fa-clock-rotate-left', label: 'Tracking Sewa', badge: 'tracking', isDropdown: true,
+            children: [
+              { href: '/tracking?tab=all',      iconClass: 'fa-solid fa-list',              label: 'Semua' },
+              { href: '/tracking?tab=overdue',  iconClass: 'fa-solid fa-circle-exclamation', label: 'Overdue' },
+              { href: '/tracking?tab=critical', iconClass: 'fa-solid fa-bell',               label: 'Kritis' },
+              { href: '/tracking?tab=upcoming', iconClass: 'fa-solid fa-calendar-days',      label: 'Akan Datang' },
+            ],
+          },
+          {
+            href: '/availability', iconClass: 'fa-solid fa-circle-half-stroke', label: 'Ketersediaan', badge: 'availability', isDropdown: true,
+            children: [
+              { href: '/availability?tab=all',         iconClass: 'fa-solid fa-grip',              label: 'Semua Armada' },
+              { href: '/availability?tab=available',   iconClass: 'fa-solid fa-circle-check',      label: 'Tersedia' },
+              { href: '/availability?tab=rented',      iconClass: 'fa-solid fa-key',                label: 'Disewa' },
+              { href: '/availability?tab=overdue',     iconClass: 'fa-solid fa-circle-exclamation', label: 'Overdue' },
+              { href: '/availability?tab=maintenance', iconClass: 'fa-solid fa-wrench',             label: 'Perawatan' },
+            ],
+          },
         ],
       },
       {
         href: '/customers',
-        iconClass: 'fa-solid fa-users',
-        label: 'Data Customer',
-        isDropdown: true,
+        iconClass: 'fa-solid fa-database',
+        label: 'Data Master',
+        isGroup: true,
         children: [
-          { href: '/customers?tab=all',    iconClass: 'fa-solid fa-users',      label: 'Semua Customer' },
-          { href: '/customers?tab=repeat', iconClass: 'fa-solid fa-crown',      label: 'Repeat Customer' },
-          { href: '/customers?tab=new',    iconClass: 'fa-solid fa-user-plus',  label: 'Customer Baru' },
-        ],
-      },
-      {
-        href: '/vehicles',
-        iconClass: 'fa-solid fa-motorcycle',
-        label: 'Data Motor',
-        isDropdown: true,
-        children: [
-          { href: '/vehicles?tab=all',            iconClass: 'fa-solid fa-motorcycle',    label: 'Semua Unit Armada' },
-          { href: '/vehicles?tab=internal',       iconClass: 'fa-solid fa-building',      label: 'Milik Internal' },
-          { href: '/vehicles?tab=investor',       iconClass: 'fa-solid fa-crown',         label: 'Milik Investor' },
-          { href: '/vehicles?tab=investor_recap', iconClass: 'fa-solid fa-address-card',  label: 'Directory & Rekap Investor' },
-        ],
-      },
-      {
-        href: '/tracking',
-        iconClass: 'fa-solid fa-clock-rotate-left',
-        label: 'Tracking Sewa',
-        badge: 'tracking',
-        isDropdown: true,
-        driverAllowed: true,
-        children: [
-          { href: '/tracking?tab=all',      iconClass: 'fa-solid fa-list',              label: 'Semua' },
-          { href: '/tracking?tab=overdue',  iconClass: 'fa-solid fa-circle-exclamation', label: 'Overdue' },
-          { href: '/tracking?tab=critical', iconClass: 'fa-solid fa-bell',               label: 'Kritis' },
-          { href: '/tracking?tab=upcoming', iconClass: 'fa-solid fa-calendar-days',      label: 'Akan Datang' },
-        ],
-      },
-      {
-        href: '/availability',
-        iconClass: 'fa-solid fa-circle-half-stroke',
-        label: 'Ketersediaan',
-        badge: 'availability',
-        isDropdown: true,
-        children: [
-          { href: '/availability?tab=all',         iconClass: 'fa-solid fa-grip',              label: 'Semua Armada' },
-          { href: '/availability?tab=available',   iconClass: 'fa-solid fa-circle-check',      label: 'Tersedia' },
-          { href: '/availability?tab=rented',      iconClass: 'fa-solid fa-key',                label: 'Disewa' },
-          { href: '/availability?tab=overdue',     iconClass: 'fa-solid fa-circle-exclamation', label: 'Overdue' },
-          { href: '/availability?tab=maintenance', iconClass: 'fa-solid fa-wrench',             label: 'Perawatan' },
+          {
+            href: '/customers', iconClass: 'fa-solid fa-users', label: 'Data Customer', isDropdown: true,
+            children: [
+              { href: '/customers?tab=all',    iconClass: 'fa-solid fa-users',      label: 'Semua Customer' },
+              { href: '/customers?tab=repeat', iconClass: 'fa-solid fa-crown',      label: 'Repeat Customer' },
+              { href: '/customers?tab=new',    iconClass: 'fa-solid fa-user-plus',  label: 'Customer Baru' },
+            ],
+          },
+          {
+            href: '/vehicles', iconClass: 'fa-solid fa-motorcycle', label: 'Data Motor', isDropdown: true,
+            children: [
+              { href: '/vehicles?tab=all',            iconClass: 'fa-solid fa-motorcycle',    label: 'Semua Unit Armada' },
+              { href: '/vehicles?tab=internal',       iconClass: 'fa-solid fa-building',      label: 'Milik Internal' },
+              { href: '/vehicles?tab=investor',       iconClass: 'fa-solid fa-crown',         label: 'Milik Investor' },
+              { href: '/vehicles?tab=investor_recap', iconClass: 'fa-solid fa-address-card',  label: 'Directory & Rekap Investor' },
+            ],
+          },
         ],
       },
     ],
@@ -99,63 +91,61 @@ const NAV_SECTIONS = [
     items: [
       {
         href: '/expenses',
-        iconClass: 'fa-solid fa-wallet',
-        label: 'Keuangan',
-        isDropdown: true,
-        driverAllowed: true,
+        iconClass: 'fa-solid fa-sack-dollar',
+        label: 'Keuangan & Laporan',
+        isGroup: true,
         children: [
-          { href: '/expenses?tab=all',     iconClass: 'fa-solid fa-list-check',        label: 'Semua Arus Kas' },
-          { href: '/expenses?tab=income',  iconClass: 'fa-solid fa-circle-arrow-down', label: 'Pemasukan (+)' },
-          { href: '/expenses?tab=expense', iconClass: 'fa-solid fa-circle-arrow-up',   label: 'Pengeluaran (-)' },
+          {
+            href: '/expenses', iconClass: 'fa-solid fa-wallet', label: 'Keuangan', isDropdown: true,
+            children: [
+              { href: '/expenses?tab=all',     iconClass: 'fa-solid fa-list-check',        label: 'Semua Arus Kas' },
+              { href: '/expenses?tab=income',  iconClass: 'fa-solid fa-circle-arrow-down', label: 'Pemasukan (+)' },
+              { href: '/expenses?tab=expense', iconClass: 'fa-solid fa-circle-arrow-up',   label: 'Pengeluaran (-)' },
+            ],
+          },
+          {
+            href: '/reports', iconClass: 'fa-solid fa-chart-line', label: 'Laporan', isDropdown: true,
+            children: [
+              { href: '/reports?tab=income',      iconClass: 'fa-solid fa-sack-dollar',         label: 'Pemasukan (Sewa)' },
+              { href: '/reports?tab=expenses',    iconClass: 'fa-solid fa-money-bill-transfer', label: 'Pengeluaran' },
+              { href: '/reports?tab=profit_loss', iconClass: 'fa-solid fa-calculator',          label: 'Laba Rugi' },
+              { href: '/reports?tab=investor',    iconClass: 'fa-solid fa-crown',               label: 'Bagi Hasil Investor' },
+            ],
+          },
         ],
       },
-      {
-        href: '/reports',
-        iconClass: 'fa-solid fa-chart-line',
-        label: 'Laporan',
-        isDropdown: true,
-        children: [
-          { href: '/reports?tab=income',      iconClass: 'fa-solid fa-sack-dollar',         label: 'Pemasukan (Sewa)' },
-          { href: '/reports?tab=expenses',    iconClass: 'fa-solid fa-money-bill-transfer', label: 'Pengeluaran' },
-          { href: '/reports?tab=profit_loss', iconClass: 'fa-solid fa-calculator',          label: 'Laba Rugi' },
-          { href: '/reports?tab=investor',    iconClass: 'fa-solid fa-crown',               label: 'Bagi Hasil Investor' },
-        ],
-      },
-    ],
-  },
-  {
-    label: 'Tools',
-    items: [
-      {
-        href: '/maintenance',
-        iconClass: 'fa-solid fa-robot',
-        label: 'AI Diagnostic',
-        isDropdown: true,
-        children: [
-          { href: '/maintenance?tab=diagnostics', iconClass: 'fa-solid fa-robot',              label: 'Skor Kesehatan' },
-          { href: '/maintenance?tab=history',     iconClass: 'fa-solid fa-clock-rotate-left',  label: 'Riwayat Servis' },
-          { href: '/maintenance?tab=reports',     iconClass: 'fa-solid fa-clipboard-list',     label: 'Keluhan Pelanggan' },
-        ],
-      },
-      { href: '/gallery',     iconClass: 'fa-solid fa-images', label: 'Galeri Foto' },
     ],
   },
   {
     label: 'Lainnya',
     items: [
       {
-        href: '/settings',
-        iconClass: 'fa-solid fa-gear',
-        label: 'Pengaturan',
-        isDropdown: true,
+        href: '/maintenance',
+        iconClass: 'fa-solid fa-toolbox',
+        label: 'Tools & Pengaturan',
+        isGroup: true,
         children: [
-          { href: '/settings?tab=storage',  iconClass: 'fa-solid fa-database',       label: 'Database & Storage' },
-          { href: '/settings?tab=payment',  iconClass: 'fa-solid fa-credit-card',    label: 'Metode Pembayaran' },
-          { href: '/settings?tab=wacustom', iconClass: 'fa-brands fa-whatsapp',      label: 'Template Invoice WA' },
-          { href: '/settings?tab=security', iconClass: 'fa-solid fa-shield-halved', label: 'Keamanan & Password' },
-          { href: '/settings?tab=business', iconClass: 'fa-solid fa-sliders',        label: 'Operasional Rental' },
-          { href: '/settings?tab=staff',    iconClass: 'fa-solid fa-user-tie',       label: 'Akun Staff' },
-          { href: '/settings?tab=delivery', iconClass: 'fa-solid fa-truck-fast',     label: 'Zona Delivery' },
+          {
+            href: '/maintenance', iconClass: 'fa-solid fa-robot', label: 'AI Diagnostic', isDropdown: true,
+            children: [
+              { href: '/maintenance?tab=diagnostics', iconClass: 'fa-solid fa-robot',              label: 'Skor Kesehatan' },
+              { href: '/maintenance?tab=history',     iconClass: 'fa-solid fa-clock-rotate-left',  label: 'Riwayat Servis' },
+              { href: '/maintenance?tab=reports',     iconClass: 'fa-solid fa-clipboard-list',     label: 'Keluhan Pelanggan' },
+            ],
+          },
+          { href: '/gallery', iconClass: 'fa-solid fa-images', label: 'Galeri Foto' },
+          {
+            href: '/settings', iconClass: 'fa-solid fa-gear', label: 'Pengaturan', isDropdown: true,
+            children: [
+              { href: '/settings?tab=storage',  iconClass: 'fa-solid fa-database',       label: 'Database & Storage' },
+              { href: '/settings?tab=payment',  iconClass: 'fa-solid fa-credit-card',    label: 'Metode Pembayaran' },
+              { href: '/settings?tab=wacustom', iconClass: 'fa-brands fa-whatsapp',      label: 'Template Invoice WA' },
+              { href: '/settings?tab=security', iconClass: 'fa-solid fa-shield-halved', label: 'Keamanan & Password' },
+              { href: '/settings?tab=business', iconClass: 'fa-solid fa-sliders',        label: 'Operasional Rental' },
+              { href: '/settings?tab=staff',    iconClass: 'fa-solid fa-user-tie',       label: 'Akun Staff' },
+              { href: '/settings?tab=delivery', iconClass: 'fa-solid fa-truck-fast',     label: 'Zona Delivery' },
+            ],
+          },
         ],
       },
       { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'Website Publik', driverAllowed: true },
@@ -209,16 +199,24 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
   const [openDropdowns, setOpenDropdowns] = useState({});
   const [logoUrl, setLogoUrl] = useState('/images/logoCompany.png');
 
-  // Auto-expand a dropdown if the current path matches one of its items
+  // Auto-expand a dropdown/group if the current path matches one of its items
   useEffect(() => {
     const match = {};
-    NAV_SECTIONS.forEach(section => {
-      section.items.forEach(item => {
-        if (item.isDropdown && pathname.startsWith(item.href)) {
+    const walk = (items) => {
+      items.forEach(item => {
+        if ((item.isDropdown || item.isGroup) && pathname.startsWith(item.href)) {
           match[item.href] = true;
         }
+        if (item.children) {
+          const childMatch = item.children.some(c =>
+            (c.isDropdown || c.isGroup) ? pathname.startsWith(c.href) : pathname.startsWith(c.href.split('?')[0])
+          );
+          if (childMatch) match[item.href] = true;
+          if (item.isGroup) walk(item.children);
+        }
       });
-    });
+    };
+    NAV_SECTIONS.forEach(section => walk(section.items));
     if (Object.keys(match).length > 0) {
       setOpenDropdowns(prev => ({ ...prev, ...match }));
     }
@@ -267,6 +265,132 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
   const userEmail = user?.email || 'admin@preview.com';
   const userInitial = userEmail.charAt(0).toUpperCase();
 
+  // Render satu item nav — dipakai buat item level atas MAUPUN item di
+  // dalam Group (recursive-ish lewat indent), biar nggak duplikat kode
+  // buat kasus dropdown/link biasa.
+  const renderNavItem = (item, indent) => {
+    const isActive = pathname === item.href || pathname.startsWith(item.href + '/') ||
+      (item.href !== '/dashboard' && pathname.startsWith(item.href.split('?')[0]));
+    const badgeCount =
+      item.badge === 'tracking' ? alertCounts.tracking
+      : item.badge === 'availability' ? alertCounts.availability
+      : item.badge === 'bookings' ? alertCounts.bookings
+      : 0;
+
+    // Group (mis. "Booking & Sewa", "Data Master") — kumpulan beberapa
+    // fitur di 1 menu yang bisa diklik, biar sidebar nggak kepanjangan.
+    if (item.isGroup) {
+      const isGroupActive = pathname.startsWith(item.href) || item.children.some(c => pathname.startsWith(c.href.split('?')[0]));
+      const isOpen = !!openDropdowns[item.href];
+      return (
+        <div key={item.href}>
+          <button
+            type="button"
+            onClick={() => setOpenDropdowns(prev => ({ ...prev, [item.href]: !prev[item.href] }))}
+            className={`sidebar-nav-item sidebar-dropdown-trigger ${isGroupActive ? 'active' : ''}`}
+          >
+            <span className="nav-icon"><i className={item.iconClass}></i></span>
+            <span style={{ flex: 1 }}>{item.label}</span>
+            {badgeCount > 0 && (
+              <span className="sidebar-alert-badge" style={{ marginRight: '4px' }}>
+                {badgeCount > 9 ? '9+' : badgeCount}
+              </span>
+            )}
+            <i
+              className="fa-solid fa-chevron-down"
+              style={{
+                fontSize: '10px',
+                transition: 'transform 0.22s ease',
+                transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                opacity: 0.45,
+              }}
+            />
+          </button>
+          <div style={{
+            overflow: 'hidden',
+            maxHeight: isOpen ? '2000px' : '0px',
+            transition: 'max-height 0.35s ease',
+          }}>
+            {item.children.map((child) => renderNavItem(child, indent + 16))}
+          </div>
+        </div>
+      );
+    }
+
+    // Dropdown (Laporan, Data Motor, Keuangan, Pengaturan, dst)
+    if (item.isDropdown) {
+      const isDropdownActive = pathname.startsWith(item.href) || item.children.some(c => pathname.startsWith(c.href.split('?')[0]));
+      const isOpen = !!openDropdowns[item.href];
+      const visibleChildren = item.children;
+      return (
+        <div key={item.href}>
+          <button
+            type="button"
+            onClick={() => setOpenDropdowns(prev => ({ ...prev, [item.href]: !prev[item.href] }))}
+            className={`sidebar-nav-item sidebar-dropdown-trigger ${isDropdownActive ? 'active' : ''}`}
+            style={indent ? { paddingLeft: `${16 + indent}px` } : undefined}
+          >
+            <span className="nav-icon"><i className={item.iconClass}></i></span>
+            <span style={{ flex: 1, fontSize: indent ? '13px' : undefined }}>{item.label}</span>
+            {badgeCount > 0 && (
+              <span className="sidebar-alert-badge" style={{ marginRight: '4px' }}>
+                {badgeCount > 9 ? '9+' : badgeCount}
+              </span>
+            )}
+            <i
+              className="fa-solid fa-chevron-down"
+              style={{
+                fontSize: '10px',
+                transition: 'transform 0.22s ease',
+                transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                opacity: 0.45,
+              }}
+            />
+          </button>
+          <div style={{
+            overflow: 'hidden',
+            maxHeight: isOpen ? `${visibleChildren.length * 42 + 8}px` : '0px',
+            transition: 'max-height 0.28s ease',
+          }}>
+            {visibleChildren.map((child) => (
+              <Link
+                key={child.href}
+                href={child.href}
+                className="sidebar-nav-item sidebar-child-item"
+                onClick={onClose}
+                style={{ paddingLeft: `${36 + indent}px` }}
+              >
+                <span className="nav-icon" style={{ fontSize: '12px', width: '16px' }}>
+                  <i className={child.iconClass}></i>
+                </span>
+                <span style={{ fontSize: '12px' }}>{child.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // Item biasa (link langsung)
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
+        onClick={onClose}
+        style={indent ? { paddingLeft: `${16 + indent}px`, fontSize: '13px' } : undefined}
+      >
+        <span className="nav-icon"><i className={item.iconClass}></i></span>
+        {item.label}
+        {badgeCount > 0 && (
+          <span className="sidebar-alert-badge">
+            {badgeCount > 9 ? '9+' : badgeCount}
+          </span>
+        )}
+      </Link>
+    );
+  };
+
   return (
     <aside className={`sidebar ${mobileOpen ? 'mobile-active' : ''}`}>
 
@@ -301,86 +425,7 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
           <div key={section.label} className="sidebar-section">
             <div className="sidebar-section-label">{section.label}</div>
 
-            {visibleItems.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/') ||
-                (item.href !== '/dashboard' && pathname.startsWith(item.href.split('?')[0]));
-              const badgeCount =
-                item.badge === 'tracking' ? alertCounts.tracking
-                : item.badge === 'availability' ? alertCounts.availability
-                : item.badge === 'bookings' ? alertCounts.bookings
-                : 0;
-
-              // Dropdown (Laporan, Data Motor, Keuangan, Pengaturan)
-              if (item.isDropdown) {
-                const isDropdownActive = pathname.startsWith(item.href) || item.children.some(c => pathname.startsWith(c.href.split('?')[0]));
-                const isOpen = !!openDropdowns[item.href];
-                const visibleChildren = item.children;
-                return (
-                  <div key={item.href}>
-                    <button
-                      type="button"
-                      onClick={() => setOpenDropdowns(prev => ({ ...prev, [item.href]: !prev[item.href] }))}
-                      className={`sidebar-nav-item sidebar-dropdown-trigger ${isDropdownActive ? 'active' : ''}`}
-                    >
-                      <span className="nav-icon"><i className={item.iconClass}></i></span>
-                      <span style={{ flex: 1 }}>{item.label}</span>
-                      {badgeCount > 0 && (
-                        <span className="sidebar-alert-badge" style={{ marginRight: '4px' }}>
-                          {badgeCount > 9 ? '9+' : badgeCount}
-                        </span>
-                      )}
-                      <i
-                        className="fa-solid fa-chevron-down"
-                        style={{
-                          fontSize: '10px',
-                          transition: 'transform 0.22s ease',
-                          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                          opacity: 0.45,
-                        }}
-                      />
-                    </button>
-                    <div style={{
-                      overflow: 'hidden',
-                      maxHeight: isOpen ? `${visibleChildren.length * 42 + 8}px` : '0px',
-                      transition: 'max-height 0.28s ease',
-                    }}>
-                      {visibleChildren.map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          className="sidebar-nav-item sidebar-child-item"
-                          onClick={onClose}
-                          style={{ paddingLeft: '36px' }}
-                        >
-                          <span className="nav-icon" style={{ fontSize: '12px', width: '16px' }}>
-                            <i className={child.iconClass}></i>
-                          </span>
-                          <span style={{ fontSize: '12px' }}>{child.label}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                );
-              }
-
-              // Regular item
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
-                  onClick={onClose}
-                >
-                  <span className="nav-icon"><i className={item.iconClass}></i></span>
-                  {item.label}
-                  {badgeCount > 0 && (
-                    <span className="sidebar-alert-badge">
-                      {badgeCount > 9 ? '9+' : badgeCount}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
+            {visibleItems.map((item) => renderNavItem(item, 0))}
           </div>
           );
         })}
