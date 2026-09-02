@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { calcFinancialSummary, formatRupiah, getLocalMonthStr, getLocalDateStr } from '@/lib/finance';
+import { formatRupiah, getLocalMonthStr, getLocalDateStr } from '@/lib/finance';
 
 function StatBox({ icon, label, value, color }) {
   return (
@@ -24,8 +24,7 @@ function StatBox({ icon, label, value, color }) {
 
 export default function DriverDashboard({ fullName }) {
   const [loading, setLoading] = useState(true);
-  const [transactions, setTransactions] = useState([]);
-  const [expenses, setExpenses] = useState([]);
+  const [myIncome, setMyIncome] = useState([]);
   const [myDeliveries, setMyDeliveries] = useState([]);
   const [allBookings, setAllBookings] = useState([]);
   const [contractedBookingIds, setContractedBookingIds] = useState(new Set());
@@ -37,15 +36,15 @@ export default function DriverDashboard({ fullName }) {
       const { data: { user } } = await supabase.auth.getUser();
 
       const month = getLocalMonthStr();
-      const [{ data: txData }, { data: expData }, bookingsRes, contractsRes] = await Promise.all([
-        supabase.from('transactions').select('*').gte('created_at', `${month}-01`),
-        supabase.from('expenses').select('*').gte('expense_date', `${month}-01`),
+      const [{ data: incomeData }, bookingsRes, contractsRes] = await Promise.all([
+        user?.id
+          ? supabase.from('expenses').select('*').eq('type', 'income').eq('staff_id', user.id).gte('expense_date', `${month}-01`)
+          : Promise.resolve({ data: [] }),
         fetch('/api/bookings').then(r => r.json()).catch(() => []),
         fetch('/api/contracts').then(r => r.json()).catch(() => []),
       ]);
 
-      setTransactions(txData || []);
-      setExpenses(expData || []);
+      setMyIncome(incomeData || []);
 
       const mine = (Array.isArray(bookingsRes) ? bookingsRes : [])
         .filter(b => b.fulfillment_method === 'delivery' && b.assigned_driver_id === user?.id);
@@ -77,7 +76,7 @@ export default function DriverDashboard({ fullName }) {
     }
   };
 
-  const summary = calcFinancialSummary({ transactions, expenses, vehicles: [] });
+  const myIncomeTotal = myIncome.reduce((s, e) => s + Number(e.amount || 0), 0);
   const thisMonthDeliveries = myDeliveries.filter(b => {
     const d = new Date(b.created_at);
     const now = new Date();
@@ -163,8 +162,7 @@ export default function DriverDashboard({ fullName }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginBottom: '20px' }}>
-        <StatBox icon="fa-solid fa-sack-dollar" label="Pemasukan Bulan Ini" value={formatRupiah(summary.totalRevenue)} color="#22C55E" />
-        <StatBox icon="fa-solid fa-money-bill-transfer" label="Pengeluaran Bulan Ini" value={formatRupiah(summary.totalExpenses)} color="#EF4444" />
+        <StatBox icon="fa-solid fa-sack-dollar" label="Pendapatan Kamu Bulan Ini" value={formatRupiah(myIncomeTotal)} color="#22C55E" />
         <StatBox icon="fa-solid fa-motorcycle" label="Delivery Kamu Bulan Ini" value={`${thisMonthDeliveries.length}x`} color="#3B82F6" />
         <StatBox icon="fa-solid fa-hand-holding-dollar" label="Uang Delivery Kamu" value={formatRupiah(deliveryEarnings)} color="#8B5CF6" />
       </div>

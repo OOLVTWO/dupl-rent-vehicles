@@ -169,6 +169,53 @@ export default function SettingsPage() {
     }
   };
 
+  // ── Pemasukan khusus per-driver (gaji, bonus, dll) ──
+  const [incomeModalStaff, setIncomeModalStaff] = useState(null);
+  const [incomeForm, setIncomeForm] = useState({ title: '', amount: '', expense_date: '', notes: '' });
+  const [incomeSaving, setIncomeSaving] = useState(false);
+  const [incomeError, setIncomeError] = useState('');
+
+  const openIncomeModal = (staff) => {
+    setIncomeModalStaff(staff);
+    setIncomeForm({ title: '', amount: '', expense_date: new Date().toISOString().split('T')[0], notes: '' });
+    setIncomeError('');
+  };
+
+  const handleIncomeSave = async (e) => {
+    e.preventDefault();
+    if (!incomeForm.title.trim() || !incomeForm.amount) {
+      setIncomeError('Judul dan jumlah wajib diisi.');
+      return;
+    }
+    setIncomeSaving(true);
+    setIncomeError('');
+    try {
+      const res = await fetch('/api/expenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'income',
+          title: incomeForm.title.trim(),
+          category: 'staff_income',
+          amount: incomeForm.amount,
+          expense_date: incomeForm.expense_date,
+          notes: incomeForm.notes,
+          staff_id: incomeModalStaff.id,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setIncomeError(data.error || 'Gagal menyimpan pemasukan.');
+        setIncomeSaving(false);
+        return;
+      }
+      setIncomeModalStaff(null);
+    } catch {
+      setIncomeError('Gagal terhubung ke server.');
+    }
+    setIncomeSaving(false);
+  };
+
   // ── Delivery Zones (Zona Delivery tab) ──
   const [zoneList, setZoneList] = useState([]);
   const [zoneLoading, setZoneLoading] = useState(false);
@@ -1883,6 +1930,11 @@ export default function SettingsPage() {
                         <td data-label="Telepon" style={{ fontSize: '12.5px' }}>{s.phone || '-'}</td>
                         <td data-label="Aksi" data-label-align="left">
                           <div style={{ display: 'flex', gap: '6px' }}>
+                            {s.role === 'driver' && (
+                              <button className="btn btn-sm" title="Input Pemasukan (Gaji, Bonus, dll)" onClick={() => openIncomeModal(s)} style={{ background: 'rgba(34,197,94,0.12)', color: '#22C55E', border: '1px solid #22C55E' }}>
+                                <i className="fa-solid fa-sack-dollar"></i>
+                              </button>
+                            )}
                             <button className="btn btn-secondary btn-sm" title="Edit" onClick={() => openEditStaff(s)}>
                               <i className="fa-solid fa-pen-to-square"></i>
                             </button>
@@ -1989,6 +2041,77 @@ export default function SettingsPage() {
                     <button type="button" className="btn btn-secondary" onClick={() => setStaffModalOpen(false)}>Batal</button>
                     <button type="submit" className="btn btn-primary" disabled={staffSaving}>
                       {staffSaving ? <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>Menyimpan...</> : 'Simpan'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {incomeModalStaff && (
+            <div className="modal-overlay" onClick={() => setIncomeModalStaff(null)}>
+              <div className="modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <div>
+                    <div className="modal-title">Input Pemasukan Driver</div>
+                    <div className="modal-subtitle">Buat {incomeModalStaff.full_name} — gaji, bonus, dll. Muncul di dashboard driver ybs.</div>
+                  </div>
+                  <button className="modal-close" onClick={() => setIncomeModalStaff(null)}>✕</button>
+                </div>
+                <form onSubmit={handleIncomeSave}>
+                  <div className="form-group">
+                    <label className="form-label">Judul</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Gaji September, Bonus, dll."
+                      value={incomeForm.title}
+                      onChange={(e) => setIncomeForm(p => ({ ...p, title: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+                    <div className="form-group">
+                      <label className="form-label">Jumlah (Rp)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="form-control"
+                        value={incomeForm.amount}
+                        onChange={(e) => setIncomeForm(p => ({ ...p, amount: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Tanggal</label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={incomeForm.expense_date}
+                        onChange={(e) => setIncomeForm(p => ({ ...p, expense_date: e.target.value }))}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Catatan (opsional)</label>
+                    <textarea
+                      className="form-control"
+                      rows={2}
+                      value={incomeForm.notes}
+                      onChange={(e) => setIncomeForm(p => ({ ...p, notes: e.target.value }))}
+                      style={{ resize: 'vertical' }}
+                    />
+                  </div>
+                  {incomeError && (
+                    <div className="alert alert-danger" style={{ marginBottom: '12px' }}>
+                      <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '6px' }}></i>{incomeError}
+                    </div>
+                  )}
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setIncomeModalStaff(null)}>Batal</button>
+                    <button type="submit" className="btn btn-primary" disabled={incomeSaving}>
+                      {incomeSaving ? <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>Menyimpan...</> : 'Simpan'}
                     </button>
                   </div>
                 </form>

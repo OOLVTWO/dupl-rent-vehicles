@@ -94,7 +94,8 @@ export async function POST(request) {
     category: body.category || (type === 'income' ? 'other_income' : 'service'),
     amount,
     expense_date: body.expense_date || new Date().toISOString().split('T')[0],
-    notes: body.notes || ''
+    notes: body.notes || '',
+    staff_id: body.staff_id || null,
   };
 
   if (!payload.id) delete payload.id;

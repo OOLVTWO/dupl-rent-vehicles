@@ -172,9 +172,11 @@ export async function PATCH(request, { params }) {
     }
   }
 
-  // Kalau booking ini sudah punya Transaksi terkait (dibuat lewat tombol
-  // "Konfirmasi Transaksi"), sinkronkan perubahan info customer supaya
-  // datanya nggak beda sendiri antara Booking Confirmation dan Transaksi.
+  // Kalau booking ini sudah punya Transaksi dan/atau Kontrak terkait,
+  // sinkronkan perubahan info customer ke keduanya supaya datanya nggak
+  // beda sendiri antara Booking Confirmation, Transaksi, dan Laporan
+  // Kontrak (mis. nomor HP beda di 3 tempat karena masing-masing nyimpen
+  // salinan sendiri-sendiri).
   const contactFields = ['customer_name', 'customer_phone', 'customer_address'];
   if (contactFields.some(f => f in body)) {
     const txUpdate = {};
@@ -182,6 +184,12 @@ export async function PATCH(request, { params }) {
     if ('customer_phone' in body) txUpdate.renter_phone = updateData.customer_phone;
     if ('customer_address' in body) txUpdate.renter_address = updateData.customer_address;
     await supabase.from('transactions').update(txUpdate).eq('booking_id', id);
+
+    const contractUpdate = {};
+    if ('customer_name' in body) contractUpdate.customer_name = updateData.customer_name;
+    if ('customer_phone' in body) contractUpdate.customer_phone = updateData.customer_phone;
+    if ('customer_address' in body) contractUpdate.customer_address = updateData.customer_address;
+    await supabase.from('contracts').update(contractUpdate).eq('booking_id', id);
   }
 
   return NextResponse.json(data);

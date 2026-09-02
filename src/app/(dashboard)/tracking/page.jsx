@@ -332,22 +332,24 @@ function TrackingCard({ tx, vehicle, onComplete, role }) {
       {/* Countdown */}
       <CountdownTimer tx={tx} />
 
-      {/* Action Buttons */}
-      <div className="tracking-actions">
-        <a
-          href={waUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="tracking-btn-wa"
-        >
-          <i className="fa-brands fa-whatsapp"></i>
-          <span>Kirim Reminder WA</span>
-        </a>
-        <button className="tracking-btn-copy" onClick={handleCopy} title="Salin teks pesan">
-          <i className={copied ? 'fa-solid fa-check' : 'fa-solid fa-copy'}></i>
-          <span>{copied ? 'Tersalin!' : 'Salin Teks'}</span>
-        </button>
-      </div>
+      {/* Action Buttons — admin only, driver fokus ke countdown aja */}
+      {role === 'admin' && (
+        <div className="tracking-actions">
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tracking-btn-wa"
+          >
+            <i className="fa-brands fa-whatsapp"></i>
+            <span>Kirim Reminder WA</span>
+          </a>
+          <button className="tracking-btn-copy" onClick={handleCopy} title="Salin teks pesan">
+            <i className={copied ? 'fa-solid fa-check' : 'fa-solid fa-copy'}></i>
+            <span>{copied ? 'Tersalin!' : 'Salin Teks'}</span>
+          </button>
+        </div>
+      )}
 
       {/* Selesai Sewa Button — admin only, sama kayak aksi tulis lain di app ini */}
       {role === 'admin' && (!confirmSelesai ? (
@@ -406,14 +408,16 @@ function TrackingCard({ tx, vehicle, onComplete, role }) {
         </div>
       ))}
 
-      {/* Preview message on hover (expandable) */}
-      <details className="tracking-msg-preview">
-        <summary>
-          <i className="fa-solid fa-eye" style={{ marginRight: '6px' }}></i>
-          Lihat Preview Pesan WA
-        </summary>
-        <pre className="tracking-msg-text">{reminderText}</pre>
-      </details>
+      {/* Preview message on hover (expandable) — admin only */}
+      {role === 'admin' && (
+        <details className="tracking-msg-preview">
+          <summary>
+            <i className="fa-solid fa-eye" style={{ marginRight: '6px' }}></i>
+            Lihat Preview Pesan WA
+          </summary>
+          <pre className="tracking-msg-text">{reminderText}</pre>
+        </details>
+      )}
     </div>
   );
 }

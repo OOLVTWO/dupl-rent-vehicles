@@ -5,9 +5,10 @@
  *  1. Refresh session Supabase (access token) di setiap request.
  *  2. Proteksi login — user belum login diarahkan ke /login.
  *  3. Proteksi ROLE — akun Driver hanya boleh buka halaman yang diizinkan
- *     (Dashboard, Booking, Tracking, Ketersediaan, Pengeluaran, Kontrak).
- *     Selain itu (Transaksi, Data Motor, Customer, Laporan, Pengaturan,
- *     Maintenance, Gallery) otomatis diarahkan balik ke /dashboard.
+ *     (Dashboard, Booking Confirmation, Tracking Sewa, Pengeluaran, dan
+ *     Buat Kontrak Baru). Selain itu (Laporan Kontrak, Ketersediaan,
+ *     Transaksi, Data Motor, Customer, Laporan, Pengaturan, Maintenance,
+ *     Gallery) otomatis diarahkan balik ke /dashboard.
  *
  * Sebelum file ini ada, token tidak pernah di-refresh: setelah ±1 jam
  * halaman client (vehicles, transactions, dll.) gagal fetch diam-diam
@@ -21,9 +22,8 @@ const DRIVER_ALLOWED_PREFIXES = [
   '/dashboard',
   '/bookings',
   '/tracking',
-  '/availability',
   '/expenses',
-  '/contracts',
+  '/contracts/new',
 ];
 
 const PROTECTED_PREFIXES = [

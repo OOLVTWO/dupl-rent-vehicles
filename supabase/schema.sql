@@ -123,6 +123,9 @@ UPDATE transactions SET payment_status = 'paid' WHERE payment_status IS NULL;
 -- Update Kolom Keuangan
 ALTER TABLE expenses ADD COLUMN IF NOT EXISTS type VARCHAR(20) DEFAULT 'expense';
 ALTER TABLE expenses ADD COLUMN IF NOT EXISTS vehicle_id UUID REFERENCES vehicles(id) ON DELETE SET NULL;
+-- Pemasukan khusus per-driver (gaji, bonus, dll) yang diinput admin dari
+-- Settings > Akun Staff — muncul di dashboard driver ybs saja.
+ALTER TABLE expenses ADD COLUMN IF NOT EXISTS staff_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 
 -- =============================================
 -- =============================================

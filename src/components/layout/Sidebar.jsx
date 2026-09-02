@@ -38,7 +38,7 @@ const NAV_SECTIONS = [
         isDropdown: true,
         children: [
           { href: '/contracts',     iconClass: 'fa-solid fa-list',        label: 'Laporan Kontrak' },
-          { href: '/contracts/new', iconClass: 'fa-solid fa-file-pen',    label: 'Buat Kontrak Baru' },
+          { href: '/contracts/new', iconClass: 'fa-solid fa-file-pen',    label: 'Buat Kontrak Baru', driverAllowed: true },
         ],
       },
       {
@@ -84,7 +84,6 @@ const NAV_SECTIONS = [
         label: 'Ketersediaan',
         badge: 'availability',
         isDropdown: true,
-        driverAllowed: true,
         children: [
           { href: '/availability?tab=all',         iconClass: 'fa-solid fa-grip',              label: 'Semua Armada' },
           { href: '/availability?tab=available',   iconClass: 'fa-solid fa-circle-check',      label: 'Tersedia' },
@@ -286,6 +285,8 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
               if (item.isDropdown) {
                 const isDropdownActive = pathname.startsWith(item.href);
                 const isOpen = !!openDropdowns[item.href];
+                const visibleChildren = role === 'driver' ? item.children.filter(c => c.driverAllowed) : item.children;
+                if (role === 'driver' && visibleChildren.length === 0) return null;
                 return (
                   <div key={item.href}>
                     <button
@@ -312,10 +313,10 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
                     </button>
                     <div style={{
                       overflow: 'hidden',
-                      maxHeight: isOpen ? `${item.children.length * 42 + 8}px` : '0px',
+                      maxHeight: isOpen ? `${visibleChildren.length * 42 + 8}px` : '0px',
                       transition: 'max-height 0.28s ease',
                     }}>
-                      {item.children.map((child) => (
+                      {visibleChildren.map((child) => (
                         <Link
                           key={child.href}
                           href={child.href}
