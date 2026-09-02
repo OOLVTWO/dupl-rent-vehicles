@@ -24,6 +24,7 @@ const DRIVER_ALLOWED_PREFIXES = [
   '/tracking',
   '/expenses',
   '/contracts/new',
+  '/driver-income',
 ];
 
 const PROTECTED_PREFIXES = [
@@ -124,5 +125,6 @@ export const config = {
     '/maintenance/:path*',
     '/gallery/:path*',
     '/contracts/:path*',
+    '/driver-income/:path*',
   ],
 };

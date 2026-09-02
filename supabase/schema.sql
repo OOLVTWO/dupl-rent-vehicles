@@ -126,6 +126,11 @@ ALTER TABLE expenses ADD COLUMN IF NOT EXISTS vehicle_id UUID REFERENCES vehicle
 -- Pemasukan khusus per-driver (gaji, bonus, dll) yang diinput admin dari
 -- Settings > Akun Staff — muncul di dashboard driver ybs saja.
 ALTER TABLE expenses ADD COLUMN IF NOT EXISTS staff_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+-- Link ke booking asalnya (dipakai buat ongkos delivery yang otomatis
+-- kecatat saat driver Confirm Delivered), plus status sudah/belum dibayar
+-- ke driver ybs — dikonfirmasi admin dari Settings > Akun Staff.
+ALTER TABLE expenses ADD COLUMN IF NOT EXISTS booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL;
+ALTER TABLE expenses ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) NOT NULL DEFAULT 'paid';
 
 -- =============================================
 -- =============================================

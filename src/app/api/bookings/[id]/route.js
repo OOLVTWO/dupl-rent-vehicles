@@ -71,6 +71,23 @@ export async function PATCH(request, { params }) {
       await admin.from('vehicles').update({ status: 'rented' }).eq('id', data.vehicle_id);
     }
 
+    // Ongkos delivery otomatis kecatat sebagai pendapatan driver yang
+    // ditugaskan — muncul di History Pendapatan dia, status "unpaid"
+    // sampai admin tandai lunas.
+    if (data.assigned_driver_id && Number(data.delivery_fee) > 0) {
+      await admin.from('expenses').insert([{
+        type: 'income',
+        title: `Delivery Fee — ${data.delivery_zone_name || data.customer_name}`,
+        category: 'delivery_fee',
+        amount: Number(data.delivery_fee),
+        expense_date: new Date().toISOString().split('T')[0],
+        staff_id: data.assigned_driver_id,
+        booking_id: data.id,
+        payment_status: 'unpaid',
+        notes: `Otomatis dari delivery booking ${data.customer_name}`,
+      }]);
+    }
+
     return NextResponse.json(data);
   }
 

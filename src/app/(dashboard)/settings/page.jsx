@@ -107,10 +107,6 @@ export default function SettingsPage() {
     setStaffLoading(false);
   }, []);
 
-  useEffect(() => {
-    if (activeTab === 'staff') Promise.resolve().then(fetchStaff);
-  }, [activeTab, fetchStaff]);
-
   const openAddStaff = () => {
     setEditingStaff(null);
     setStaffForm({ email: '', password: '', full_name: '', role: 'driver', phone: '' });
@@ -171,6 +167,63 @@ export default function SettingsPage() {
 
   // ── Pemasukan khusus per-driver (gaji, bonus, dll) ──
   const [incomeModalStaff, setIncomeModalStaff] = useState(null);
+  const [unpaidByStaff, setUnpaidByStaff] = useState({});
+  const [payoutModalStaff, setPayoutModalStaff] = useState(null);
+  const [payoutEntries, setPayoutEntries] = useState([]);
+  const [payoutBusyId, setPayoutBusyId] = useState(null);
+
+  const fetchUnpaidPayouts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/expenses');
+      const data = await res.json().catch(() => []);
+      if (Array.isArray(data)) {
+        const unpaid = data.filter(e => e.type === 'income' && e.staff_id && e.payment_status !== 'paid');
+        const totals = {};
+        unpaid.forEach(e => {
+          totals[e.staff_id] = (totals[e.staff_id] || 0) + Number(e.amount || 0);
+        });
+        setUnpaidByStaff(totals);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  const openPayoutModal = async (staff) => {
+    setPayoutModalStaff(staff);
+    try {
+      const res = await fetch('/api/expenses');
+      const data = await res.json().catch(() => []);
+      const entries = (Array.isArray(data) ? data : [])
+        .filter(e => e.type === 'income' && e.staff_id === staff.id && e.payment_status !== 'paid')
+        .sort((a, b) => (b.expense_date || '').localeCompare(a.expense_date || ''));
+      setPayoutEntries(entries);
+    } catch {
+      setPayoutEntries([]);
+    }
+  };
+
+  const markPayoutPaid = async (entryId) => {
+    setPayoutBusyId(entryId);
+    try {
+      const res = await fetch(`/api/expenses/${entryId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payment_status: 'paid' }),
+      });
+      if (res.ok) {
+        setPayoutEntries(prev => prev.filter(e => e.id !== entryId));
+        fetchUnpaidPayouts();
+      }
+    } catch { /* ignore */ }
+    setPayoutBusyId(null);
+  };
+
+  useEffect(() => {
+    if (activeTab === 'staff') {
+      Promise.resolve().then(fetchStaff);
+      Promise.resolve().then(fetchUnpaidPayouts);
+    }
+  }, [activeTab, fetchStaff, fetchUnpaidPayouts]);
+
   const [incomeForm, setIncomeForm] = useState({ title: '', amount: '', expense_date: '', notes: '' });
   const [incomeSaving, setIncomeSaving] = useState(false);
   const [incomeError, setIncomeError] = useState('');
@@ -210,6 +263,7 @@ export default function SettingsPage() {
         return;
       }
       setIncomeModalStaff(null);
+      fetchUnpaidPayouts();
     } catch {
       setIncomeError('Gagal terhubung ke server.');
     }
@@ -1929,7 +1983,18 @@ export default function SettingsPage() {
                         </td>
                         <td data-label="Telepon" style={{ fontSize: '12.5px' }}>{s.phone || '-'}</td>
                         <td data-label="Aksi" data-label-align="left">
-                          <div style={{ display: 'flex', gap: '6px' }}>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {s.role === 'driver' && unpaidByStaff[s.id] > 0 && (
+                              <button
+                                className="btn btn-sm"
+                                title="Ada ongkos delivery/gaji belum dibayar"
+                                onClick={() => openPayoutModal(s)}
+                                style={{ background: 'rgba(245,158,11,0.12)', color: '#F59E0B', border: '1px solid #F59E0B', fontSize: '11px', fontWeight: 700 }}
+                              >
+                                <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '4px' }}></i>
+                                {formatRupiah(unpaidByStaff[s.id])}
+                              </button>
+                            )}
                             {s.role === 'driver' && (
                               <button className="btn btn-sm" title="Input Pemasukan (Gaji, Bonus, dll)" onClick={() => openIncomeModal(s)} style={{ background: 'rgba(34,197,94,0.12)', color: '#22C55E', border: '1px solid #22C55E' }}>
                                 <i className="fa-solid fa-sack-dollar"></i>
@@ -2115,6 +2180,51 @@ export default function SettingsPage() {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {payoutModalStaff && (
+            <div className="modal-overlay" onClick={() => setPayoutModalStaff(null)}>
+              <div className="modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <div>
+                    <div className="modal-title">Pembayaran {payoutModalStaff.full_name}</div>
+                    <div className="modal-subtitle">Ongkos delivery & pemasukan lain yang belum dibayar</div>
+                  </div>
+                  <button className="modal-close" onClick={() => setPayoutModalStaff(null)}>✕</button>
+                </div>
+
+                {payoutEntries.length === 0 ? (
+                  <div className="table-empty" style={{ padding: '24px' }}>
+                    <p>Semua sudah lunas 🎉</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                    {payoutEntries.map((entry) => (
+                      <div key={entry.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--bg-border)' }}>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '13px' }}>{entry.title}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{entry.expense_date}</div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ fontWeight: 800, color: '#F59E0B' }}>{formatRupiah(entry.amount)}</div>
+                          <button
+                            className="btn btn-primary btn-sm"
+                            disabled={payoutBusyId === entry.id}
+                            onClick={() => markPayoutPaid(entry.id)}
+                          >
+                            {payoutBusyId === entry.id ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Tandai Lunas'}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={() => setPayoutModalStaff(null)}>Tutup</button>
+                </div>
               </div>
             </div>
           )}

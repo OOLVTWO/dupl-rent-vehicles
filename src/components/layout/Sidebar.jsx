@@ -37,8 +37,8 @@ const NAV_SECTIONS = [
         driverAllowed: true,
         isDropdown: true,
         children: [
-          { href: '/contracts',     iconClass: 'fa-solid fa-list',        label: 'Laporan Kontrak' },
-          { href: '/contracts/new', iconClass: 'fa-solid fa-file-pen',    label: 'Buat Kontrak Baru', driverAllowed: true },
+          { href: '/contracts',     iconClass: 'fa-solid fa-list',        label: 'Laporan Kontrak', driverAllowed: false },
+          { href: '/contracts/new', iconClass: 'fa-solid fa-file-pen',    label: 'Buat Kontrak Baru' },
         ],
       },
       {
@@ -163,6 +163,57 @@ const NAV_SECTIONS = [
   },
 ];
 
+// Nav khusus akun Driver — dipisah dari NAV_SECTIONS admin biar
+// pengelompokannya beda (fokus ke alur kerja driver), bukan sekadar
+// nyaring item admin.
+const DRIVER_NAV_SECTIONS = [
+  {
+    label: 'Operasional',
+    items: [
+      { href: '/dashboard', iconClass: 'fa-solid fa-chart-pie', label: 'Dashboard' },
+    ],
+  },
+  {
+    label: 'Layanan Driver',
+    items: [
+      {
+        href: '/bookings',
+        iconClass: 'fa-solid fa-inbox',
+        label: 'Booking Confirmation',
+        badge: 'bookings',
+        isDropdown: true,
+        children: [
+          { href: '/bookings?tab=all',       iconClass: 'fa-solid fa-list',              label: 'Semua' },
+          { href: '/bookings?tab=pending',   iconClass: 'fa-solid fa-hourglass-half',    label: 'Pending' },
+          { href: '/bookings?tab=confirmed', iconClass: 'fa-solid fa-circle-check',      label: 'Confirmed' },
+          { href: '/bookings?tab=completed', iconClass: 'fa-solid fa-flag-checkered',    label: 'Completed' },
+        ],
+      },
+      { href: '/contracts/new', iconClass: 'fa-solid fa-file-signature', label: 'Buat Kontrak Baru' },
+      { href: '/driver-income', iconClass: 'fa-solid fa-sack-dollar', label: 'History Pendapatan' },
+      {
+        href: '/tracking',
+        iconClass: 'fa-solid fa-clock-rotate-left',
+        label: 'Tracking Sewa',
+        badge: 'tracking',
+        isDropdown: true,
+        children: [
+          { href: '/tracking?tab=all',      iconClass: 'fa-solid fa-list',              label: 'Semua' },
+          { href: '/tracking?tab=overdue',  iconClass: 'fa-solid fa-circle-exclamation', label: 'Overdue' },
+          { href: '/tracking?tab=upcoming', iconClass: 'fa-solid fa-calendar-days',      label: 'Akan Datang' },
+        ],
+      },
+    ],
+  },
+  {
+    label: 'Lainnya',
+    items: [
+      { href: '/expenses', iconClass: 'fa-solid fa-wallet', label: 'Kelola Pengeluaran' },
+      { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'Website Publik' },
+    ],
+  },
+];
+
 function getDaysLeft(endDate) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -262,10 +313,8 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
 
       {/* Nav sections */}
       <nav className="sidebar-nav sidebar-nav-scroll">
-        {NAV_SECTIONS.map((section) => {
-          const visibleItems = role === 'driver'
-            ? section.items.filter(item => item.driverAllowed)
-            : section.items;
+        {(role === 'driver' ? DRIVER_NAV_SECTIONS : NAV_SECTIONS).map((section) => {
+          const visibleItems = section.items;
           if (visibleItems.length === 0) return null;
 
           return (
@@ -285,8 +334,7 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
               if (item.isDropdown) {
                 const isDropdownActive = pathname.startsWith(item.href);
                 const isOpen = !!openDropdowns[item.href];
-                const visibleChildren = role === 'driver' ? item.children.filter(c => c.driverAllowed) : item.children;
-                if (role === 'driver' && visibleChildren.length === 0) return null;
+                const visibleChildren = item.children;
                 return (
                   <div key={item.href}>
                     <button

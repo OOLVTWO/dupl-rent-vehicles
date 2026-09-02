@@ -76,13 +76,13 @@ export default function DriverDashboard({ fullName }) {
     }
   };
 
-  const myIncomeTotal = myIncome.reduce((s, e) => s + Number(e.amount || 0), 0);
+  const myDeliveryIncome = myIncome.filter(i => i.category === 'delivery_fee').reduce((s, e) => s + Number(e.amount || 0), 0);
+  const myOtherIncome = myIncome.filter(i => i.category !== 'delivery_fee').reduce((s, e) => s + Number(e.amount || 0), 0);
   const thisMonthDeliveries = myDeliveries.filter(b => {
     const d = new Date(b.created_at);
     const now = new Date();
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
-  const deliveryEarnings = thisMonthDeliveries.reduce((s, b) => s + Number(b.delivery_fee || 0), 0);
   const upcomingDeliveries = myDeliveries.filter(b => ['pending', 'confirmed'].includes(b.status));
   const todaysDeliveries = myDeliveries.filter(b => b.status === 'confirmed' && b.start_date === getLocalDateStr() && !b.delivered_at);
   const activeBookings = allBookings
@@ -139,7 +139,7 @@ export default function DriverDashboard({ fullName }) {
         {[
           { href: '/bookings', icon: 'fa-solid fa-clipboard-list', label: 'Booking Confirmation', color: '#3B82F6' },
           { href: '/contracts/new', icon: 'fa-solid fa-file-signature', label: 'Buat Kontrak', color: '#8B5CF6' },
-          { href: '/expenses', icon: 'fa-solid fa-wallet', label: 'Kelola Pengeluaran', color: '#22C55E' },
+          { href: '/driver-income', icon: 'fa-solid fa-sack-dollar', label: 'History Pendapatan', color: '#22C55E' },
         ].map(action => (
           <Link
             key={action.href}
@@ -162,9 +162,9 @@ export default function DriverDashboard({ fullName }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginBottom: '20px' }}>
-        <StatBox icon="fa-solid fa-sack-dollar" label="Pendapatan Kamu Bulan Ini" value={formatRupiah(myIncomeTotal)} color="#22C55E" />
+        <StatBox icon="fa-solid fa-sack-dollar" label="Pendapatan Lain Bulan Ini" value={formatRupiah(myOtherIncome)} color="#22C55E" />
         <StatBox icon="fa-solid fa-motorcycle" label="Delivery Kamu Bulan Ini" value={`${thisMonthDeliveries.length}x`} color="#3B82F6" />
-        <StatBox icon="fa-solid fa-hand-holding-dollar" label="Uang Delivery Kamu" value={formatRupiah(deliveryEarnings)} color="#8B5CF6" />
+        <StatBox icon="fa-solid fa-hand-holding-dollar" label="Uang Delivery Kamu" value={formatRupiah(myDeliveryIncome)} color="#8B5CF6" />
       </div>
 
       <div className="card" style={{ marginBottom: '20px' }}>
