@@ -246,14 +246,30 @@ function EditBookingModal({ booking, onClose, onSaved }) {
   );
 }
 
+// Booking pakai skema sederhana (cash/transfer/qris/card), sedangkan daftar
+// metode pembayaran admin lebih rinci (mis. transfer_bca, transfer_mandiri,
+// wise). Cocokkan otomatis ke opsi admin yang paling sesuai.
+const BOOKING_PAYMENT_LABEL = { cash: 'Cash', transfer: 'Bank Transfer', qris: 'QRIS', card: 'Kartu (EDC)' };
+
+function mapBookingPaymentMethod(bookingMethod, availableMethods) {
+  if (!bookingMethod) return availableMethods[0]?.id || 'cash';
+  const exact = availableMethods.find(m => m.id === bookingMethod);
+  if (exact) return exact.id;
+  if (bookingMethod === 'transfer') {
+    const match = availableMethods.find(m => m.id.startsWith('transfer'));
+    if (match) return match.id;
+  }
+  return availableMethods[0]?.id || 'cash';
+}
+
 function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
   const [deposit, setDeposit] = useState('');
   const [kmStart, setKmStart] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const paymentMethods = getPaymentMethods().filter(m => m.active !== false);
+  const [paymentMethod, setPaymentMethod] = useState(() => mapBookingPaymentMethod(booking.payment_method, paymentMethods));
   const [paymentStatus, setPaymentStatus] = useState('paid');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const paymentMethods = getPaymentMethods().filter(m => m.active !== false);
 
   const handleConfirm = async (e) => {
     e.preventDefault();
@@ -311,6 +327,12 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
           <div style={{ color: 'var(--text-muted)' }}>{booking.customer_phone} · {formatDate(booking.start_date)} — {formatDate(booking.end_date)}</div>
           {contract?.customer_id_number && (
             <div style={{ color: 'var(--text-muted)' }}>ID: {contract.customer_id_number}</div>
+          )}
+          {booking.payment_method && (
+            <div style={{ color: 'var(--text-muted)' }}>
+              <i className="fa-solid fa-wallet" style={{ marginRight: '4px' }}></i>
+              Customer pilih saat booking: <strong>{BOOKING_PAYMENT_LABEL[booking.payment_method] || booking.payment_method}</strong>
+            </div>
           )}
           {!contract && (
             <div style={{ color: '#F59E0B', marginTop: '4px' }}>
