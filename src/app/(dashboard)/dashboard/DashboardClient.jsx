@@ -88,6 +88,21 @@ export default function DashboardClient({ transactions, vehicles }) {
     })();
   }, []);
 
+  const [bookings, setBookings] = useState([]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/bookings');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) setBookings(data);
+        }
+      } catch (err) {
+        console.error('Fetch bookings error:', err);
+      }
+    })();
+  }, []);
+
   const safeTx       = Array.isArray(transactions) ? transactions : [];
   const safeVehicles = Array.isArray(vehicles)     ? vehicles     : [];
   const safeExpenses = Array.isArray(expenses)     ? expenses     : [];
@@ -180,6 +195,10 @@ export default function DashboardClient({ transactions, vehicles }) {
   const diagnostics    = safeVehicles.map(v => analyzeVehicleHealth(v, safeTx));
   const urgentVehicles = diagnostics.filter(d => d.healthScore < 60 || d.recentIssues.length > 0);
 
+  const pendingBookings = bookings.filter(b => b.status === 'pending');
+  const todaysBookings = bookings.filter(b => b.status === 'confirmed' && b.start_date === today);
+  const unassignedDeliveriesToday = todaysBookings.filter(b => b.fulfillment_method === 'delivery' && !b.assigned_driver_id);
+
   const recentTx    = filteredTx.slice(0, 5);
   const fleetPreview = safeVehicles.slice(0, 6);
 
@@ -231,8 +250,25 @@ export default function DashboardClient({ transactions, vehicles }) {
   return (
     <div className="dashboard-v2 fade-in">
 
-      {(unpaidTx.length > 0 || urgentVehicles.length > 0) && (
+      {(unpaidTx.length > 0 || urgentVehicles.length > 0 || pendingBookings.length > 0 || todaysBookings.length > 0) && (
         <div className="dash-alerts">
+          {pendingBookings.length > 0 && (
+            <Link href="/bookings?tab=pending" className="dash-alert-bar" style={{ background: 'rgba(245, 158, 11, 0.12)', borderColor: 'rgba(245, 158, 11, 0.4)', color: '#F59E0B' }}>
+              <i className="fa-solid fa-inbox"></i>
+              <span>{pendingBookings.length} booking baru menunggu konfirmasi</span>
+              <span className="alert-cta">Cek Booking &rarr;</span>
+            </Link>
+          )}
+          {todaysBookings.length > 0 && (
+            <Link href="/bookings?tab=confirmed" className="dash-alert-bar" style={{ background: 'rgba(59, 130, 246, 0.12)', borderColor: 'rgba(59, 130, 246, 0.4)', color: '#3B82F6' }}>
+              <i className="fa-solid fa-calendar-day"></i>
+              <span>
+                {todaysBookings.length} jadwal booking hari ini
+                {unassignedDeliveriesToday.length > 0 && ` — ${unassignedDeliveriesToday.length} delivery belum ada driver!`}
+              </span>
+              <span className="alert-cta">Lihat Jadwal &rarr;</span>
+            </Link>
+          )}
           {unpaidTx.length > 0 && (
             <Link href="/transactions" className="dash-alert-bar unpaid">
               <i className="fa-solid fa-triangle-exclamation"></i>

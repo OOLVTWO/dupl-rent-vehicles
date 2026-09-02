@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { calcFinancialSummary, formatRupiah, getLocalMonthStr } from '@/lib/finance';
+import { calcFinancialSummary, formatRupiah, getLocalMonthStr, getLocalDateStr } from '@/lib/finance';
 
 function StatBox({ icon, label, value, color }) {
   return (
@@ -80,6 +80,7 @@ export default function DriverDashboard({ fullName }) {
   });
   const deliveryEarnings = thisMonthDeliveries.reduce((s, b) => s + Number(b.delivery_fee || 0), 0);
   const upcomingDeliveries = myDeliveries.filter(b => ['pending', 'confirmed'].includes(b.status));
+  const todaysDeliveries = myDeliveries.filter(b => b.status === 'confirmed' && b.start_date === getLocalDateStr() && !b.delivered_at);
 
   if (loading) {
     return (
@@ -99,6 +100,33 @@ export default function DriverDashboard({ fullName }) {
           Ringkasan bulan ini — {new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
         </p>
       </div>
+
+      {todaysDeliveries.length > 0 && (
+        <Link
+          href="/bookings?tab=confirmed"
+          style={{
+            display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none',
+            background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.4)',
+            borderRadius: '12px', padding: '14px 16px', marginBottom: '20px',
+          }}
+        >
+          <div style={{
+            width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(245,158,11,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>
+            <i className="fa-solid fa-bell" style={{ color: '#F59E0B', fontSize: '16px' }}></i>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 800, fontSize: '13.5px', color: '#F59E0B' }}>
+              {todaysDeliveries.length} delivery kamu hari ini!
+            </div>
+            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
+              Jangan lupa Confirm Delivered setelah motor sampai.
+            </div>
+          </div>
+          <i className="fa-solid fa-chevron-right" style={{ color: '#F59E0B' }}></i>
+        </Link>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '10px', marginBottom: '20px' }}>
         {[
