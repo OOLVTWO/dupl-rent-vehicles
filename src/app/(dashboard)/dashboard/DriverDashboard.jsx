@@ -28,6 +28,7 @@ export default function DriverDashboard({ fullName }) {
   const [expenses, setExpenses] = useState([]);
   const [myDeliveries, setMyDeliveries] = useState([]);
   const [allBookings, setAllBookings] = useState([]);
+  const [contractedBookingIds, setContractedBookingIds] = useState(new Set());
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -36,10 +37,11 @@ export default function DriverDashboard({ fullName }) {
       const { data: { user } } = await supabase.auth.getUser();
 
       const month = getLocalMonthStr();
-      const [{ data: txData }, { data: expData }, bookingsRes] = await Promise.all([
+      const [{ data: txData }, { data: expData }, bookingsRes, contractsRes] = await Promise.all([
         supabase.from('transactions').select('*').gte('created_at', `${month}-01`),
         supabase.from('expenses').select('*').gte('expense_date', `${month}-01`),
         fetch('/api/bookings').then(r => r.json()).catch(() => []),
+        fetch('/api/contracts').then(r => r.json()).catch(() => []),
       ]);
 
       setTransactions(txData || []);
@@ -49,6 +51,7 @@ export default function DriverDashboard({ fullName }) {
         .filter(b => b.fulfillment_method === 'delivery' && b.assigned_driver_id === user?.id);
       setMyDeliveries(mine);
       setAllBookings(Array.isArray(bookingsRes) ? bookingsRes : []);
+      setContractedBookingIds(new Set((Array.isArray(contractsRes) ? contractsRes : []).map(c => c.booking_id).filter(Boolean)));
     } catch { /* ignore */ }
     setLoading(false);
   }, []);
@@ -209,7 +212,7 @@ export default function DriverDashboard({ fullName }) {
                     <i className="fa-solid fa-circle-check" style={{ fontSize: '16px' }}></i>
                     Delivered — {new Date(b.delivered_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </div>
-                ) : b.status === 'confirmed' ? (
+                ) : b.status === 'confirmed' && contractedBookingIds.has(b.id) ? (
                   <button
                     type="button"
                     onClick={() => confirmDelivery(b.id)}
@@ -222,6 +225,18 @@ export default function DriverDashboard({ fullName }) {
                     <i className="fa-solid fa-circle-check" style={{ fontSize: '20px' }}></i>
                     CONFIRM DELIVERED
                   </button>
+                ) : b.status === 'confirmed' ? (
+                  <Link
+                    href={`/contracts/new?bookingId=${b.id}`}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                      width: '100%', padding: '16px', fontSize: '15px', fontWeight: 900,
+                      background: '#8B5CF6', color: '#fff', textDecoration: 'none',
+                    }}
+                  >
+                    <i className="fa-solid fa-file-signature" style={{ fontSize: '18px' }}></i>
+                    BUAT KONTRAK DULU
+                  </Link>
                 ) : (
                   <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.25)', color: '#F59E0B', fontSize: '11.5px' }}>
                     <i className="fa-solid fa-hourglass-half" style={{ marginRight: '6px' }}></i>

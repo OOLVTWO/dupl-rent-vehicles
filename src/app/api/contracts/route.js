@@ -50,6 +50,7 @@ export async function POST(request) {
     .from('contracts')
     .insert([{
       transaction_id: body.transaction_id || null,
+      booking_id: body.booking_id || null,
       vehicle_id: body.vehicle_id || null,
       vehicle_name: body.vehicle_name || null,
       customer_name: String(body.customer_name).trim(),

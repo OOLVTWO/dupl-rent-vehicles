@@ -259,6 +259,7 @@ CREATE POLICY "staff_profiles_own_select" ON staff_profiles
 CREATE TABLE IF NOT EXISTS contracts (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   transaction_id UUID REFERENCES transactions(id) ON DELETE SET NULL,
+  booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL,
   vehicle_id UUID REFERENCES vehicles(id) ON DELETE SET NULL,
   vehicle_name VARCHAR(150),
   customer_name VARCHAR(100) NOT NULL,

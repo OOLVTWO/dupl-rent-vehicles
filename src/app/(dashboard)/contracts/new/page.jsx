@@ -74,12 +74,14 @@ function NewContractInner() {
   const router = useRouter();
   const transactionId = searchParams.get('transactionId') || '';
   const vehicleIdParam = searchParams.get('vehicleId') || '';
+  const bookingId = searchParams.get('bookingId') || '';
 
   const [vehicles, setVehicles] = useState([]);
   const [loadingContext, setLoadingContext] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [createdContract, setCreatedContract] = useState(null);
 
   const [form, setForm] = useState({
     vehicle_id: vehicleIdParam,
@@ -115,10 +117,23 @@ function NewContractInner() {
             end_date: tx.end_date || '',
           }));
         }
+      } else if (bookingId) {
+        const { data: booking } = await supabase.from('bookings').select('*').eq('id', bookingId).maybeSingle();
+        if (booking) {
+          setForm(prev => ({
+            ...prev,
+            vehicle_id: booking.vehicle_id || prev.vehicle_id,
+            customer_name: booking.customer_name || '',
+            customer_phone: booking.customer_phone || '',
+            customer_address: booking.customer_address || '',
+            start_date: booking.start_date || '',
+            end_date: booking.end_date || '',
+          }));
+        }
       }
       setLoadingContext(false);
     });
-  }, [transactionId]);
+  }, [transactionId, bookingId]);
 
   const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
@@ -150,6 +165,7 @@ function NewContractInner() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           transaction_id: transactionId || null,
+          booking_id: bookingId || null,
           vehicle_id: form.vehicle_id || null,
           vehicle_name: selectedVehicle ? `${selectedVehicle.name}${selectedVehicle.plate_number ? ' — ' + selectedVehicle.plate_number : ''}` : null,
           customer_name: form.customer_name.trim(),
@@ -170,6 +186,7 @@ function NewContractInner() {
         setSubmitting(false);
         return;
       }
+      setCreatedContract(data);
       setSuccess(true);
     } catch {
       setError('Gagal terhubung ke server.');
@@ -191,6 +208,29 @@ function NewContractInner() {
           <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
             Kontrak sewa untuk {form.customer_name} sudah tercatat lengkap dengan tanda tangan & foto.
           </p>
+
+          {createdContract?.id && (
+            <a
+              href={`/api/contracts/${createdContract.id}/pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary"
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '12px' }}
+            >
+              <i className="fa-solid fa-file-pdf" style={{ marginRight: '6px' }}></i> Download / Share PDF ke Customer
+            </a>
+          )}
+
+          {bookingId && (
+            <button
+              className="btn btn-secondary"
+              style={{ width: '100%', marginBottom: '12px' }}
+              onClick={() => router.push(`/bookings?tab=confirmed`)}
+            >
+              <i className="fa-solid fa-arrow-left" style={{ marginRight: '6px' }}></i> Kembali ke Booking Confirmation
+            </button>
+          )}
+
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
             <button className="btn btn-secondary" onClick={() => router.push('/contracts')}>
               <i className="fa-solid fa-list" style={{ marginRight: '6px' }}></i> Lihat Laporan Kontrak
@@ -199,7 +239,7 @@ function NewContractInner() {
               className="btn btn-primary"
               onClick={() => {
                 setForm({ vehicle_id: '', customer_name: '', customer_id_number: '', customer_phone: '', customer_address: '', start_date: '', end_date: '', notes: '' });
-                setPassportPhoto(''); setVehiclePhoto(''); setSignature(''); setSuccess(false);
+                setPassportPhoto(''); setVehiclePhoto(''); setSignature(''); setSuccess(false); setCreatedContract(null);
               }}
             >
               <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Buat Kontrak Lain

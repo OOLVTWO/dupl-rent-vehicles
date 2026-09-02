@@ -205,6 +205,14 @@ function ContractDetailModal({ contract, onClose, onDelete, canDelete, onSaved }
               <i className="fa-solid fa-trash-can" style={{ marginRight: '6px' }}></i> Hapus Kontrak
             </button>
           )}
+          <a
+            href={`/api/contracts/${contract.id}/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-primary"
+          >
+            <i className="fa-solid fa-file-pdf" style={{ marginRight: '6px' }}></i> Download PDF
+          </a>
           <button className="btn btn-secondary" onClick={() => setEditing(true)}>
             <i className="fa-solid fa-pen-to-square" style={{ marginRight: '6px' }}></i> Edit
           </button>

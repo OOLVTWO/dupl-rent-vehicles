@@ -255,6 +255,7 @@ function BookingsPageInner() {
   const [editingBooking, setEditingBooking] = useState(null);
   const [drivers, setDrivers] = useState([]);
   const [myUserId, setMyUserId] = useState(null);
+  const [contractedBookingIds, setContractedBookingIds] = useState(new Set());
 
   useEffect(() => {
     Promise.resolve().then(async () => {
@@ -262,6 +263,18 @@ function BookingsPageInner() {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         setMyUserId(user?.id || null);
+      } catch { /* ignore */ }
+    });
+  }, []);
+
+  useEffect(() => {
+    Promise.resolve().then(async () => {
+      try {
+        const res = await fetch('/api/contracts');
+        const data = await res.json().catch(() => []);
+        if (res.ok) {
+          setContractedBookingIds(new Set((Array.isArray(data) ? data : []).map(c => c.booking_id).filter(Boolean)));
+        }
       } catch { /* ignore */ }
     });
   }, []);
@@ -550,19 +563,38 @@ function BookingsPageInner() {
                                   Delivered {new Date(b.delivered_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                 </span>
                               ) : (role === 'driver' && myUserId === b.assigned_driver_id) && (
-                                <button
-                                  type="button"
-                                  disabled={busyId === b.id}
-                                  onClick={() => confirmDelivery(b.id)}
-                                  style={{
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                                    fontSize: '12.5px', fontWeight: 800, padding: '10px 14px', width: '100%', maxWidth: '220px',
-                                    background: '#22C55E', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer',
-                                  }}
-                                >
-                                  <i className="fa-solid fa-circle-check" style={{ fontSize: '15px' }}></i>CONFIRM DELIVERED
-                                </button>
+                                contractedBookingIds.has(b.id) ? (
+                                  <button
+                                    type="button"
+                                    disabled={busyId === b.id}
+                                    onClick={() => confirmDelivery(b.id)}
+                                    style={{
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                                      fontSize: '12.5px', fontWeight: 800, padding: '10px 14px', width: '100%', maxWidth: '220px',
+                                      background: '#22C55E', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer',
+                                    }}
+                                  >
+                                    <i className="fa-solid fa-circle-check" style={{ fontSize: '15px' }}></i>CONFIRM DELIVERED
+                                  </button>
+                                ) : (
+                                  <Link
+                                    href={`/contracts/new?bookingId=${b.id}`}
+                                    style={{
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                                      fontSize: '12px', fontWeight: 800, padding: '10px 14px', width: '100%', maxWidth: '220px',
+                                      background: '#8B5CF6', color: '#fff', borderRadius: 'var(--radius-md)', textDecoration: 'none',
+                                    }}
+                                  >
+                                    <i className="fa-solid fa-file-signature"></i> Buat Kontrak Dulu
+                                  </Link>
+                                )
                               )
+                            )}
+                            {b.assigned_driver_id && role === 'admin' && !b.delivered_at && (
+                              <span style={{ fontSize: '10.5px', color: contractedBookingIds.has(b.id) ? '#8B5CF6' : '#94A3B8' }}>
+                                <i className={`fa-solid ${contractedBookingIds.has(b.id) ? 'fa-file-signature' : 'fa-hourglass-half'}`} style={{ marginRight: '4px' }}></i>
+                                {contractedBookingIds.has(b.id) ? 'Kontrak sudah dibuat' : 'Menunggu driver'}
+                              </span>
                             )}
                           </div>
                         )}
@@ -574,7 +606,7 @@ function BookingsPageInner() {
                       </td>
                       <td data-label="Aksi" data-label-align="left">
                         <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                          {b.status === 'confirmed' && (b.fulfillment_method !== 'delivery' || b.delivered_at) && (
+                          {role === 'admin' && b.status === 'confirmed' && (b.fulfillment_method !== 'delivery' || b.delivered_at) && (
                             <Link
                               href={`/transactions?bookingId=${b.id}`}
                               title="Buat Transaksi dari booking ini"

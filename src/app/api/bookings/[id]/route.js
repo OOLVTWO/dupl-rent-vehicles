@@ -44,6 +44,20 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Kamu bukan driver yang ditugaskan untuk booking ini.' }, { status: 403 });
     }
 
+    // Wajib sudah ada Kontrak (data diri + foto + tanda tangan customer) untuk
+    // booking ini sebelum delivery boleh dikonfirmasi — memastikan bukti
+    // serah terima selalu ada sebelum status "Delivered".
+    const { count: contractCount } = await admin
+      .from('contracts')
+      .select('id', { count: 'exact', head: true })
+      .eq('booking_id', id);
+    if (!contractCount || contractCount === 0) {
+      return NextResponse.json(
+        { error: 'Buat Kontrak (data diri, foto, tanda tangan customer) dulu sebelum konfirmasi delivery.' },
+        { status: 400 }
+      );
+    }
+
     const { data, error } = await admin
       .from('bookings')
       .update({ delivered_at: new Date().toISOString() })
