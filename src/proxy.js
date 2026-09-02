@@ -22,7 +22,6 @@ const DRIVER_ALLOWED_PREFIXES = [
   '/dashboard',
   '/bookings',
   '/tracking',
-  '/expenses',
   '/contracts/new',
   '/driver-income',
 ];

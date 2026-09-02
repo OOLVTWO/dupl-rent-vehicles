@@ -171,36 +171,17 @@ const DRIVER_NAV_SECTIONS = [
     label: 'Operasional',
     items: [
       { href: '/dashboard', iconClass: 'fa-solid fa-chart-pie', label: 'Dashboard' },
-    ],
-  },
-  {
-    label: 'Layanan Driver',
-    items: [
       {
         href: '/bookings',
-        iconClass: 'fa-solid fa-inbox',
-        label: 'Booking Confirmation',
+        iconClass: 'fa-solid fa-truck-fast',
+        label: 'Layanan Driver',
         badge: 'bookings',
         isDropdown: true,
         children: [
-          { href: '/bookings?tab=all',       iconClass: 'fa-solid fa-list',              label: 'Semua' },
-          { href: '/bookings?tab=pending',   iconClass: 'fa-solid fa-hourglass-half',    label: 'Pending' },
-          { href: '/bookings?tab=confirmed', iconClass: 'fa-solid fa-circle-check',      label: 'Confirmed' },
-          { href: '/bookings?tab=completed', iconClass: 'fa-solid fa-flag-checkered',    label: 'Completed' },
-        ],
-      },
-      { href: '/contracts/new', iconClass: 'fa-solid fa-file-signature', label: 'Buat Kontrak Baru' },
-      { href: '/driver-income', iconClass: 'fa-solid fa-sack-dollar', label: 'History Pendapatan' },
-      {
-        href: '/tracking',
-        iconClass: 'fa-solid fa-clock-rotate-left',
-        label: 'Tracking Sewa',
-        badge: 'tracking',
-        isDropdown: true,
-        children: [
-          { href: '/tracking?tab=all',      iconClass: 'fa-solid fa-list',              label: 'Semua' },
-          { href: '/tracking?tab=overdue',  iconClass: 'fa-solid fa-circle-exclamation', label: 'Overdue' },
-          { href: '/tracking?tab=upcoming', iconClass: 'fa-solid fa-calendar-days',      label: 'Akan Datang' },
+          { href: '/bookings',      iconClass: 'fa-solid fa-inbox',           label: 'Booking Confirmation' },
+          { href: '/contracts/new', iconClass: 'fa-solid fa-file-signature',  label: 'Buat Kontrak Baru' },
+          { href: '/driver-income', iconClass: 'fa-solid fa-sack-dollar',     label: 'History Pendapatan' },
+          { href: '/tracking',      iconClass: 'fa-solid fa-clock-rotate-left', label: 'Tracking Sewa' },
         ],
       },
     ],
@@ -208,7 +189,6 @@ const DRIVER_NAV_SECTIONS = [
   {
     label: 'Lainnya',
     items: [
-      { href: '/expenses', iconClass: 'fa-solid fa-wallet', label: 'Kelola Pengeluaran' },
       { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'Website Publik' },
     ],
   },
@@ -332,7 +312,7 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
 
               // Dropdown (Laporan, Data Motor, Keuangan, Pengaturan)
               if (item.isDropdown) {
-                const isDropdownActive = pathname.startsWith(item.href);
+                const isDropdownActive = pathname.startsWith(item.href) || item.children.some(c => pathname.startsWith(c.href.split('?')[0]));
                 const isOpen = !!openDropdowns[item.href];
                 const visibleChildren = item.children;
                 return (

@@ -598,12 +598,30 @@ function BookingsPageInner() {
             </span>
           </h1>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
-            Booking masuk dari form &quot;Book Now&quot; di website publik (/fleet) — ganti filter status lewat menu sidebar
+            Booking masuk dari form &quot;Book Now&quot; di website publik (/fleet)
           </p>
         </div>
         <button className="btn btn-secondary" onClick={fetchBookings} disabled={loading}>
           <i className={`fa-solid fa-rotate ${loading ? 'fa-spin' : ''}`} style={{ marginRight: '6px' }}></i> Refresh
         </button>
+      </div>
+
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '18px' }}>
+        {TABS.map(t => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setTab(t.key)}
+            style={{
+              padding: '7px 14px', borderRadius: 'var(--radius-full, 999px)', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer',
+              border: tab === t.key ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+              background: tab === t.key ? 'var(--brand-primary-bg, rgba(59,130,246,0.12))' : 'transparent',
+              color: tab === t.key ? 'var(--brand-primary)' : 'var(--text-secondary)',
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
       {error && (

@@ -1,10 +1,10 @@
 import { createAdminClient } from '@/lib/supabase/server';
-import { requireAuth, requireAdmin, readJsonBody, missingFields } from '@/lib/apiAuth';
+import { requireAdmin, readJsonBody, missingFields } from '@/lib/apiAuth';
 import { NextResponse } from 'next/server';
 
 // GET /api/expenses
 export async function GET(request) {
-  const authError = await requireAuth(request);
+  const authError = await requireAdmin(request);
   if (authError) return authError;
 
   const supabase = await createAdminClient();
@@ -61,7 +61,7 @@ export async function POST(request) {
   if (!body) return NextResponse.json({ error: 'Body request bukan JSON valid.' }, { status: 400 });
 
   // Staff/driver hanya boleh mencatat pengeluaran, bukan pemasukan.
-  const authError = body.type === 'income' ? await requireAdmin(request) : await requireAuth(request);
+  const authError = await requireAdmin(request);
   if (authError) return authError;
 
   const supabase = await createAdminClient();

@@ -597,23 +597,26 @@ export default function TrackingPage() {
 
       {/* ── Filters & Search ── */}
       <div className="tracking-controls">
-        {/* Current filter indicator — filter is now chosen from the
-            sidebar "Tracking Sewa" dropdown, this just confirms what's showing */}
-        {(() => {
-          const current = FILTERS.find(f => f.key === filter) || FILTERS[0];
-          return (
-            <span className="badge" style={{
-              background: current.color ? `${current.color}18` : 'var(--bg-elevated)',
-              color: current.color || 'var(--brand-primary)',
-              border: `1px solid ${current.color ? `${current.color}40` : 'var(--bg-border)'}`,
-              fontSize: '12.5px', padding: '6px 14px', fontWeight: 600,
-            }}>
-              <i className={current.icon} style={{ marginRight: '6px' }}></i>
-              {current.label}
-              {current.count > 0 && <span style={{ marginLeft: '6px', opacity: 0.75 }}>({current.count})</span>}
-            </span>
-          );
-        })()}
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          {FILTERS.map(f => (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => setFilter(f.key)}
+              className="badge"
+              style={{
+                background: filter === f.key ? (f.color ? `${f.color}18` : 'var(--bg-elevated)') : 'transparent',
+                color: filter === f.key ? (f.color || 'var(--brand-primary)') : 'var(--text-muted)',
+                border: `1px solid ${filter === f.key ? (f.color ? `${f.color}40` : 'var(--bg-border)') : 'var(--bg-border)'}`,
+                fontSize: '12.5px', padding: '6px 14px', fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              <i className={f.icon} style={{ marginRight: '6px' }}></i>
+              {f.label}
+              {f.count > 0 && <span style={{ marginLeft: '6px', opacity: 0.75 }}>({f.count})</span>}
+            </button>
+          ))}
+        </div>
         <div className="tracking-search-wrap">
           <i className="fa-solid fa-magnifying-glass"></i>
           <input
