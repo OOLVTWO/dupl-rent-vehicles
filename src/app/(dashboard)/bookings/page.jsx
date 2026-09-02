@@ -536,15 +536,15 @@ function BookingsPageInner() {
                               ) : (role === 'admin' || myUserId === b.assigned_driver_id) && (
                                 <button
                                   type="button"
-                                  className="btn btn-sm"
                                   disabled={busyId === b.id}
                                   onClick={() => confirmDelivery(b.id)}
                                   style={{
-                                    fontSize: '11px', fontWeight: 700, padding: '5px 10px', width: 'fit-content',
-                                    background: 'rgba(34,197,94,0.12)', color: '#22C55E', border: '1px solid #22C55E',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                                    fontSize: '12.5px', fontWeight: 800, padding: '10px 14px', width: '100%', maxWidth: '220px',
+                                    background: '#22C55E', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer',
                                   }}
                                 >
-                                  <i className="fa-solid fa-check" style={{ marginRight: '4px' }}></i>Confirm Delivered
+                                  <i className="fa-solid fa-circle-check" style={{ fontSize: '15px' }}></i>CONFIRM DELIVERED
                                 </button>
                               )
                             )}

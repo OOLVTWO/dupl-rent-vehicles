@@ -148,36 +148,53 @@ export default function DriverDashboard({ fullName }) {
             <p>Belum ada delivery yang ditugaskan ke kamu saat ini.</p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {upcomingDeliveries.map(b => (
-              <div key={b.id} style={{ border: '1px solid var(--bg-border)', borderRadius: '10px', padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '13.5px' }}>{b.customer_name} — {b.vehicle_name}</div>
-                  <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
-                    <i className="fa-solid fa-location-dot" style={{ marginRight: '4px' }}></i>{b.delivery_zone_name || '-'} · {b.customer_address || '-'}
+              <div key={b.id} style={{
+                border: b.status === 'confirmed' && !b.delivered_at ? '2px solid #22C55E' : '1px solid var(--bg-border)',
+                borderRadius: '12px', overflow: 'hidden',
+              }}>
+                <div style={{ padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '13.5px' }}>{b.customer_name} — {b.vehicle_name}</div>
+                    <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
+                      <i className="fa-solid fa-location-dot" style={{ marginRight: '4px' }}></i>{b.delivery_zone_name || '-'} · {b.customer_address || '-'}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontWeight: 800, color: '#8B5CF6', fontSize: '13px' }}>{formatRupiah(b.delivery_fee)}</div>
+                    {!b.delivered_at && (
+                      <span className="badge" style={{ background: b.status === 'confirmed' ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)', color: b.status === 'confirmed' ? '#22C55E' : '#F59E0B', border: `1px solid ${b.status === 'confirmed' ? '#22C55E' : '#F59E0B'}`, marginTop: '2px' }}>
+                        {b.status === 'confirmed' ? 'Ready To Deliver' : 'Pending Admin'}
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 800, color: '#8B5CF6', fontSize: '13px', marginBottom: '4px' }}>{formatRupiah(b.delivery_fee)}</div>
-                  {b.delivered_at ? (
-                    <span style={{ fontSize: '10.5px', color: '#22C55E', fontWeight: 700 }}>
-                      <i className="fa-solid fa-circle-check" style={{ marginRight: '4px' }}></i>Delivered
-                    </span>
-                  ) : b.status === 'confirmed' ? (
-                    <button
-                      type="button"
-                      className="btn btn-sm"
-                      onClick={() => confirmDelivery(b.id)}
-                      style={{ fontSize: '11px', fontWeight: 700, padding: '5px 10px', background: 'rgba(34,197,94,0.12)', color: '#22C55E', border: '1px solid #22C55E' }}
-                    >
-                      <i className="fa-solid fa-check" style={{ marginRight: '4px' }}></i>Confirm Delivered
-                    </button>
-                  ) : (
-                    <span className="badge" style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B', border: '1px solid #F59E0B' }}>
-                      Pending
-                    </span>
-                  )}
-                </div>
+
+                {b.delivered_at ? (
+                  <div style={{ padding: '12px 14px', background: 'rgba(34,197,94,0.1)', borderTop: '1px solid rgba(34,197,94,0.3)', color: '#22C55E', fontWeight: 800, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <i className="fa-solid fa-circle-check" style={{ fontSize: '16px' }}></i>
+                    Delivered — {new Date(b.delivered_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                ) : b.status === 'confirmed' ? (
+                  <button
+                    type="button"
+                    onClick={() => confirmDelivery(b.id)}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                      width: '100%', padding: '16px', fontSize: '15px', fontWeight: 900,
+                      background: '#22C55E', color: '#fff', border: 'none', cursor: 'pointer',
+                    }}
+                  >
+                    <i className="fa-solid fa-circle-check" style={{ fontSize: '20px' }}></i>
+                    CONFIRM DELIVERED
+                  </button>
+                ) : (
+                  <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.25)', color: '#F59E0B', fontSize: '11.5px' }}>
+                    <i className="fa-solid fa-hourglass-half" style={{ marginRight: '6px' }}></i>
+                    Waiting for admin to confirm this booking first.
+                  </div>
+                )}
               </div>
             ))}
           </div>
