@@ -1148,27 +1148,31 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* Current section indicator — the section itself is now chosen from
-          the sidebar "Pengaturan" dropdown, this just confirms what's showing */}
       {(() => {
         const TABS = [
-          { id: 'storage', label: 'Database & Storage', icon: 'fa-solid fa-database' },
           { id: 'payment', label: 'Metode Pembayaran', icon: 'fa-solid fa-credit-card' },
           { id: 'wacustom', label: 'Template Invoice WA', icon: 'fa-brands fa-whatsapp' },
           { id: 'security', label: 'Keamanan & Password', icon: 'fa-solid fa-shield-halved' },
           { id: 'business', label: 'Operasional Rental', icon: 'fa-solid fa-sliders' },
-          { id: 'staff', label: 'Akun Staff', icon: 'fa-solid fa-user-tie' },
-          { id: 'delivery', label: 'Zona Delivery', icon: 'fa-solid fa-truck-fast' },
         ];
-        const current = TABS.find(t => t.id === activeTab) || TABS[0];
         return (
-          <div style={{ marginBottom: '16px' }}>
-            <span className="badge" style={{
-              background: 'var(--bg-elevated)', color: 'var(--brand-primary)', border: '1px solid var(--bg-border)',
-              fontSize: '12.5px', padding: '6px 14px', fontWeight: 600,
-            }}>
-              <i className={current.icon} style={{ marginRight: '6px' }}></i>{current.label}
-            </span>
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px', marginBottom: '20px', WebkitOverflowScrolling: 'touch' }}>
+            {TABS.map(t => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setActiveTab(t.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '7px', flexShrink: 0,
+                  padding: '10px 16px', borderRadius: '10px', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+                  border: activeTab === t.id ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+                  background: activeTab === t.id ? 'var(--brand-primary)' : 'var(--bg-elevated)',
+                  color: activeTab === t.id ? '#fff' : 'var(--text-secondary)',
+                }}
+              >
+                <i className={t.icon}></i>{t.label}
+              </button>
+            ))}
           </div>
         );
       })()}
@@ -1782,6 +1786,30 @@ export default function SettingsPage() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {(activeTab === 'delivery' || activeTab === 'staff') && (
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+          {[
+            { id: 'staff', label: 'Akun Staff', icon: 'fa-solid fa-user-tie' },
+            { id: 'delivery', label: 'Zona Delivery', icon: 'fa-solid fa-truck-fast' },
+          ].map(t => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setActiveTab(t.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '7px',
+                padding: '10px 16px', borderRadius: '10px', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer',
+                border: activeTab === t.id ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+                background: activeTab === t.id ? 'var(--brand-primary)' : 'var(--bg-elevated)',
+                color: activeTab === t.id ? '#fff' : 'var(--text-secondary)',
+              }}
+            >
+              <i className={t.icon}></i>{t.label}
+            </button>
+          ))}
         </div>
       )}
 

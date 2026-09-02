@@ -4,7 +4,18 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+
+// Kecil, dipisah biar useSearchParams() (butuh Suspense boundary) nggak
+// nge-block render Sidebar utama. Dipakai buat bedain link yang share base
+// path sama tapi query beda (mis. /settings?tab=storage vs ?tab=staff),
+// biar highlight "active" di sidebar nggak nyala di banyak item sekaligus.
+function SearchParamsWatcher({ onChange }) {
+  const searchParams = useSearchParams();
+  useEffect(() => { onChange(searchParams.toString()); }, [searchParams, onChange]);
+  return null;
+}
 
 // ── Nav grouped by section ──
 // `driverAllowed: true` = tetap muncul untuk akun role Driver.
@@ -22,7 +33,6 @@ const NAV_SECTIONS = [
         children: [
           { href: '/bookings',      iconClass: 'fa-solid fa-inbox',            label: 'Booking Confirmation', badge: 'bookings' },
           { href: '/transactions',  iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi' },
-          { href: '/contracts',     iconClass: 'fa-solid fa-file-signature',   label: 'Laporan Kontrak' },
           { href: '/contracts/new', iconClass: 'fa-solid fa-file-pen',         label: 'Buat Kontrak Baru' },
           { href: '/tracking',      iconClass: 'fa-solid fa-clock-rotate-left', label: 'Tracking Sewa', badge: 'tracking' },
           { href: '/availability',  iconClass: 'fa-solid fa-circle-half-stroke', label: 'Ketersediaan', badge: 'availability' },
@@ -34,23 +44,30 @@ const NAV_SECTIONS = [
         label: 'Data Master',
         isGroup: true,
         children: [
-          { href: '/customers', iconClass: 'fa-solid fa-users',      label: 'Data Customer' },
-          { href: '/vehicles',  iconClass: 'fa-solid fa-motorcycle', label: 'Data Motor' },
+          { href: '/customers',            iconClass: 'fa-solid fa-users',       label: 'Data Customer' },
+          { href: '/vehicles',             iconClass: 'fa-solid fa-motorcycle',  label: 'Data Motor' },
+          { href: '/expenses',             iconClass: 'fa-solid fa-wallet',      label: 'Keuangan' },
+          { href: '/settings?tab=storage', iconClass: 'fa-solid fa-database',    label: 'Database & Storage' },
         ],
       },
-    ],
-  },
-  {
-    label: 'Keuangan',
-    items: [
       {
-        href: '/expenses',
-        iconClass: 'fa-solid fa-sack-dollar',
-        label: 'Keuangan & Laporan',
+        href: '/reports',
+        iconClass: 'fa-solid fa-chart-line',
+        label: 'Laporan',
         isGroup: true,
         children: [
-          { href: '/expenses', iconClass: 'fa-solid fa-wallet',     label: 'Keuangan' },
-          { href: '/reports',  iconClass: 'fa-solid fa-chart-line', label: 'Laporan' },
+          { href: '/contracts', iconClass: 'fa-solid fa-file-signature', label: 'Laporan Kontrak' },
+          { href: '/reports',   iconClass: 'fa-solid fa-chart-line',     label: 'Laporan Keuangan' },
+        ],
+      },
+      {
+        href: '/settings?tab=staff',
+        iconClass: 'fa-solid fa-user-tie',
+        label: 'Staff & Driver',
+        isGroup: true,
+        children: [
+          { href: '/settings?tab=staff',    iconClass: 'fa-solid fa-user-tie',   label: 'Akun Staff' },
+          { href: '/settings?tab=delivery', iconClass: 'fa-solid fa-truck-fast', label: 'Zona Delivery' },
         ],
       },
     ],
@@ -64,9 +81,9 @@ const NAV_SECTIONS = [
         label: 'Tools & Pengaturan',
         isGroup: true,
         children: [
-          { href: '/maintenance', iconClass: 'fa-solid fa-robot',  label: 'AI Diagnostic' },
-          { href: '/gallery',     iconClass: 'fa-solid fa-images', label: 'Galeri Foto' },
-          { href: '/settings', iconClass: 'fa-solid fa-gear', label: 'Pengaturan' },
+          { href: '/maintenance',          iconClass: 'fa-solid fa-robot',  label: 'AI Diagnostic' },
+          { href: '/gallery',              iconClass: 'fa-solid fa-images', label: 'Galeri Foto' },
+          { href: '/settings?tab=payment', iconClass: 'fa-solid fa-gear',   label: 'Pengaturan' },
         ],
       },
       { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'Website Publik', driverAllowed: true },
@@ -119,19 +136,26 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
   const [alertCounts, setAlertCounts] = useState({ tracking: 0, availability: 0, bookings: 0 });
   const [openDropdowns, setOpenDropdowns] = useState({});
   const [logoUrl, setLogoUrl] = useState('/images/logoCompany.png');
+  const [searchString, setSearchString] = useState('');
+  const currentFullPath = pathname + (searchString ? `?${searchString}` : '');
+
+  // Item cocok dianggap "active" kalau: hrefnya nggak ada query (cukup match
+  // base path), ATAU hrefnya ADA query dan itu match persis sama URL saat
+  // ini (biar /settings?tab=storage dan /settings?tab=staff nggak nyala
+  // bareng-bareng padahal cuma salah satunya yang lagi dibuka).
+  const matchesHref = (href) => {
+    const [hrefPath, hrefQuery] = href.split('?');
+    if (!hrefQuery) return pathname === hrefPath || pathname.startsWith(hrefPath + '/');
+    return currentFullPath === href;
+  };
 
   // Auto-expand a dropdown/group if the current path matches one of its items
   useEffect(() => {
     const match = {};
     const walk = (items) => {
       items.forEach(item => {
-        if ((item.isDropdown || item.isGroup) && pathname.startsWith(item.href)) {
-          match[item.href] = true;
-        }
         if (item.children) {
-          const childMatch = item.children.some(c =>
-            (c.isDropdown || c.isGroup) ? pathname.startsWith(c.href) : pathname.startsWith(c.href.split('?')[0])
-          );
+          const childMatch = item.children.some(c => matchesHref(c.href));
           if (childMatch) match[item.href] = true;
           if (item.isGroup) walk(item.children);
         }
@@ -141,7 +165,7 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
     if (Object.keys(match).length > 0) {
       setOpenDropdowns(prev => ({ ...prev, ...match }));
     }
-  }, [pathname]);
+  }, [pathname, searchString]);
 
   useEffect(() => {
     try {
@@ -190,8 +214,7 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
   // dalam Group (recursive-ish lewat indent), biar nggak duplikat kode
   // buat kasus dropdown/link biasa.
   const renderNavItem = (item, indent) => {
-    const isActive = pathname === item.href || pathname.startsWith(item.href + '/') ||
-      (item.href !== '/dashboard' && pathname.startsWith(item.href.split('?')[0]));
+    const isActive = item.href === '/dashboard' ? pathname === item.href : matchesHref(item.href);
     const badgeCount =
       item.badge === 'tracking' ? alertCounts.tracking
       : item.badge === 'availability' ? alertCounts.availability
@@ -201,7 +224,7 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
     // Group (mis. "Booking & Sewa", "Data Master") — kumpulan beberapa
     // fitur di 1 menu yang bisa diklik, biar sidebar nggak kepanjangan.
     if (item.isGroup) {
-      const isGroupActive = pathname.startsWith(item.href) || item.children.some(c => pathname.startsWith(c.href.split('?')[0]));
+      const isGroupActive = item.children.some(c => matchesHref(c.href));
       const isOpen = !!openDropdowns[item.href];
       return (
         <div key={item.href}>
@@ -240,7 +263,7 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
 
     // Dropdown (Laporan, Data Motor, Keuangan, Pengaturan, dst)
     if (item.isDropdown) {
-      const isDropdownActive = pathname.startsWith(item.href) || item.children.some(c => pathname.startsWith(c.href.split('?')[0]));
+      const isDropdownActive = item.children.some(c => matchesHref(c.href));
       const isOpen = !!openDropdowns[item.href];
       const visibleChildren = item.children;
       return (
@@ -314,6 +337,9 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
 
   return (
     <aside className={`sidebar ${mobileOpen ? 'mobile-active' : ''}`}>
+      <Suspense fallback={null}>
+        <SearchParamsWatcher onChange={setSearchString} />
+      </Suspense>
 
       {/* Mobile close button */}
       <button
