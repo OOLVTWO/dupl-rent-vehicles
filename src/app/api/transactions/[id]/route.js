@@ -103,12 +103,13 @@ export async function DELETE(request, { params }) {
 
   // Transaksi & booking asalnya itu 1 kesatuan (bukti sewa yang sama) —
   // hapus salah satu, hapus juga yang lain, biar nggak ada data
-  // "nyangkut" sendiri-sendiri. Sama seperti hapus booking: kontrak &
-  // catatan pendapatan driver yang masih nunjuk ke booking ini di-lepas
-  // dulu (bukan ikut dihapus), baru booking-nya beneran dihapus.
+  // "nyangkut" sendiri-sendiri. Kontrak TETAP disimpan (cuma di-lepas),
+  // tapi catatan pendapatan driver yang otomatis dari booking ini ikut
+  // DIHAPUS — nggak masuk akal riwayat pendapatannya masih nyantol di
+  // History Pendapatan kalau transaksi/booking sumbernya udah nggak ada.
   if (tx && tx.booking_id) {
     await supabase.from('contracts').update({ booking_id: null }).eq('booking_id', tx.booking_id);
-    await supabase.from('expenses').update({ booking_id: null }).eq('booking_id', tx.booking_id);
+    await supabase.from('expenses').delete().eq('booking_id', tx.booking_id);
     await supabase.from('bookings').delete().eq('id', tx.booking_id);
   }
 

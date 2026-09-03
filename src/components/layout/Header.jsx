@@ -17,6 +17,7 @@ const pageMeta = {
   '/expenses':    { title: 'Keuangan',         subtitle: 'Catat pemasukan, pengeluaran & saldo bersih' },
   '/maintenance': { title: 'AI Diagnostic',    subtitle: 'Deteksi dini kesehatan motor' },
   '/gallery':     { title: 'Galeri Foto',      subtitle: 'Arsip foto identitas & kendaraan' },
+  '/driver-income': { title: 'History Pendapatan', subtitle: 'Riwayat pendapatan kamu' },
   '/reports':     { title: 'Laporan Keuangan', subtitle: 'Export dan analisis pendapatan' },
   '/fleet':       { title: 'Website Publik',   subtitle: 'Katalog sewa motor publik (/fleet)' },
   '/customers':   { title: 'Data Customer',    subtitle: 'Kelola data penyewa & riwayat' },

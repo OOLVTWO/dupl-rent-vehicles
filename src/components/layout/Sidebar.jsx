@@ -101,6 +101,7 @@ const DRIVER_NAV_SECTIONS = [
         children: [
           { href: '/bookings',      iconClass: 'fa-solid fa-inbox',           label: 'Booking' },
           { href: '/contracts/new', iconClass: 'fa-solid fa-file-signature',  label: 'Kontrak' },
+          { href: '/driver-income', iconClass: 'fa-solid fa-sack-dollar',     label: 'History Pendapatan' },
           { href: '/tracking',      iconClass: 'fa-solid fa-clock-rotate-left', label: 'Tracking Sewa' },
         ],
       },

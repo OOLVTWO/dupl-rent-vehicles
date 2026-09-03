@@ -23,6 +23,7 @@ const DRIVER_ALLOWED_PREFIXES = [
   '/bookings',
   '/tracking',
   '/contracts/new',
+  '/driver-income',
 ];
 
 const PROTECTED_PREFIXES = [
