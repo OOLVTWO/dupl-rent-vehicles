@@ -12,6 +12,7 @@ import { COUNTRY_CODES, getWhatsAppShareUrl, generateInvoiceText, getFlagImageUr
 import { createClient } from '@/lib/supabase/client';
 import { fetchCustomers, upsertCustomer } from '@/lib/customers';
 import { getLocalDateStr } from '@/lib/finance';
+import { sharePdfFile } from '@/lib/shareFile';
 
 
 function formatRupiah(amount) {
@@ -899,20 +900,36 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
 
 // ===== MODAL KIRIM INVOICE WHATSAPP =====
 function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
-  const [activeTab, setActiveTab] = useState('text');
   const [customMsg, setCustomMsg] = useState('');
   const [copied, setCopied] = useState(false);
+  const [contract, setContract] = useState(null);
+  const [loadingContract, setLoadingContract] = useState(false);
+  const [sharingPdf, setSharingPdf] = useState(false);
 
   const paymentMeta = getPaymentMethodMeta(tx?.payment_method);
 
-  // Generate pesan invoice saat modal dibuka — pola resmi React
-  // "adjust state during render" (menggantikan useEffect + setState sinkron)
+  // Generate pesan invoice + cari kontrak terhubung saat modal dibuka —
+  // pola resmi React "adjust state during render".
   const [prevInvoiceKey, setPrevInvoiceKey] = useState(null);
   const invoiceKey = isOpen && tx ? tx.id : null;
   if (invoiceKey !== prevInvoiceKey) {
     setPrevInvoiceKey(invoiceKey);
     if (invoiceKey) {
       setCustomMsg(generateInvoiceText(tx, vehicle, paymentMeta));
+      setContract(null);
+      setLoadingContract(true);
+      const supabase = createClient();
+      // Kontrak bisa nyambung lewat transaction_id (dibuat setelah
+      // transaksi ada) ATAU booking_id (dibuat driver sebelum admin bikin
+      // transaksinya) — cek dua-duanya.
+      const orFilter = tx.booking_id
+        ? `transaction_id.eq.${tx.id},booking_id.eq.${tx.booking_id}`
+        : `transaction_id.eq.${tx.id}`;
+      supabase.from('contracts').select('id').or(orFilter).maybeSingle()
+        .then(({ data }) => {
+          setContract(data);
+          setLoadingContract(false);
+        });
     }
   }
 
@@ -926,8 +943,16 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handleSharePdf = async () => {
+    if (!contract) return;
+    setSharingPdf(true);
+    await sharePdfFile(
+      `/api/contracts/${contract.id}/pdf`,
+      `invoice-${tx.renter_name}.pdf`,
+      'Invoice Sewa',
+      `Invoice sewa untuk ${tx.renter_name} — Demo Rental Preview`
+    );
+    setSharingPdf(false);
   };
 
   return (
@@ -937,7 +962,7 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
           <div>
             <div className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <i className="fa-brands fa-whatsapp" style={{ color: '#25D366', fontSize: '20px' }}></i>
-              Kirim Invoice WhatsApp & Pesan Customer
+              Kirim Invoice ke Customer
             </div>
             <div className="modal-subtitle">
               Penyewa: <strong>{tx.renter_name}</strong> ({tx.renter_phone})
@@ -946,181 +971,65 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
 
-        {/* Tab Selector */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-          <button
-            className={`btn btn-${activeTab === 'text' ? 'primary' : 'secondary'} btn-sm`}
-            onClick={() => setActiveTab('text')}
-          >
-            <i className="fa-brands fa-whatsapp" style={{ marginRight: '6px' }}></i> Format Text WA
-          </button>
-          <button
-            className={`btn btn-${activeTab === 'visual' ? 'primary' : 'secondary'} btn-sm`}
-            onClick={() => setActiveTab('visual')}
-          >
-            <i className="fa-solid fa-file-invoice" style={{ marginRight: '6px' }}></i> Kartu Invoice Gambar / Print
-          </button>
+        <div className="form-group">
+          <label className="form-label">
+            <i className="fa-solid fa-pen-to-square" style={{ marginRight: '6px' }}></i> Text Invoice (Dapat Diedit):
+          </label>
+          <textarea
+            className="form-control"
+            rows={10}
+            value={customMsg}
+            onChange={e => setCustomMsg(e.target.value)}
+            style={{ fontFamily: 'monospace', fontSize: '12.5px', lineHeight: 1.5, resize: 'vertical' }}
+          />
         </div>
 
-        {activeTab === 'text' ? (
-          <div>
-            <div className="form-group">
-              <label className="form-label">
-                <i className="fa-solid fa-pen-to-square" style={{ marginRight: '6px' }}></i> Text Invoice Formal (Dapat Diedit):
-              </label>
-              <textarea
-                className="form-control"
-                rows={12}
-                value={customMsg}
-                onChange={e => setCustomMsg(e.target.value)}
-                style={{ fontFamily: 'monospace', fontSize: '12.5px', lineHeight: 1.5, resize: 'vertical' }}
-              />
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px' }}>
+          <button className="btn btn-secondary" onClick={handleCopy} style={{ flex: 1 }}>
+            <i className={`fa-solid ${copied ? 'fa-check' : 'fa-copy'}`} style={{ marginRight: '6px' }}></i>
+            {copied ? 'Tercopy!' : 'Copy Text'}
+          </button>
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-success"
+            style={{ textDecoration: 'none', background: '#25D366', borderColor: '#25D366', color: '#fff', flex: 1, textAlign: 'center' }}
+          >
+            <i className="fa-brands fa-whatsapp" style={{ marginRight: '6px', fontSize: '16px' }}></i>
+            Kirim Pesan Text
+          </a>
+        </div>
+
+        <div style={{ borderTop: '1px solid var(--bg-border)', paddingTop: '16px' }}>
+          <label className="form-label" style={{ marginBottom: '10px', display: 'block' }}>
+            <i className="fa-solid fa-file-pdf" style={{ marginRight: '6px' }}></i> Invoice PDF (1 halaman, foto &amp; TTD kontrak)
+          </label>
+          {loadingContract ? (
+            <div style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
+              <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i> Mengecek kontrak terhubung...
             </div>
-
-            <div className="modal-footer" style={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-              <button className="btn btn-secondary" onClick={handleCopy}>
-                <i className={`fa-solid ${copied ? 'fa-check' : 'fa-copy'}`} style={{ marginRight: '6px' }}></i>
-                {copied ? 'Tercopy!' : 'Copy Text Invoice'}
-              </button>
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-success"
-                style={{ textDecoration: 'none', background: '#25D366', borderColor: '#25D366', color: '#fff' }}
-              >
-                <i className="fa-brands fa-whatsapp" style={{ marginRight: '6px', fontSize: '16px' }}></i>
-                Buka WhatsApp & Kirim Pesan
-              </a>
-            </div>
-          </div>
-        ) : (
-          /* VISUAL INVOICE CARD FOR PRINT / IMAGE SHARE */
-          <div>
-            <div id="visual-invoice-card" style={{
-              background: '#0F172A',
-              border: '1px solid var(--bg-border)',
-              borderRadius: '16px',
-              padding: '24px',
-              color: '#F8FAFC',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)'
-            }}>
-              {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '20px' }}>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: 800, color: 'var(--brand-primary-light)', flexWrap: 'wrap' }}>
-                    <i className="fa-solid fa-motorcycle"></i>
-                    DEMO RENTAL PREVIEW
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '2px' }}>
-                    Jl. Pantai Pererenan, Canggu, Badung, Bali • WA: +62 812-3456-7890
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <span className="badge" style={{ background: tx.status === 'completed' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(59, 130, 246, 0.2)', color: tx.status === 'completed' ? '#22C55E' : '#3B82F6', border: `1px solid ${tx.status === 'completed' ? '#22C55E' : '#3B82F6'}`, padding: '6px 12px', fontSize: '12px' }}>
-                    {tx.status === 'completed' ? 'PAID / LUNAS ✓' : 'ACTIVE RENTAL 🛵'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Renter & Vehicle */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '10px' }}>
-                <div>
-                  <div style={{ fontSize: '11px', color: '#94A3B8', textTransform: 'uppercase', fontWeight: 700 }}>Penyewa / Renter</div>
-                  <div style={{ fontWeight: 700, fontSize: '15px', marginTop: '2px' }}>{tx.renter_name}</div>
-                  <div style={{ fontSize: '12px', color: '#CBD5E1' }}>{tx.renter_phone}</div>
-                  {tx.renter_address && (
-                    <div style={{ fontSize: '11.5px', color: 'var(--brand-primary-light)', marginTop: '4px' }}>
-                      <i className="fa-solid fa-location-dot" style={{ marginRight: '4px' }}></i> {tx.renter_address}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <div style={{ fontSize: '11px', color: '#94A3B8', textTransform: 'uppercase', fontWeight: 700 }}>Motor / Vehicle</div>
-                  <div style={{ fontWeight: 700, fontSize: '15px', marginTop: '2px', color: 'var(--brand-primary-light)' }}>{vehicle?.name || 'Motor'}</div>
-                  <div style={{ fontSize: '12px', color: '#CBD5E1' }}>Plat: <strong>{vehicle?.plate_number}</strong></div>
-                </div>
-              </div>
-
-              {/* Documentation Photos on Invoice Card */}
-              {(tx.customer_image_url || tx.handover_image_url) && (
-                <div style={{ marginBottom: '20px', background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 800, textTransform: 'uppercase', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <i className="fa-solid fa-camera" style={{ color: 'var(--brand-primary)' }}></i> Dokumentasi Foto Transaksi
-                  </div>
-                  <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-                    {tx.customer_image_url && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <img src={tx.customer_image_url} alt="KTP / SIM" style={{ width: '110px', height: '76px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)' }} />
-                        <span style={{ fontSize: '10px', color: '#22C55E', fontWeight: 800 }}>✓ Foto Identitas KTP/SIM</span>
-                      </div>
-                    )}
-                    {tx.handover_image_url && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <img src={tx.handover_image_url} alt="Serah Terima" style={{ width: '110px', height: '76px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)' }} />
-                        <span style={{ fontSize: '10px', color: '#3B82F6', fontWeight: 800 }}>✓ Foto Orang + Motor</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+          ) : contract ? (
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={sharingPdf}
+              onClick={handleSharePdf}
+              style={{ width: '100%' }}
+            >
+              {sharingPdf ? (
+                <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i> Menyiapkan PDF...</>
+              ) : (
+                <><i className="fa-brands fa-whatsapp" style={{ marginRight: '6px' }}></i> Kirim PDF Invoice ke Customer</>
               )}
-
-              {/* Dates & Pricing Table */}
-              <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse', marginBottom: '20px' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#94A3B8', textAlign: 'left' }}>
-                    <th style={{ padding: '8px 0' }}>DESKRIPSI</th>
-                    <th style={{ padding: '8px 0', textAlign: 'right' }}>DURASI / VALUE</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding: '10px 0' }}>Periode Sewa ({new Date(tx.start_date).toLocaleDateString('id-ID')} s/d {new Date(tx.end_date).toLocaleDateString('id-ID')})</td>
-                    <td style={{ padding: '10px 0', textAlign: 'right', fontWeight: 600 }}>{tx.duration_days} Hari</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding: '10px 0' }}>Tarif Sewa Harian</td>
-                    <td style={{ padding: '10px 0', textAlign: 'right' }}>{formatRupiah(vehicle?.rate_per_day)} / hari</td>
-                  </tr>
-                  {tx.discount > 0 && (
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#F59E0B' }}>
-                      <td style={{ padding: '10px 0' }}>Diskon Potongan Harga</td>
-                      <td style={{ padding: '10px 0', textAlign: 'right' }}>-{formatRupiah(tx.discount)}</td>
-                    </tr>
-                  )}
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding: '10px 0' }}>Deposit Jaminan (Held)</td>
-                    <td style={{ padding: '10px 0', textAlign: 'right' }}>{formatRupiah(tx.deposit)}</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', fontWeight: 800, fontSize: '15px' }}>
-                    <td style={{ padding: '12px 0', color: 'var(--brand-primary-light)' }}>TOTAL PEMBAYARAN</td>
-                    <td style={{ padding: '12px 0', textAlign: 'right', color: 'var(--brand-primary-light)' }}>{formatRupiah(tx.total_price)}</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', fontSize: '11px', color: '#94A3B8' }}>
-                <div>Metode Pembayaran: <strong style={{ color: paymentMeta.color }}><i className={paymentMeta.icon}></i> {paymentMeta.label}</strong></div>
-                <div>Thank you for choosing Demo Rental Preview! 🌴</div>
-              </div>
+            </button>
+          ) : (
+            <div style={{ fontSize: '12.5px', color: '#F59E0B', background: 'rgba(245,158,11,0.1)', padding: '10px 14px', borderRadius: '10px' }}>
+              <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '6px' }}></i>
+              Transaksi ini belum punya kontrak terhubung, jadi PDF-nya belum bisa dibuat (butuh foto &amp; TTD dari kontrak).
             </div>
-
-            <div className="modal-footer" style={{ marginTop: '16px', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-              <button className="btn btn-secondary" onClick={handlePrint}>
-                <i className="fa-solid fa-print" style={{ marginRight: '6px' }}></i> Cetak / Print PDF
-              </button>
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-success"
-                style={{ textDecoration: 'none', background: '#25D366', borderColor: '#25D366', color: '#fff' }}
-              >
-                <i className="fa-brands fa-whatsapp" style={{ marginRight: '6px', fontSize: '16px' }}></i> Kirim Invoice WA
-              </a>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
