@@ -2004,121 +2004,6 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {incomeModalStaff && (
-            <div className="modal-overlay" onClick={() => setIncomeModalStaff(null)}>
-              <div className="modal" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <div>
-                    <div className="modal-title">Input Pemasukan Driver</div>
-                    <div className="modal-subtitle">Buat {incomeModalStaff.full_name} — gaji, bonus, dll. Muncul di dashboard driver ybs.</div>
-                  </div>
-                  <button className="modal-close" onClick={() => setIncomeModalStaff(null)}>✕</button>
-                </div>
-                <form onSubmit={handleIncomeSave}>
-                  <div className="form-group">
-                    <label className="form-label">Judul</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Gaji September, Bonus, dll."
-                      value={incomeForm.title}
-                      onChange={(e) => setIncomeForm(p => ({ ...p, title: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
-                    <div className="form-group">
-                      <label className="form-label">Jumlah (Rp)</label>
-                      <input
-                        type="number"
-                        min="0"
-                        className="form-control"
-                        value={incomeForm.amount}
-                        onChange={(e) => setIncomeForm(p => ({ ...p, amount: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Tanggal</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        value={incomeForm.expense_date}
-                        onChange={(e) => setIncomeForm(p => ({ ...p, expense_date: e.target.value }))}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Catatan (opsional)</label>
-                    <textarea
-                      className="form-control"
-                      rows={2}
-                      value={incomeForm.notes}
-                      onChange={(e) => setIncomeForm(p => ({ ...p, notes: e.target.value }))}
-                      style={{ resize: 'vertical' }}
-                    />
-                  </div>
-                  {incomeError && (
-                    <div className="alert alert-danger" style={{ marginBottom: '12px' }}>
-                      <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '6px' }}></i>{incomeError}
-                    </div>
-                  )}
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" onClick={() => setIncomeModalStaff(null)}>Batal</button>
-                    <button type="submit" className="btn btn-primary" disabled={incomeSaving}>
-                      {incomeSaving ? <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>Menyimpan...</> : 'Simpan'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {payoutModalStaff && (
-            <div className="modal-overlay" onClick={() => setPayoutModalStaff(null)}>
-              <div className="modal" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <div>
-                    <div className="modal-title">Pembayaran {payoutModalStaff.full_name}</div>
-                    <div className="modal-subtitle">Ongkos delivery & pemasukan lain yang belum dibayar</div>
-                  </div>
-                  <button className="modal-close" onClick={() => setPayoutModalStaff(null)}>✕</button>
-                </div>
-
-                {payoutEntries.length === 0 ? (
-                  <div className="table-empty" style={{ padding: '24px' }}>
-                    <p>Semua sudah lunas 🎉</p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-                    {payoutEntries.map((entry) => (
-                      <div key={entry.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--bg-border)' }}>
-                        <div>
-                          <div style={{ fontWeight: 700, fontSize: '13px' }}>{entry.title}</div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{entry.expense_date}</div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{ fontWeight: 800, color: '#F59E0B' }}>{formatRupiah(entry.amount)}</div>
-                          <button
-                            className="btn btn-primary btn-sm"
-                            disabled={payoutBusyId === entry.id}
-                            onClick={() => markPayoutPaid(entry.id)}
-                          >
-                            {payoutBusyId === entry.id ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Tandai Lunas'}
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className="modal-footer">
-                  <button className="btn btn-secondary" onClick={() => setPayoutModalStaff(null)}>Tutup</button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
@@ -2929,6 +2814,125 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
+
+      {/* Income & Payout modal khusus Employee - render di level halaman (bukan
+          di dalam 1 tab tertentu) biar bisa dipakai dari tab manapun
+          (Akun Staff, Input Pendapatan, Konfirmasi Pembayaran). */}
+          {incomeModalStaff && (
+            <div className="modal-overlay" onClick={() => setIncomeModalStaff(null)}>
+              <div className="modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <div>
+                    <div className="modal-title">Input Pemasukan Driver</div>
+                    <div className="modal-subtitle">Buat {incomeModalStaff.full_name} — gaji, bonus, dll. Muncul di dashboard driver ybs.</div>
+                  </div>
+                  <button className="modal-close" onClick={() => setIncomeModalStaff(null)}>✕</button>
+                </div>
+                <form onSubmit={handleIncomeSave}>
+                  <div className="form-group">
+                    <label className="form-label">Judul</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Gaji September, Bonus, dll."
+                      value={incomeForm.title}
+                      onChange={(e) => setIncomeForm(p => ({ ...p, title: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+                    <div className="form-group">
+                      <label className="form-label">Jumlah (Rp)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="form-control"
+                        value={incomeForm.amount}
+                        onChange={(e) => setIncomeForm(p => ({ ...p, amount: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Tanggal</label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={incomeForm.expense_date}
+                        onChange={(e) => setIncomeForm(p => ({ ...p, expense_date: e.target.value }))}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Catatan (opsional)</label>
+                    <textarea
+                      className="form-control"
+                      rows={2}
+                      value={incomeForm.notes}
+                      onChange={(e) => setIncomeForm(p => ({ ...p, notes: e.target.value }))}
+                      style={{ resize: 'vertical' }}
+                    />
+                  </div>
+                  {incomeError && (
+                    <div className="alert alert-danger" style={{ marginBottom: '12px' }}>
+                      <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '6px' }}></i>{incomeError}
+                    </div>
+                  )}
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setIncomeModalStaff(null)}>Batal</button>
+                    <button type="submit" className="btn btn-primary" disabled={incomeSaving}>
+                      {incomeSaving ? <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>Menyimpan...</> : 'Simpan'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {payoutModalStaff && (
+            <div className="modal-overlay" onClick={() => setPayoutModalStaff(null)}>
+              <div className="modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <div>
+                    <div className="modal-title">Pembayaran {payoutModalStaff.full_name}</div>
+                    <div className="modal-subtitle">Ongkos delivery & pemasukan lain yang belum dibayar</div>
+                  </div>
+                  <button className="modal-close" onClick={() => setPayoutModalStaff(null)}>✕</button>
+                </div>
+
+                {payoutEntries.length === 0 ? (
+                  <div className="table-empty" style={{ padding: '24px' }}>
+                    <p>Semua sudah lunas 🎉</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                    {payoutEntries.map((entry) => (
+                      <div key={entry.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--bg-border)' }}>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '13px' }}>{entry.title}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{entry.expense_date}</div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ fontWeight: 800, color: '#F59E0B' }}>{formatRupiah(entry.amount)}</div>
+                          <button
+                            className="btn btn-primary btn-sm"
+                            disabled={payoutBusyId === entry.id}
+                            onClick={() => markPayoutPaid(entry.id)}
+                          >
+                            {payoutBusyId === entry.id ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Tandai Lunas'}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={() => setPayoutModalStaff(null)}>Tutup</button>
+                </div>
+              </div>
+            </div>
+          )}
     </div>
   );
 }

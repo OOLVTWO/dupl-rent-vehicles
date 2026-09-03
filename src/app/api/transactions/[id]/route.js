@@ -89,12 +89,28 @@ export async function DELETE(request, { params }) {
 
   const { data: tx } = await supabase
     .from('transactions')
-    .select('vehicle_id, status')
+    .select('vehicle_id, status, booking_id')
     .eq('id', id)
     .single();
 
+  // Kontrak (dokumen legal bertanda tangan) yang masih nunjuk ke transaksi
+  // ini di-lepas dulu (bukan dihapus) — foreign key contracts.transaction_id
+  // nolak hapus transaksi selama masih ada kontrak yang nunjuk ke situ.
+  await supabase.from('contracts').update({ transaction_id: null }).eq('transaction_id', id);
+
   const { error } = await supabase.from('transactions').delete().eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Transaksi & booking asalnya itu 1 kesatuan (bukti sewa yang sama) —
+  // hapus salah satu, hapus juga yang lain, biar nggak ada data
+  // "nyangkut" sendiri-sendiri. Sama seperti hapus booking: kontrak &
+  // catatan pendapatan driver yang masih nunjuk ke booking ini di-lepas
+  // dulu (bukan ikut dihapus), baru booking-nya beneran dihapus.
+  if (tx && tx.booking_id) {
+    await supabase.from('contracts').update({ booking_id: null }).eq('booking_id', tx.booking_id);
+    await supabase.from('expenses').update({ booking_id: null }).eq('booking_id', tx.booking_id);
+    await supabase.from('bookings').delete().eq('id', tx.booking_id);
+  }
 
   if (tx && tx.status === 'active') {
     await supabase

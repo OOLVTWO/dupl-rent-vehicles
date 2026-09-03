@@ -2252,8 +2252,8 @@ const handleSubmit = async (formData) => {
                           <i className="fa-brands fa-whatsapp"></i>
                         </button>
 
-                        {/* Tandai Lunas button for unpaid active transactions */}
-                        {role === 'admin' && tx.status === 'active' && tx.payment_status === 'unpaid' && (
+                        {/* Tandai Lunas button for unpaid/DP active transactions */}
+                        {role === 'admin' && tx.status === 'active' && (tx.payment_status === 'unpaid' || tx.payment_status === 'down_payment') && (
                         <button
                         className="btn btn-sm"
                         title="Tandai Lunas — Masukkan ke Pendapatan"

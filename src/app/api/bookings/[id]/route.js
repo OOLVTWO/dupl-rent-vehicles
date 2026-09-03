@@ -226,6 +226,17 @@ export async function DELETE(request, { params }) {
     .eq('id', id)
     .single();
 
+  // Transaksi & booking yang sama itu 1 kesatuan — hapus salah satu, hapus
+  // juga yang lain. Transaksinya harus dihapus DULU (foreign key
+  // transactions.booking_id nolak hapus booking selama masih ada transaksi
+  // yang nunjuk ke situ). Kontrak (dokumen legal bertanda tangan) dan
+  // catatan pendapatan driver TIDAK ikut dihapus — cuma di-lepas
+  // (booking_id di-null-kan) biar tetap tersimpan sebagai riwayat, tapi
+  // nggak lagi ngeblok hapus booking-nya.
+  await supabase.from('transactions').delete().eq('booking_id', id);
+  await supabase.from('contracts').update({ booking_id: null }).eq('booking_id', id);
+  await supabase.from('expenses').update({ booking_id: null }).eq('booking_id', id);
+
   const { error } = await supabase.from('bookings').delete().eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

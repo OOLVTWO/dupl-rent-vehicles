@@ -255,6 +255,7 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
   const [kmStart, setKmStart] = useState('');
   const [paymentMethod, setPaymentMethod] = useState(booking.payment_method || 'cash');
   const [paymentStatus, setPaymentStatus] = useState('paid');
+  const [dpAmount, setDpAmount] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -262,6 +263,10 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
     e.preventDefault();
     if (!booking.vehicle_id) {
       setError('Booking ini tidak punya data motor (vehicle_id kosong) — tidak bisa dibuatkan transaksi. Coba edit booking-nya dulu untuk pilih motor.');
+      return;
+    }
+    if (paymentStatus === 'down_payment' && !String(dpAmount).trim()) {
+      setError('Jumlah DP yang sudah dibayar wajib diisi.');
       return;
     }
     setSaving(true);
@@ -286,6 +291,7 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
           total_price: Number(booking.estimated_price) || 0,
           payment_method: paymentMethod,
           payment_status: paymentStatus,
+          dp_amount: paymentStatus === 'down_payment' ? Number(dpAmount) || 0 : 0,
           status: 'active',
         }),
       });
@@ -394,9 +400,10 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
 
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" style={{ marginBottom: '8px' }}>Status Pembayaran</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
               {[
-                { key: 'paid', label: 'Sudah Lunas', icon: 'fa-solid fa-circle-check', color: '#22C55E' },
+                { key: 'paid', label: 'Lunas', icon: 'fa-solid fa-circle-check', color: '#22C55E' },
+                { key: 'down_payment', label: 'Down Payment', icon: 'fa-solid fa-coins', color: '#3B82F6' },
                 { key: 'unpaid', label: 'Belum Bayar', icon: 'fa-solid fa-clock', color: '#F59E0B' },
               ].map(opt => (
                 <button
@@ -404,8 +411,8 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
                   type="button"
                   onClick={() => setPaymentStatus(opt.key)}
                   style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
-                    padding: '12px', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px',
+                    padding: '11px 6px', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, fontSize: '12px',
                     border: paymentStatus === opt.key ? `2px solid ${opt.color}` : '1px solid var(--bg-border)',
                     background: paymentStatus === opt.key ? `${opt.color}18` : 'transparent',
                     color: paymentStatus === opt.key ? opt.color : 'var(--text-secondary)',
@@ -416,6 +423,27 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
                 </button>
               ))}
             </div>
+            {paymentStatus === 'down_payment' && (
+              <div style={{ marginTop: '10px' }}>
+                <label className="form-label" htmlFor="confirm-tx-dp">Jumlah DP yang sudah dibayar (Rp) <span className="required">*</span></label>
+                <input
+                  id="confirm-tx-dp"
+                  type="number"
+                  min="0"
+                  className="form-control"
+                  placeholder="e.g. 300000"
+                  value={dpAmount}
+                  onChange={(e) => setDpAmount(e.target.value)}
+                  required
+                />
+                {Number(booking.estimated_price) > 0 && dpAmount && (
+                  <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(59,130,246,0.08)', borderRadius: '8px', border: '1px solid rgba(59,130,246,0.3)', fontSize: '12px', color: '#3B82F6', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Sisa yang harus dilunasi:</span>
+                    <strong>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Math.max(0, Number(booking.estimated_price) - Number(dpAmount || 0)))}</strong>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {error && (
