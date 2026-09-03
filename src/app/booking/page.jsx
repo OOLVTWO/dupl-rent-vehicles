@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -463,11 +464,11 @@ function BookingPageInner() {
                     </div>
                   )}
 
-                  {showMapModal && (
+                  {showMapModal && createPortal(
                     <div
                       onClick={() => setShowMapModal(false)}
                       style={{
-                        position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.75)', zIndex: 300,
+                        position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.75)', zIndex: 2000,
                         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px',
                       }}
                     >
@@ -478,7 +479,7 @@ function BookingPageInner() {
                           aria-label="Close"
                           style={{
                             position: 'absolute', top: '-14px', right: '-8px', width: '34px', height: '34px', borderRadius: '50%',
-                            background: '#fff', border: '1px solid var(--sharp-line)', color: 'var(--sharp-ink)', fontSize: '14px', cursor: 'pointer', zIndex: 301,
+                            background: '#fff', border: '1px solid var(--sharp-line)', color: 'var(--sharp-ink)', fontSize: '14px', cursor: 'pointer', zIndex: 2001,
                           }}
                         >
                           <i className="fa-solid fa-xmark"></i>
@@ -487,10 +488,11 @@ function BookingPageInner() {
                         <img
                           src="/images/delivery-zone-map.webp"
                           alt="Delivery zone map — Green: Kerobokan/Seminyak/Legian/Kuta, Blue: Canggu/Uluwatu/Sanur & surrounding coastal areas, Yellow: Ubud"
-                          style={{ maxWidth: '100%', maxHeight: '80vh', width: 'auto', height: 'auto', objectFit: 'contain', borderRadius: 'var(--radius-md)', background: '#fff', display: 'block' }}
+                          style={{ maxWidth: '100%', maxHeight: '75dvh', width: 'auto', height: 'auto', objectFit: 'contain', borderRadius: 'var(--radius-md)', background: '#fff', display: 'block' }}
                         />
                       </div>
-                    </div>
+                    </div>,
+                    document.body
                   )}
 
                   <div style={{ marginBottom: '18px' }}>
