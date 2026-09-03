@@ -69,18 +69,6 @@ export async function POST(request) {
   if (!VALID_STATUS.includes(status)) {
     return NextResponse.json({ error: `Status tidak valid: ${status}` }, { status: 400 });
   }
-
-  // Transaksi = sewa yang BENERAN terjadi sekarang (motor langsung
-  // kesetel "Disewa"). Kalau tanggal mulainya masih di masa depan, ini
-  // seharusnya jadi Booking (Pending) dulu, bukan Transaksi aktif —
-  // supaya motornya nggak salah kesetel "disewa" padahal belum diambil.
-  const todayStr = new Date().toISOString().split('T')[0];
-  if (status === 'active' && body.start_date > todayStr) {
-    return NextResponse.json({
-      error: 'Tanggal mulai masih di masa depan — ini seharusnya dicatat sebagai Booking (Pending), bukan Transaksi aktif. Transaksi langsung menandai motor "Disewa" mulai sekarang.',
-    }, { status: 400 });
-  }
-
   const paymentStatus = body.payment_status || 'paid';
   if (!VALID_PAYMENT.includes(paymentStatus)) {
     return NextResponse.json({ error: `payment_status tidak valid: ${paymentStatus}` }, { status: 400 });

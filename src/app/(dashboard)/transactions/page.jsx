@@ -328,6 +328,13 @@ function SmartPriceRecommendationPanel({ vehicle, startDate, endDate, selectedOp
 // (dari "function TransactionModal" sampai "}" penutupnya, sebelum "// ===== MODAL KIRIM INVOICE WHATSAPP =====")
 
 function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
+  const [recordType, setRecordType] = useState('transaction'); // 'transaction' | 'booking'
+  const [fulfillment, setFulfillment] = useState('pickup'); // 'pickup' | 'delivery'
+  const [deliveryZones, setDeliveryZones] = useState([]);
+  const [selectedZoneId, setSelectedZoneId] = useState('');
+  const [bookingSaving, setBookingSaving] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookingError, setBookingError] = useState('');
   const [form, setForm] = useState({
     vehicle_id: '',
     renter_name: '',
@@ -354,6 +361,14 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
   const [uploading, setUploading] = useState(false);
   const [showOptional, setShowOptional] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    fetch('/api/delivery-zones')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setDeliveryZones(Array.isArray(data) ? data : []))
+      .catch(() => setDeliveryZones([]));
+  }, [isOpen]);
 
   // ── Kalkulasi harga otomatis: pilih kombinasi termurah daily/weekly/monthly ──
   const calcBestPrice = (vehicle, startDate, endDate) => {
@@ -522,9 +537,15 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
       alert('Silakan pilih unit motor terlebih dahulu!');
       return;
     }
-    if (!editData && form.start_date && form.start_date > getLocalDateStr()) {
-      alert('Tanggal mulai masih di masa depan. Transaksi langsung menandai motor "Disewa" mulai sekarang — kalau ini reservasi untuk nanti, catat sebagai Booking (Pending) dulu, bukan Transaksi.');
-      return;
+    if (!editData && recordType === 'booking') {
+      if (fulfillment === 'delivery' && !selectedZoneId) {
+        alert('Silakan pilih zona delivery terlebih dahulu!');
+        return;
+      }
+      if (fulfillment === 'delivery' && !form.renter_address.trim()) {
+        alert('Alamat wajib diisi untuk delivery.');
+        return;
+      }
     }
     setShowConfirm(true);
   };
@@ -532,6 +553,41 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
   const handleConfirmSave = async () => {
     const cleanVehicleId = (form.vehicle_id || '').trim();
     setShowConfirm(false);
+
+    if (!editData && recordType === 'booking') {
+      setBookingSaving(true);
+      setBookingError('');
+      const vehicleObj = vehicles.find(v => v.id === cleanVehicleId);
+      const zoneObj = deliveryZones.find(z => z.id === selectedZoneId);
+      try {
+        const supabase = createClient();
+        const { error } = await supabase.from('bookings').insert([{
+          vehicle_id: cleanVehicleId,
+          vehicle_name: vehicleObj?.name || '',
+          vehicle_category: vehicleObj?.category || null,
+          customer_name: form.renter_name.trim(),
+          customer_phone: form.renter_phone.trim(),
+          customer_address: form.renter_address.trim() || null,
+          fulfillment_method: fulfillment,
+          payment_method: form.payment_method,
+          delivery_zone_id: fulfillment === 'delivery' ? (zoneObj?.id || null) : null,
+          delivery_zone_name: fulfillment === 'delivery' ? (zoneObj?.name || null) : null,
+          delivery_fee: fulfillment === 'delivery' ? Number(zoneObj?.fee) || 0 : 0,
+          start_date: form.start_date,
+          end_date: form.end_date,
+          duration_days: Math.max(1, Math.ceil((new Date(form.end_date) - new Date(form.start_date)) / 86400000)),
+          estimated_price: totalPrice,
+          status: 'pending',
+        }]);
+        if (error) throw error;
+        setBookingSuccess(true);
+      } catch (err) {
+        setBookingError(err?.message || 'Gagal menyimpan booking.');
+      }
+      setBookingSaving(false);
+      return;
+    }
+
     setLoading(true);
     await onSubmit({ ...form, vehicle_id: cleanVehicleId, total_price: totalPrice });
     setLoading(false);
@@ -569,6 +625,50 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
             <CustomerPickerCombobox onSelectCustomer={handleSelectCustomer} />
           )}
 
+          {/* ── Jenis Pencatatan: Transaksi langsung atau Booking (reservasi tanggal lain) ── */}
+          {!editData && (
+            <div className="form-group">
+              <label className="form-label">Jenis Pencatatan</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setRecordType('transaction')}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textAlign: 'center',
+                    padding: '12px 10px', borderRadius: '10px', cursor: 'pointer', fontWeight: 700,
+                    border: recordType === 'transaction' ? '2px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+                    background: recordType === 'transaction' ? 'rgba(37,99,235,0.1)' : 'transparent',
+                    color: recordType === 'transaction' ? 'var(--brand-primary-light)' : 'var(--text-secondary)',
+                  }}
+                >
+                  <i className="fa-solid fa-key" style={{ fontSize: '16px' }}></i>
+                  <span style={{ fontSize: '13px' }}>Transaksi Langsung</span>
+                  <span style={{ fontSize: '10.5px', fontWeight: 500, opacity: 0.8 }}>Sewa dimulai sekarang</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRecordType('booking')}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textAlign: 'center',
+                    padding: '12px 10px', borderRadius: '10px', cursor: 'pointer', fontWeight: 700,
+                    border: recordType === 'booking' ? '2px solid #8B5CF6' : '1px solid var(--bg-border)',
+                    background: recordType === 'booking' ? 'rgba(139,92,246,0.1)' : 'transparent',
+                    color: recordType === 'booking' ? '#8B5CF6' : 'var(--text-secondary)',
+                  }}
+                >
+                  <i className="fa-solid fa-calendar-plus" style={{ fontSize: '16px' }}></i>
+                  <span style={{ fontSize: '13px' }}>Booking (Reservasi)</span>
+                  <span style={{ fontSize: '10.5px', fontWeight: 500, opacity: 0.8 }}>Untuk tanggal lain / nanti</span>
+                </button>
+              </div>
+              {recordType === 'booking' && (
+                <p style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '8px', marginBottom: 0 }}>
+                  Masuk ke Booking Confirmation (status Pending) — motor tetap kelihatan tersedia sampai booking-nya dikonfirmasi.
+                </p>
+              )}
+            </div>
+          )}
+
           {/* ── Pilih Motor ── */}
           {noVehiclesAvailable && !editData ? (
             <div style={{ padding: '16px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '12px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#EF4444' }}>
@@ -586,6 +686,67 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
               value={form.vehicle_id}
               onChange={(id) => setForm(prev => ({ ...prev, vehicle_id: (id || '').trim() }))}
             />
+          )}
+
+          {/* ── Ambil di Toko / Diantar (khusus mode Booking) ── */}
+          {!editData && recordType === 'booking' && (
+            <div className="form-group">
+              <label className="form-label">Ambil di Toko atau Diantar?</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: fulfillment === 'delivery' ? '12px' : 0 }}>
+                <button
+                  type="button"
+                  onClick={() => setFulfillment('pickup')}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+                    padding: '11px', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px',
+                    border: fulfillment === 'pickup' ? '2px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+                    background: fulfillment === 'pickup' ? 'rgba(37,99,235,0.1)' : 'transparent',
+                    color: fulfillment === 'pickup' ? 'var(--brand-primary-light)' : 'var(--text-secondary)',
+                  }}
+                >
+                  <i className="fa-solid fa-shop"></i> Ambil di Toko
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFulfillment('delivery')}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+                    padding: '11px', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px',
+                    border: fulfillment === 'delivery' ? '2px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+                    background: fulfillment === 'delivery' ? 'rgba(37,99,235,0.1)' : 'transparent',
+                    color: fulfillment === 'delivery' ? 'var(--brand-primary-light)' : 'var(--text-secondary)',
+                  }}
+                >
+                  <i className="fa-solid fa-truck-fast"></i> Diantar
+                </button>
+              </div>
+
+              {fulfillment === 'delivery' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {deliveryZones.map(z => (
+                    <button
+                      key={z.id}
+                      type="button"
+                      onClick={() => setSelectedZoneId(z.id)}
+                      style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        padding: '10px 14px', borderRadius: '10px', cursor: 'pointer', textAlign: 'left',
+                        border: selectedZoneId === z.id ? '2px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+                        background: selectedZoneId === z.id ? 'rgba(37,99,235,0.08)' : 'transparent',
+                      }}
+                    >
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>{z.name}</span>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: Number(z.fee) > 0 ? '#F59E0B' : '#22C55E' }}>
+                        {Number(z.fee) > 0 ? formatRupiah(z.fee) : 'Gratis'}
+                      </span>
+                    </button>
+                  ))}
+                  {deliveryZones.length === 0 && (
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Belum ada zona delivery diatur. Cek di Pengaturan.</p>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           {/* ── Nama & No. HP ── */}
@@ -841,9 +1002,11 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
           {/* ── Footer ── */}
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" onClick={onClose}>Batal</button>
-            <button type="submit" className="btn btn-primary" disabled={loading || uploading}>
-              {loading ? (
+            <button type="submit" className="btn btn-primary" disabled={loading || uploading || bookingSaving}>
+              {(loading || bookingSaving) ? (
                 <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '4px' }}></i> Menyimpan...</>
+              ) : !editData && recordType === 'booking' ? (
+                <><i className="fa-solid fa-calendar-plus" style={{ marginRight: '4px' }}></i> Simpan Booking</>
               ) : (
                 <><i className="fa-solid fa-floppy-disk" style={{ marginRight: '4px' }}></i> Simpan Transaksi</>
               )}
@@ -861,7 +1024,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
                   <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <i className="fa-solid fa-floppy-disk" style={{ color: '#6366F1', fontSize: '16px' }}></i>
                   </div>
-                  {editData ? 'Konfirmasi Perubahan' : 'Konfirmasi Transaksi Baru'}
+                  {editData ? 'Konfirmasi Perubahan' : recordType === 'booking' ? 'Konfirmasi Booking Baru' : 'Konfirmasi Transaksi Baru'}
                 </div>
                 <button className="modal-close" onClick={() => setShowConfirm(false)}>✕</button>
               </div>
@@ -885,7 +1048,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
 
                 <div style={{ padding: '12px 14px', background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: '8px', marginBottom: '8px' }}>
                   <p style={{ fontSize: '13.5px', color: 'var(--text-primary)', margin: 0, lineHeight: 1.6 }}>
-                    {editData ? 'Simpan perubahan data transaksi ini?' : 'Tambahkan transaksi baru ini ke sistem?'}
+                    {editData ? 'Simpan perubahan data transaksi ini?' : recordType === 'booking' ? 'Simpan sebagai Booking (Pending) di Booking Confirmation?' : 'Tambahkan transaksi baru ini ke sistem?'}
                   </p>
                 </div>
 
@@ -900,13 +1063,51 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
                 <button className="btn btn-primary" onClick={handleConfirmSave}
                   style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <i className="fa-solid fa-floppy-disk"></i>
-                  {editData ? 'Ya, Simpan Perubahan' : 'Ya, Tambah Transaksi'}
+                  {editData ? 'Ya, Simpan Perubahan' : recordType === 'booking' ? 'Ya, Simpan Booking' : 'Ya, Tambah Transaksi'}
                 </button>
               </div>
             </div>
           </div>
         )}
 
+        {/* ── Booking Berhasil Disimpan ── */}
+        {bookingSuccess && (
+          <div className="modal-overlay" style={{ zIndex: 1100 }}>
+            <div className="modal modal-sm" style={{ maxWidth: '400px', textAlign: 'center', padding: '32px 24px' }}>
+              <div style={{
+                width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(139,92,246,0.15)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', fontSize: '26px', color: '#8B5CF6',
+              }}>
+                <i className="fa-solid fa-check"></i>
+              </div>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '17px' }}>Booking Tersimpan!</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '22px' }}>
+                Reservasi untuk <strong>{form.renter_name}</strong> masuk ke Booking Confirmation dengan status Pending — motor tetap kelihatan tersedia sampai booking-nya dikonfirmasi.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <Link href="/bookings" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+                  <i className="fa-solid fa-arrow-right" style={{ marginRight: '6px' }}></i> Buka Booking Confirmation
+                </Link>
+                <button className="btn btn-secondary" onClick={onClose}>Tutup</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {bookingError && (
+          <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => setBookingError('')}>
+            <div className="modal modal-sm" onClick={e => e.stopPropagation()} style={{ maxWidth: '380px' }}>
+              <div className="modal-header">
+                <div className="modal-title">Gagal Menyimpan Booking</div>
+                <button className="modal-close" onClick={() => setBookingError('')}>✕</button>
+              </div>
+              <div className="alert alert-danger" style={{ margin: 0 }}>{bookingError}</div>
+              <div className="modal-footer" style={{ marginTop: '16px' }}>
+                <button className="btn btn-secondary" onClick={() => setBookingError('')}>Tutup</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

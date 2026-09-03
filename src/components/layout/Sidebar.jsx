@@ -33,7 +33,6 @@ const NAV_SECTIONS = [
         children: [
           { href: '/bookings',      iconClass: 'fa-solid fa-inbox',            label: 'Booking', badge: 'bookings' },
           { href: '/transactions',  iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi' },
-          { href: '/contracts/new', iconClass: 'fa-solid fa-file-pen',         label: 'Kontrak' },
           { href: '/tracking',      iconClass: 'fa-solid fa-clock-rotate-left', label: 'Tracking Sewa', badge: 'tracking' },
           { href: '/availability',  iconClass: 'fa-solid fa-circle-half-stroke', label: 'Ketersediaan', badge: 'availability' },
           { href: '/expenses',      iconClass: 'fa-solid fa-wallet',           label: 'Keuangan' },
@@ -67,6 +66,7 @@ const NAV_SECTIONS = [
         isGroup: true,
         children: [
           { href: '/settings?tab=staff',        iconClass: 'fa-solid fa-user-tie',           label: 'Akun Staff' },
+          { href: '/contracts/new',             iconClass: 'fa-solid fa-file-pen',            label: 'Kontrak' },
           { href: '/settings?tab=staff-income', iconClass: 'fa-solid fa-sack-dollar',         label: 'Input Pendapatan' },
           { href: '/settings?tab=staff-payout', iconClass: 'fa-solid fa-hand-holding-dollar', label: 'Konfirmasi Pembayaran' },
         ],
