@@ -2095,6 +2095,7 @@ const handleSubmit = async (formData) => {
                   <th>Status Motor</th>
                   <th>Status Pembayaran</th>
                   <th>Kontrak</th>
+                  <th>Driver</th>
                   <th>Ringkasan Pembayaran</th>
                   <th>Aksi</th>
                 </tr>
@@ -2133,6 +2134,15 @@ const handleSubmit = async (formData) => {
                     </td>
                     <td data-label="Status Pembayaran" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Kontrak" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
+                    <td data-label="Driver" data-label-align="left">
+                      {b.assigned_driver_name ? (
+                        <span style={{ fontSize: '11.5px', color: '#3B82F6', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                          <i className="fa-solid fa-motorcycle"></i> {b.assigned_driver_name}
+                        </span>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                      )}
+                    </td>
                     <td data-label="Ringkasan Pembayaran" data-label-align="left" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Aksi" data-label-align="left">
                       <Link href="/bookings" className="btn btn-sm" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid #8B5CF6', color: '#8B5CF6', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
@@ -2267,25 +2277,35 @@ const handleSubmit = async (formData) => {
                       )}
                     </td>
                     <td data-label="Kontrak" data-label-align="left" style={{ verticalAlign: 'middle' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {(contractedIds.has(tx.id) || (tx.booking_id && contractedIds.has(tx.booking_id))) ? (
-                          <span style={{ fontSize: '11.5px', color: '#8B5CF6', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                            <i className="fa-solid fa-file-signature"></i> Sudah TTD
-                          </span>
-                        ) : (
-                          <Link
-                            href={`/contracts/new?transactionId=${tx.id}`}
-                            style={{ fontSize: '11.5px', color: 'var(--text-muted)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '5px', textDecoration: 'underline' }}
-                          >
-                            <i className="fa-solid fa-file-pen"></i> Belum ada kontrak
-                          </Link>
-                        )}
-                        {(tx.assigned_driver_name || (tx.booking_id && bookingDriverMap[tx.booking_id])) && (
-                          <span style={{ fontSize: '11.5px', color: '#3B82F6', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      {(contractedIds.has(tx.id) || (tx.booking_id && contractedIds.has(tx.booking_id))) ? (
+                        <span style={{ fontSize: '11.5px', color: '#8B5CF6', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                          <i className="fa-solid fa-file-signature"></i> Sudah TTD
+                        </span>
+                      ) : (
+                        <Link
+                          href={`/contracts/new?transactionId=${tx.id}`}
+                          style={{ fontSize: '11.5px', color: 'var(--text-muted)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '5px', textDecoration: 'underline' }}
+                        >
+                          <i className="fa-solid fa-file-pen"></i> Belum ada kontrak
+                        </Link>
+                      )}
+                    </td>
+                    <td data-label="Driver" data-label-align="left" style={{ verticalAlign: 'middle' }}>
+                      {(tx.assigned_driver_name || (tx.booking_id && bookingDriverMap[tx.booking_id])) ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          <span style={{ fontSize: '11.5px', color: '#3B82F6', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                             <i className="fa-solid fa-motorcycle"></i> {tx.assigned_driver_name || bookingDriverMap[tx.booking_id]}
                           </span>
-                        )}
-                      </div>
+                          {Number(tx.delivery_fee) > 0 && (
+                            <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
+                              <i className="fa-solid fa-truck-fast" style={{ marginRight: '4px' }}></i>
+                              Ongkos antar: {formatRupiah(tx.delivery_fee)}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                      )}
                     </td>
                     <td data-label="Ringkasan Pembayaran" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       {tx.payment_status === 'down_payment' ? (

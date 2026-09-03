@@ -394,6 +394,7 @@ export default function ReportsPage() {
                     <th>Tgl Transaksi</th>
                     <th>Penyewa</th>
                     <th>Motor</th>
+                    <th>Driver</th>
                     <th>Durasi</th>
                     <th>Tarif Sewa</th>
                     <th>Klaim Denda Kerusakan</th>
@@ -438,6 +439,23 @@ export default function ReportsPage() {
                               </div>
                             )}
                           </div>
+                        </td>
+                        <td>
+                          {tx.assigned_driver_name ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                              <span style={{ fontSize: '11.5px', color: '#3B82F6', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                <i className="fa-solid fa-motorcycle"></i> {tx.assigned_driver_name}
+                              </span>
+                              {Number(tx.delivery_fee) > 0 && (
+                                <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
+                                  <i className="fa-solid fa-truck-fast" style={{ marginRight: '4px' }}></i>
+                                  {formatRupiah(tx.delivery_fee)}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                          )}
                         </td>
                         <td>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '120px' }}>
