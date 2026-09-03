@@ -145,6 +145,25 @@ export default function SettingsPage() {
 
   // ── Pemasukan khusus per-driver (gaji, bonus, dll) ──
   const [incomeModalStaff, setIncomeModalStaff] = useState(null);
+  const [historyModalStaff, setHistoryModalStaff] = useState(null);
+  const [historyEntries, setHistoryEntries] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const openHistoryModal = async (staff) => {
+    setHistoryModalStaff(staff);
+    setHistoryLoading(true);
+    try {
+      const res = await fetch('/api/expenses');
+      const data = await res.json().catch(() => []);
+      const entries = (Array.isArray(data) ? data : [])
+        .filter(e => e.type === 'income' && e.staff_id === staff.id)
+        .sort((a, b) => (b.expense_date || '').localeCompare(a.expense_date || ''));
+      setHistoryEntries(entries);
+    } catch {
+      setHistoryEntries([]);
+    }
+    setHistoryLoading(false);
+  };
   const [unpaidByStaff, setUnpaidByStaff] = useState({});
   const [payoutModalStaff, setPayoutModalStaff] = useState(null);
   const [payoutEntries, setPayoutEntries] = useState([]);
@@ -1891,6 +1910,11 @@ export default function SettingsPage() {
                         <td data-label="Telepon" style={{ fontSize: '12.5px' }}>{s.phone || '-'}</td>
                         <td data-label="Aksi" data-label-align="left">
                           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {s.role === 'driver' && (
+                              <button className="btn btn-sm" title="Lihat History Pendapatan" onClick={() => openHistoryModal(s)} style={{ background: 'rgba(139,92,246,0.12)', color: '#8B5CF6', border: '1px solid #8B5CF6' }}>
+                                <i className="fa-solid fa-clock-rotate-left"></i>
+                              </button>
+                            )}
                             <button className="btn btn-secondary btn-sm" title="Edit" onClick={() => openEditStaff(s)}>
                               <i className="fa-solid fa-pen-to-square"></i>
                             </button>
@@ -2811,6 +2835,64 @@ export default function SettingsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {historyModalStaff && (
+        <div className="modal-overlay" onClick={() => setHistoryModalStaff(null)}>
+          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <div className="modal-title">History Pendapatan — {historyModalStaff.full_name}</div>
+                <div className="modal-subtitle">Ongkos delivery otomatis + gaji/bonus yang diinput admin</div>
+              </div>
+              <button className="modal-close" onClick={() => setHistoryModalStaff(null)}>✕</button>
+            </div>
+
+            {(() => {
+              const totalPaid = historyEntries.filter(e => e.payment_status === 'paid').reduce((s, e) => s + Number(e.amount || 0), 0);
+              const totalUnpaid = historyEntries.filter(e => e.payment_status !== 'paid').reduce((s, e) => s + Number(e.amount || 0), 0);
+              return (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+                  <div style={{ padding: '10px 12px', borderRadius: '10px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)' }}>
+                    <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Sudah Dibayar</div>
+                    <div style={{ fontSize: '15px', fontWeight: 800, color: '#22C55E' }}>{formatRupiah(totalPaid)}</div>
+                  </div>
+                  <div style={{ padding: '10px 12px', borderRadius: '10px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)' }}>
+                    <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Belum Dibayar</div>
+                    <div style={{ fontSize: '15px', fontWeight: 800, color: '#F59E0B' }}>{formatRupiah(totalUnpaid)}</div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {historyLoading ? (
+              <div className="table-empty"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>Memuat...</div>
+            ) : historyEntries.length === 0 ? (
+              <div className="table-empty"><p>Belum ada riwayat pendapatan.</p></div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '360px', overflowY: 'auto' }}>
+                {historyEntries.map(entry => (
+                  <div key={entry.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--bg-border)' }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '13px' }}>{entry.title}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{entry.expense_date}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontWeight: 800, color: '#22C55E', fontSize: '13px' }}>{formatRupiah(entry.amount)}</div>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: entry.payment_status === 'paid' ? '#22C55E' : '#F59E0B' }}>
+                        {entry.payment_status === 'paid' ? 'Lunas' : 'Belum Dibayar'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setHistoryModalStaff(null)}>Tutup</button>
+            </div>
           </div>
         </div>
       )}

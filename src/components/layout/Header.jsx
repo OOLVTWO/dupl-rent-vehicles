@@ -18,7 +18,6 @@ const pageMeta = {
   '/maintenance': { title: 'AI Diagnostic',    subtitle: 'Deteksi dini kesehatan motor' },
   '/gallery':     { title: 'Galeri Foto',      subtitle: 'Arsip foto identitas & kendaraan' },
   '/reports':     { title: 'Laporan Keuangan', subtitle: 'Export dan analisis pendapatan' },
-  '/driver-income': { title: 'History Pendapatan', subtitle: 'Riwayat pendapatan kamu' },
   '/fleet':       { title: 'Website Publik',   subtitle: 'Katalog sewa motor publik (/fleet)' },
   '/customers':   { title: 'Data Customer',    subtitle: 'Kelola data penyewa & riwayat' },
 };

@@ -139,7 +139,6 @@ export default function DriverDashboard({ fullName }) {
         {[
           { href: '/bookings', icon: 'fa-solid fa-clipboard-list', label: 'Booking', color: '#3B82F6' },
           { href: '/contracts/new', icon: 'fa-solid fa-file-signature', label: 'Kontrak', color: '#8B5CF6' },
-          { href: '/driver-income', icon: 'fa-solid fa-sack-dollar', label: 'History Pendapatan', color: '#22C55E' },
           { href: '/tracking', icon: 'fa-solid fa-clock-rotate-left', label: 'Tracking Sewa', color: '#F59E0B' },
         ].map(action => (
           <Link
