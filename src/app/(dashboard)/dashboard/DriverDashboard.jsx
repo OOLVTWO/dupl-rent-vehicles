@@ -225,17 +225,24 @@ export default function DriverDashboard({ fullName }) {
                     CONFIRM DELIVERED
                   </button>
                 ) : b.status === 'confirmed' ? (
-                  <Link
-                    href={`/contracts/new?bookingId=${b.id}`}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-                      width: '100%', padding: '16px', fontSize: '15px', fontWeight: 900,
-                      background: '#8B5CF6', color: '#fff', textDecoration: 'none',
-                    }}
-                  >
-                    <i className="fa-solid fa-file-signature" style={{ fontSize: '18px' }}></i>
-                    BUAT KONTRAK DULU
-                  </Link>
+                  b.start_date > getLocalDateStr() ? (
+                    <div style={{ padding: '14px', background: 'var(--bg-elevated)', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <i className="fa-solid fa-lock" style={{ marginRight: '6px' }}></i>
+                      Belum bisa buat kontrak — aktif mulai {new Date(b.start_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                    </div>
+                  ) : (
+                    <Link
+                      href={`/contracts/new?bookingId=${b.id}`}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                        width: '100%', padding: '16px', fontSize: '15px', fontWeight: 900,
+                        background: '#8B5CF6', color: '#fff', textDecoration: 'none',
+                      }}
+                    >
+                      <i className="fa-solid fa-file-signature" style={{ fontSize: '18px' }}></i>
+                      BUAT KONTRAK DULU
+                    </Link>
+                  )
                 ) : (
                   <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.25)', color: '#F59E0B', fontSize: '11.5px' }}>
                     <i className="fa-solid fa-hourglass-half" style={{ marginRight: '6px' }}></i>

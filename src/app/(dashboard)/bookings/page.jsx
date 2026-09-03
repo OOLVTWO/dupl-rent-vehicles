@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { formatRupiah } from '@/lib/finance';
+import { formatRupiah, getLocalDateStr } from '@/lib/finance';
 import { getWhatsAppShareUrl } from '@/lib/countryCodes';
 import { useRole } from '@/lib/RoleContext';
 import { createClient } from '@/lib/supabase/client';
@@ -734,17 +734,10 @@ function BookingsPageInner() {
                         <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{b.duration_days} hari</div>
                       </td>
                       <td data-label="Metode Pengambilan" data-label-align="left">
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <span className="badge" style={{ background: b.fulfillment_method === 'delivery' ? 'rgba(59,130,246,0.15)' : 'rgba(148,163,184,0.2)', color: b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8', border: `1px solid ${b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8'}` }}>
-                            <i className={`fa-solid ${b.fulfillment_method === 'delivery' ? 'fa-truck-fast' : 'fa-store'}`} style={{ marginRight: '4px' }}></i>
-                            {b.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup'}
-                          </span>
-                          {b.fulfillment_method === 'delivery' && b.delivery_zone_name && (
-                            <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
-                              <i className="fa-solid fa-location-dot" style={{ marginRight: '3px' }}></i>{b.delivery_zone_name} · {formatRupiah(b.delivery_fee)}
-                            </span>
-                          )}
-                        </div>
+                        <span className="badge" style={{ background: b.fulfillment_method === 'delivery' ? 'rgba(59,130,246,0.15)' : 'rgba(148,163,184,0.2)', color: b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8', border: `1px solid ${b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8'}` }}>
+                          <i className={`fa-solid ${b.fulfillment_method === 'delivery' ? 'fa-truck-fast' : 'fa-store'}`} style={{ marginRight: '4px' }}></i>
+                          {b.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup'}
+                        </span>
                       </td>
                       <td data-label="Metode Pembayaran" data-label-align="left">
                         <span className="badge badge-muted">
@@ -817,16 +810,30 @@ function BookingsPageInner() {
                                     <i className="fa-solid fa-circle-check" style={{ fontSize: '15px' }}></i>CONFIRM DELIVERED
                                   </button>
                                 ) : (
-                                  <Link
-                                    href={`/contracts/new?bookingId=${b.id}`}
-                                    style={{
-                                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                                      fontSize: '12px', fontWeight: 800, padding: '10px 14px', width: '100%', maxWidth: '220px',
-                                      background: '#8B5CF6', color: '#fff', borderRadius: 'var(--radius-md)', textDecoration: 'none',
-                                    }}
-                                  >
-                                    <i className="fa-solid fa-file-signature"></i> Buat Kontrak Dulu
-                                  </Link>
+                                  b.start_date > getLocalDateStr() ? (
+                                    <div
+                                      title={`Baru bisa dipencet mulai ${new Date(b.start_date).toLocaleDateString('id-ID')}`}
+                                      style={{
+                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                                        fontSize: '12px', fontWeight: 700, padding: '10px 14px', width: '100%', maxWidth: '220px',
+                                        background: 'var(--bg-elevated)', color: 'var(--text-muted)', border: '1px dashed var(--bg-border)', borderRadius: 'var(--radius-md)',
+                                      }}
+                                    >
+                                      <span><i className="fa-solid fa-lock" style={{ marginRight: '6px' }}></i>Belum Bisa Buat Kontrak</span>
+                                      <span style={{ fontSize: '10.5px', fontWeight: 500 }}>Aktif mulai {new Date(b.start_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</span>
+                                    </div>
+                                  ) : (
+                                    <Link
+                                      href={`/contracts/new?bookingId=${b.id}`}
+                                      style={{
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                                        fontSize: '12px', fontWeight: 800, padding: '10px 14px', width: '100%', maxWidth: '220px',
+                                        background: '#8B5CF6', color: '#fff', borderRadius: 'var(--radius-md)', textDecoration: 'none',
+                                      }}
+                                    >
+                                      <i className="fa-solid fa-file-signature"></i> Buat Kontrak Dulu
+                                    </Link>
+                                  )
                                 )
                               )
                             )}
