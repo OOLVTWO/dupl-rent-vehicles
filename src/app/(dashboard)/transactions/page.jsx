@@ -776,14 +776,17 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
                       type="button"
                       onClick={() => setSelectedZoneId(z.id)}
                       style={{
-                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                        padding: '10px 14px', borderRadius: '10px', cursor: 'pointer', textAlign: 'left',
-                        border: selectedZoneId === z.id ? '2px solid var(--brand-primary)' : '1px solid var(--bg-border)',
-                        background: selectedZoneId === z.id ? 'rgba(37,99,235,0.08)' : 'transparent',
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px',
+                        padding: '12px 14px', borderRadius: '10px', cursor: 'pointer', textAlign: 'left',
+                        border: selectedZoneId === z.id ? `2px solid ${z.color}` : '1px solid var(--bg-border)',
+                        background: selectedZoneId === z.id ? `${z.color}15` : 'transparent',
                       }}
                     >
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>{z.name}</span>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: Number(z.fee) > 0 ? '#F59E0B' : '#22C55E' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                        <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: z.color, flexShrink: 0 }}></span>
+                        {z.zone_label}
+                      </span>
+                      <span style={{ fontSize: '12.5px', fontWeight: 700, color: Number(z.fee) > 0 ? '#F59E0B' : '#22C55E', whiteSpace: 'nowrap', flexShrink: 0 }}>
                         {Number(z.fee) > 0 ? formatRupiah(z.fee) : 'Gratis'}
                       </span>
                     </button>
