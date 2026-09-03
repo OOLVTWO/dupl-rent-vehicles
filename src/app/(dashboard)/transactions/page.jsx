@@ -12,7 +12,7 @@ import { COUNTRY_CODES, getWhatsAppShareUrl, generateInvoiceText, getFlagImageUr
 import { createClient } from '@/lib/supabase/client';
 import { fetchCustomers, upsertCustomer } from '@/lib/customers';
 import { getLocalDateStr } from '@/lib/finance';
-import { sharePdfFile } from '@/lib/shareFile';
+import { sharePdfToWhatsApp } from '@/lib/shareFile';
 
 
 function formatRupiah(amount) {
@@ -946,9 +946,11 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
   const handleSharePdf = async () => {
     if (!contract) return;
     setSharingPdf(true);
-    await sharePdfFile(
+    await sharePdfToWhatsApp(
       `/api/contracts/${contract.id}/pdf`,
       `invoice-${tx.renter_name}.pdf`,
+      tx.renter_phone,
+      `Halo ${tx.renter_name}, berikut invoice sewa Anda — mohon tunggu sebentar, file PDF-nya akan menyusul terkirim 🙏`,
       'Invoice Sewa',
       `Invoice sewa untuk ${tx.renter_name} — Demo Rental Preview`
     );
@@ -1002,9 +1004,12 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
         </div>
 
         <div style={{ borderTop: '1px solid var(--bg-border)', paddingTop: '16px' }}>
-          <label className="form-label" style={{ marginBottom: '10px', display: 'block' }}>
+          <label className="form-label" style={{ marginBottom: '4px', display: 'block' }}>
             <i className="fa-solid fa-file-pdf" style={{ marginRight: '6px' }}></i> Invoice PDF (1 halaman, foto &amp; TTD kontrak)
           </label>
+          <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 0, marginBottom: '10px' }}>
+            Chat WA customer akan kebuka duluan, lalu HP minta pilih aplikasi buat lampirin PDF-nya (pilih WhatsApp) — langkah ini normal, browser tidak bisa auto-attach file tanpa persetujuan.
+          </p>
           {loadingContract ? (
             <div style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
               <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i> Mengecek kontrak terhubung...

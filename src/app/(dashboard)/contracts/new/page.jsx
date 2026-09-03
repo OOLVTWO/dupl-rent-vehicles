@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { compressImage } from '@/lib/imageCompressor';
 import SignaturePad from '@/components/contracts/SignaturePad';
 import VehicleCombobox from '@/components/shared/VehicleCombobox';
-import { sharePdfFile } from '@/lib/shareFile';
+import { sharePdfToWhatsApp } from '@/lib/shareFile';
 
 function formatDate(d) {
   if (!d) return '-';
@@ -263,9 +263,11 @@ function NewContractInner() {
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 onClick={async () => {
                   setSharing(true);
-                  await sharePdfFile(
+                  await sharePdfToWhatsApp(
                     `/api/contracts/${createdContract.id}/pdf`,
                     `contract-${form.customer_name}.pdf`,
+                    form.customer_phone,
+                    `Halo ${form.customer_name}, berikut kontrak sewa Anda — mohon tunggu sebentar, file PDF-nya akan menyusul terkirim 🙏`,
                     'Kontrak Sewa',
                     `Kontrak sewa untuk ${form.customer_name} — Demo Rental Preview`
                   );

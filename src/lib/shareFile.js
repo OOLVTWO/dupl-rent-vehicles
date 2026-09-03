@@ -1,4 +1,21 @@
 /**
+ * Kirim PDF ke customer tertentu di WhatsApp. Browser TIDAK BISA langsung
+ * nge-attach file ke chat WA tertentu tanpa persetujuan user (ini proteksi
+ * keamanan OS/browser, semua app kena aturan sama — bukan celah yang bisa
+ * di-skip dari sisi web). Yang bisa dilakukan: buka dulu chat WA customer
+ * yang dituju (jadi konteksnya udah pas), baru langsung susul minta pilih
+ * app buat lampirin PDF-nya — biasanya begitu WhatsApp dipilih dari share
+ * sheet, dia otomatis nyambung ke chat yang baru saja dibuka/paling baru.
+ */
+export async function sharePdfToWhatsApp(pdfUrl, filename, phone, waMessage, shareTitle, shareText) {
+  if (phone && waMessage) {
+    const cleanPhone = phone.replace(/[^\d+]/g, '');
+    window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(waMessage)}`, '_blank');
+  }
+  return sharePdfFile(pdfUrl, filename, shareTitle, shareText);
+}
+
+/**
  * Share a PDF (or any file) via the device's native share sheet — on mobile
  * this lets the user pick WhatsApp and send the actual PDF file as an
  * attachment, not just a text link. Falls back to opening the PDF in a new
