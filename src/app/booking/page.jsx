@@ -181,7 +181,10 @@ function BookingPageInner() {
   const deliveryFee = form.fulfillment === 'delivery' && selectedZone ? Number(selectedZone.fee) : 0;
   const grandTotal = price + deliveryFee;
 
-  const submitBooking = async (e) => {
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [reviewPayload, setReviewPayload] = useState(null);
+
+  const proceedToReview = (e) => {
     e.preventDefault();
     if (!vehicle) return;
     if (!form.name.trim() || !form.phone.trim()) {
@@ -201,10 +204,8 @@ function BookingPageInner() {
       return;
     }
 
-    setSubmitting(true);
     setError('');
-
-    const payload = {
+    setReviewPayload({
       vehicle_id: vehicle.id || null,
       vehicle_name: vehicle.name,
       vehicle_category: vehicle.category || null,
@@ -221,22 +222,30 @@ function BookingPageInner() {
       duration_days: days,
       estimated_price: grandTotal,
       status: 'pending',
-    };
+    });
+    setAgreedToTerms(false);
+    setStep('review');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
+  const submitBooking = async () => {
+    if (!reviewPayload || !agreedToTerms) return;
+    setSubmitting(true);
+    setError('');
     try {
       const supabase = createClient();
       // No .select() here on purpose — anonymous visitors may INSERT but may
       // not read bookings back (RLS also gates the RETURNING clause), so we
       // just confirm there's no error and render the confirmation from what
       // we already have client-side.
-      const { error: insertError } = await supabase.from('bookings').insert([payload]);
+      const { error: insertError } = await supabase.from('bookings').insert([reviewPayload]);
       if (insertError) {
         console.error('Booking insert error:', insertError.message);
         setError('Failed to submit booking. Please try again.');
         setSubmitting(false);
         return;
       }
-      setConfirmedBooking(payload);
+      setConfirmedBooking(reviewPayload);
       setStep('confirmed');
       setSubmitting(false);
     } catch {
@@ -311,7 +320,7 @@ function BookingPageInner() {
                 )}
                 {deliveryFee === 0 && <div style={{ marginBottom: '16px' }} />}
 
-                <form onSubmit={submitBooking}>
+                <form onSubmit={proceedToReview}>
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
                       Full Name *
@@ -415,17 +424,6 @@ function BookingPageInner() {
                       <p style={{ fontSize: '11.5px', color: 'var(--sharp-muted)', margin: '0 0 8px 0' }}>
                         Our shop is on Sunset Road, Kuta. Please pick the zone closest to your actual location so the delivery fee is accurate — double-check before confirming.
                       </p>
-                      <button
-                        type="button"
-                        onClick={() => setShowMapModal(true)}
-                        style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '14px',
-                          width: '100%', background: 'var(--sharp-accent)', border: 'none', borderRadius: 'var(--radius-md)',
-                          padding: '13px 16px', fontSize: '14px', fontWeight: 800, color: '#fff', cursor: 'pointer',
-                        }}
-                      >
-                        <i className="fa-solid fa-map-location-dot" style={{ fontSize: '16px' }}></i> View Zone Map
-                      </button>
                       {deliveryZones.length === 0 ? (
                         <p style={{ fontSize: '12px', color: 'var(--sharp-muted)' }}>Loading areas...</p>
                       ) : (
@@ -451,6 +449,17 @@ function BookingPageInner() {
                           ))}
                         </div>
                       )}
+                      <button
+                        type="button"
+                        onClick={() => setShowMapModal(true)}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '14px',
+                          width: '100%', background: 'var(--sharp-accent)', border: 'none', borderRadius: 'var(--radius-md)',
+                          padding: '13px 16px', fontSize: '14px', fontWeight: 800, color: '#fff', cursor: 'pointer',
+                        }}
+                      >
+                        <i className="fa-solid fa-map-location-dot" style={{ fontSize: '16px' }}></i> View Zone Map
+                      </button>
                       {selectedZone && (
                         <div style={{
                           marginTop: '10px', padding: '12px 14px', borderRadius: 'var(--radius-md)',
@@ -463,21 +472,6 @@ function BookingPageInner() {
                           <div style={{ fontSize: '20px', fontWeight: 900, color: selectedZone.color, whiteSpace: 'nowrap' }}>
                             {selectedZone.fee > 0 ? formatRupiah(selectedZone.fee) : 'FREE'}
                           </div>
-                        </div>
-                      )}
-                      {selectedZone && (
-                        <div style={{ marginTop: '10px', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', fontSize: '11.5px', color: 'var(--sharp-ink)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
-                          <span>
-                            <i className="fa-solid fa-map-location-dot" style={{ color: '#F59E0B', marginRight: '6px' }}></i>
-                            Not sure which zone fits your address?
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setShowMapModal(true)}
-                            style={{ background: 'none', border: 'none', color: 'var(--sharp-accent)', fontWeight: 700, fontSize: '11.5px', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-                          >
-                            View zone map
-                          </button>
                         </div>
                       )}
                     </div>
@@ -534,14 +528,98 @@ function BookingPageInner() {
                   )}
 
                   <SharpButton type="submit" variant="accent" block disabled={submitting}>
-                    {submitting ? (
-                      <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>Submitting...</>
-                    ) : (
-                      'Confirm Booking'
-                    )}
+                    Review Booking
                   </SharpButton>
                 </form>
               </>
+            )}
+
+            {step === 'review' && reviewPayload && (
+              <div>
+                <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--sharp-ink)', margin: '0 0 4px 0' }}>
+                  Review Your Booking
+                </h2>
+                <p style={{ fontSize: '13px', color: 'var(--sharp-muted)', margin: '0 0 18px 0' }}>
+                  Please check everything below before confirming.
+                </p>
+
+                {/* ── Summary Card ── */}
+                <div style={{ background: 'var(--sharp-surface)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-md)', padding: '16px', marginBottom: '18px' }}>
+                  {[
+                    ['Vehicle', reviewPayload.vehicle_name],
+                    ['Renter', reviewPayload.customer_name],
+                    ['WhatsApp', reviewPayload.customer_phone],
+                    ['Rental Period', `${new Date(reviewPayload.start_date).toLocaleDateString('en-GB')} — ${new Date(reviewPayload.end_date).toLocaleDateString('en-GB')} (${reviewPayload.duration_days} day${reviewPayload.duration_days > 1 ? 's' : ''})`],
+                    ['Fulfillment', reviewPayload.fulfillment_method === 'delivery' ? `Delivery (${reviewPayload.delivery_zone_name || '-'})` : 'Self Pickup at Shop'],
+                    ...(reviewPayload.fulfillment_method === 'delivery' ? [['Delivery Address', reviewPayload.customer_address]] : []),
+                    ['Payment Method', PAYMENT_METHOD_META[reviewPayload.payment_method]?.label || 'Cash'],
+                  ].map(([label, value]) => (
+                    <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '8px 0', borderBottom: '1px dashed var(--sharp-line)', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--sharp-muted)', flexShrink: 0 }}>{label}</span>
+                      <span style={{ color: 'var(--sharp-ink)', fontWeight: 700, textAlign: 'right' }}>{value || '-'}</span>
+                    </div>
+                  ))}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', paddingTop: '12px', fontSize: '15px' }}>
+                    <span style={{ color: 'var(--sharp-ink)', fontWeight: 800 }}>Total Estimated</span>
+                    <span style={{ color: 'var(--sharp-accent)', fontWeight: 900 }}>{formatRupiah(reviewPayload.estimated_price)}</span>
+                  </div>
+                </div>
+
+                {/* ── Terms & Conditions ── */}
+                <div style={{ marginBottom: '14px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: 800, color: 'var(--sharp-ink)', margin: '0 0 8px 0' }}>
+                    Terms &amp; Conditions
+                  </h3>
+                  <div style={{
+                    background: 'var(--sharp-surface)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-md)',
+                    padding: '14px 16px', maxHeight: '220px', overflowY: 'auto', fontSize: '12px', color: 'var(--sharp-muted)', lineHeight: 1.7,
+                  }}>
+                    <ol style={{ margin: 0, paddingLeft: '18px' }}>
+                      <li>The renter must be at least 18 years old and hold a valid ID/passport and a valid motorbike driving license (SIM or International Driving Permit) at the time of vehicle handover.</li>
+                      <li>A valid ID/passport will be shown and photographed as part of the rental agreement, kept on file for the duration of the rental only.</li>
+                      <li>The renter is fully responsible for any loss, damage, or theft of the vehicle during the rental period, including damage caused by accidents, misuse, or negligence.</li>
+                      <li>A security deposit may be requested and will be refunded upon return of the vehicle in its original condition, minus any applicable damage, fuel, or late fees.</li>
+                      <li>The vehicle must be returned with the same fuel level as at pickup, or a refueling fee will apply.</li>
+                      <li>Helmets are provided and must be worn at all times while riding, in compliance with Indonesian traffic law. Traffic violations, tickets, or fines incurred during the rental are the renter&apos;s sole responsibility.</li>
+                      <li>Late returns beyond the agreed end date/time may incur additional daily charges.</li>
+                      <li>This rental does not include third-party liability or medical insurance unless explicitly stated. Renters are encouraged to have their own travel/health insurance.</li>
+                      <li>Demo Rental Preview reserves the right to refuse or cancel a booking in case of suspected fraudulent information or unavailability of the requested vehicle.</li>
+                      <li>By submitting this booking, the renter confirms that all information provided is accurate and agrees to the terms above.</li>
+                    </ol>
+                  </div>
+                </div>
+
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', marginBottom: '18px', fontSize: '12.5px', color: 'var(--sharp-ink)' }}>
+                  <input
+                    type="checkbox"
+                    checked={agreedToTerms}
+                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                    style={{ width: '18px', height: '18px', marginTop: '1px', flexShrink: 0, cursor: 'pointer' }}
+                  />
+                  <span>I have read and agree to the Terms &amp; Conditions above, and confirm that the information I provided is accurate.</span>
+                </label>
+
+                {error && (
+                  <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444', borderRadius: 'var(--radius-md)', padding: '10px 12px', fontSize: '12.5px', marginBottom: '14px' }}>
+                    <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '6px' }}></i>{error}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <SharpButton type="button" variant="outline" onClick={() => setStep('form')} disabled={submitting}>
+                    Back
+                  </SharpButton>
+                  <div style={{ flex: 1 }}>
+                    <SharpButton type="button" variant="accent" block disabled={submitting || !agreedToTerms} onClick={submitBooking}>
+                      {submitting ? (
+                        <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>Submitting...</>
+                      ) : (
+                        'Confirm Booking'
+                      )}
+                    </SharpButton>
+                  </div>
+                </div>
+              </div>
             )}
 
             {step === 'confirmed' && confirmedBooking && (
