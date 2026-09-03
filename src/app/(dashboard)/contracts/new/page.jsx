@@ -317,7 +317,7 @@ function NewContractInner() {
 
             {isFromBooking ? (
               <button className="btn btn-secondary" onClick={() => router.push('/bookings?tab=confirmed')}>
-                <i className="fa-solid fa-arrow-left" style={{ marginRight: '6px' }}></i> Kembali ke Booking Confirmation
+                <i className="fa-solid fa-arrow-left" style={{ marginRight: '6px' }}></i> Kembali ke Booking
               </button>
             ) : (
               <button className="btn btn-secondary" onClick={() => router.push('/contracts')}>
@@ -343,7 +343,7 @@ function NewContractInner() {
   return (
     <div className="page-content">
       <div className="page-header-row" style={{ marginBottom: '18px' }}>
-        <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>Buat Kontrak Baru</h1>
+        <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>Kontrak</h1>
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
           {isFromBooking
             ? 'Data booking sudah otomatis terisi — tinggal lengkapi no. ID, foto, dan tanda tangan customer.'

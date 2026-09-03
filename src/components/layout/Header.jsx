@@ -1,14 +1,14 @@
 /* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { useState, useEffect, useRef, Suspense } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import VuiVoiceControl from '@/components/dashboard/VuiVoiceControl';
 
 const pageMeta = {
   '/dashboard':   { title: 'Dashboard',       subtitle: 'Ringkasan statistik usaha rental' },
-  '/bookings':    { title: 'Booking Confirmation', subtitle: 'Booking masuk dari website publik' },
-  '/contracts/new': { title: 'Buat Kontrak Baru', subtitle: 'Data diri, foto, dan tanda tangan customer' },
+  '/bookings':    { title: 'Booking',         subtitle: 'Booking masuk dari website publik' },
+  '/contracts/new': { title: 'Kontrak',       subtitle: 'Data diri, foto, dan tanda tangan customer' },
   '/contracts':   { title: 'Laporan Kontrak', subtitle: 'Kontrak sewa yang sudah ditandatangani' },
   '/transactions':{ title: 'Transaksi',        subtitle: 'Kelola pencatatan sewa motor' },
   '/vehicles':    { title: 'Data Motor',       subtitle: 'Manajemen armada kendaraan' },
@@ -17,16 +17,38 @@ const pageMeta = {
   '/expenses':    { title: 'Keuangan',         subtitle: 'Catat pemasukan, pengeluaran & saldo bersih' },
   '/maintenance': { title: 'AI Diagnostic',    subtitle: 'Deteksi dini kesehatan motor' },
   '/gallery':     { title: 'Galeri Foto',      subtitle: 'Arsip foto identitas & kendaraan' },
-  '/reports':     { title: 'Laporan',          subtitle: 'Export dan analisis pendapatan' },
-  '/settings':    { title: 'Pengaturan',       subtitle: 'Koneksi database & template WA' },
+  '/reports':     { title: 'Laporan Keuangan', subtitle: 'Export dan analisis pendapatan' },
+  '/driver-income': { title: 'History Pendapatan', subtitle: 'Riwayat pendapatan kamu' },
   '/fleet':       { title: 'Website Publik',   subtitle: 'Katalog sewa motor publik (/fleet)' },
   '/customers':   { title: 'Data Customer',    subtitle: 'Kelola data penyewa & riwayat' },
 };
 
+// /settings kepakai dari 3 grup sidebar yang beda (Data Master, Employee,
+// Lainnya) — judulnya harus ngikutin ?tab= biar nggak selalu bilang
+// "Pengaturan" padahal lagi buka Employee atau Database & Storage.
+const settingsTabMeta = {
+  storage:  { title: 'Database & Storage', subtitle: 'Koneksi database & backup data' },
+  staff:    { title: 'Employee',           subtitle: 'Kelola akun admin & driver' },
+  payment:  { title: 'Pengaturan',         subtitle: 'Metode pembayaran & konfigurasi rental' },
+  wacustom: { title: 'Pengaturan',         subtitle: 'Template invoice WhatsApp' },
+  security: { title: 'Pengaturan',         subtitle: 'Keamanan akun & password' },
+  business: { title: 'Pengaturan',         subtitle: 'Operasional rental' },
+  delivery: { title: 'Pengaturan',         subtitle: 'Zona & ongkos delivery' },
+};
+
+function SettingsTabWatcher({ onChange }) {
+  const searchParams = useSearchParams();
+  useEffect(() => { onChange(searchParams.get('tab') || ''); }, [searchParams, onChange]);
+  return null;
+}
+
 export default function Header({ onToggleMobile, theme, onToggleTheme }) {
   const pathname = usePathname();
+  const [settingsTab, setSettingsTab] = useState('');
   const matchedKey = Object.keys(pageMeta).find(key => pathname.startsWith(key));
-  const meta = pageMeta[matchedKey] || { title: 'Demo Rental Preview', subtitle: 'Admin Panel' };
+  const meta = pathname.startsWith('/settings')
+    ? (settingsTabMeta[settingsTab] || { title: 'Pengaturan', subtitle: 'Koneksi database & template WA' })
+    : (pageMeta[matchedKey] || { title: 'Demo Rental Preview', subtitle: 'Admin Panel' });
   const [logoUrl, setLogoUrl] = useState('/images/logoCompany.png');
   const [themeDropOpen, setThemeDropOpen] = useState(false);
   const themeRef = useRef(null);
@@ -66,6 +88,9 @@ export default function Header({ onToggleMobile, theme, onToggleTheme }) {
 
   return (
     <header className="header">
+      <Suspense fallback={null}>
+        <SettingsTabWatcher onChange={setSettingsTab} />
+      </Suspense>
       <div className="header-left-wrap">
         <button
           type="button"

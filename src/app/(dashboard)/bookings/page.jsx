@@ -592,7 +592,7 @@ function BookingsPageInner() {
       <div className="page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '18px' }}>
         <div>
           <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-            Booking Confirmation
+            Booking
             <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--brand-primary)', background: 'var(--brand-primary-bg, rgba(59,130,246,0.12))', padding: '3px 10px', borderRadius: 'var(--radius-full, 999px)' }}>
               {TABS.find(t => t.key === tab)?.label || 'Semua'}
             </span>
