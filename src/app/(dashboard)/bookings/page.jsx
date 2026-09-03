@@ -437,9 +437,9 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
                   required
                 />
                 {Number(booking.estimated_price) > 0 && dpAmount && (
-                  <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(59,130,246,0.08)', borderRadius: '8px', border: '1px solid rgba(59,130,246,0.3)', fontSize: '12px', color: '#3B82F6', display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(59,130,246,0.08)', borderRadius: '8px', border: '1px solid rgba(59,130,246,0.3)', fontSize: '12px', color: '#3B82F6', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
                     <span>Sisa yang harus dilunasi:</span>
-                    <strong>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Math.max(0, Number(booking.estimated_price) - Number(dpAmount || 0)))}</strong>
+                    <strong style={{ whiteSpace: 'nowrap' }}>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Math.max(0, Number(booking.estimated_price) - Number(dpAmount || 0)))}</strong>
                   </div>
                 )}
               </div>

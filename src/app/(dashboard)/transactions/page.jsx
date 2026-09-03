@@ -933,9 +933,9 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
                   required
                 />
                 {totalPrice > 0 && form.dp_amount && (
-                  <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(59,130,246,0.08)', borderRadius: '8px', border: '1px solid rgba(59,130,246,0.3)', fontSize: '12px', color: '#3B82F6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(59,130,246,0.08)', borderRadius: '8px', border: '1px solid rgba(59,130,246,0.3)', fontSize: '12px', color: '#3B82F6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                     <span>Sisa yang harus dilunasi:</span>
-                    <strong>{formatRupiah(Math.max(0, totalPrice - Number(form.dp_amount || 0)))}</strong>
+                    <strong style={{ whiteSpace: 'nowrap' }}>{formatRupiah(Math.max(0, totalPrice - Number(form.dp_amount || 0)))}</strong>
                   </div>
                 )}
               </div>
@@ -950,13 +950,13 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
 
           {/* ── Info harga otomatis (muncul setelah motor + tanggal dipilih) ── */}
           {totalPrice > 0 && (
-            <div style={{ padding: '12px 16px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '10px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ padding: '14px 16px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '10px', marginBottom: '16px' }}>
+              <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px', marginBottom: '6px' }}>
                 <i className="fa-solid fa-calculator" style={{ color: '#22C55E' }}></i>
                 Harga Terbaik Otomatis
                 {form.discount > 0 && <span style={{ fontSize: '11px', color: '#F59E0B' }}>(sudah potong diskon)</span>}
               </div>
-              <strong style={{ fontSize: '20px', color: '#22C55E', letterSpacing: '-0.5px' }}>
+              <strong style={{ display: 'block', fontSize: '22px', color: '#22C55E', letterSpacing: '-0.5px', whiteSpace: 'nowrap' }}>
                 {formatRupiah(totalPrice)}
               </strong>
             </div>
