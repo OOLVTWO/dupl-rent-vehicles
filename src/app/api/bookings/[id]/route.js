@@ -226,6 +226,16 @@ export async function DELETE(request, { params }) {
     .eq('id', id)
     .single();
 
+  // Cek dulu transaksi yang bakal dihapus di bawah — kalau statusnya
+  // 'active', motornya perlu dibalikin ke available juga. Ini raw delete
+  // (bukan lewat route DELETE transaksi), jadi reset status motor yang ada
+  // di route itu TIDAK otomatis kepanggil — makanya dicek manual di sini.
+  const { data: linkedTx } = await supabase
+    .from('transactions')
+    .select('status, vehicle_id')
+    .eq('booking_id', id)
+    .maybeSingle();
+
   // Transaksi & booking yang sama itu 1 kesatuan — hapus salah satu, hapus
   // juga yang lain. Transaksinya harus dihapus DULU (foreign key
   // transactions.booking_id nolak hapus booking selama masih ada transaksi
@@ -245,8 +255,14 @@ export async function DELETE(request, { params }) {
   // ke-tandain booked/rented), balikin motornya jadi available lagi —
   // sebelumnya ini nggak ada, jadi motor bisa "nyangkut" statusnya kalau
   // booking-nya dihapus langsung tanpa dibatalkan/diselesaikan dulu.
-  if (booking && booking.vehicle_id && ['pending', 'confirmed'].includes(booking.status)) {
-    await supabase.from('vehicles').update({ status: 'available' }).eq('id', booking.vehicle_id);
+  // Dicek dari 2 sisi: status booking-nya sendiri, ATAU transaksi yang
+  // barusan ikut dihapus di atas kalau itu masih 'active'.
+  const shouldReset =
+    (booking && booking.vehicle_id && ['pending', 'confirmed'].includes(booking.status)) ||
+    (linkedTx && linkedTx.status === 'active');
+  if (shouldReset) {
+    const vId = booking?.vehicle_id || linkedTx?.vehicle_id;
+    if (vId) await supabase.from('vehicles').update({ status: 'available' }).eq('id', vId);
   }
 
   return NextResponse.json({ success: true });
