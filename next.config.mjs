@@ -16,11 +16,16 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_A
 }
 
 const nextConfig = {
-  // pdfkit butuh file .afm (metrik font standar) saat runtime, tapi Next.js
-  // punya "file tracing" yang cuma ikutin graph require()/import — file data
-  // yang dibaca lewat fs.readFileSync() secara dinamis (kayak punya pdfkit)
-  // gak otomatis ke-include di bundle serverless. Tanpa baris ini, endpoint
-  // PDF akan error di production (Vercel) walau sukses di lokal.
+  // pdfkit baca file font (.afm) internal via path.join(__dirname, ...).
+  // Kalau Next.js nge-bundle pdfkit lewat webpack (perilaku default),
+  // __dirname-nya jadi rusak/diganti jadi path palsu (mis. "/ROOT/...")
+  // yang gak match sama lokasi asli file di node_modules — makanya
+  // error "ENOENT .../pdfkit/js/data/Helvetica.afm" walau file-nya
+  // sebenarnya ada. Fix-nya: jangan bundle pdfkit sama sekali, biarkan
+  // dia jalan sebagai require() biasa ke node_modules aslinya.
+  serverExternalPackages: ['pdfkit'],
+  // Extra safety net: pastikan file .afm tetap ke-trace ke bundle
+  // serverless (kalau-kalau Vercel butuh referensi eksplisit ini juga).
   outputFileTracingIncludes: {
     '/api/contracts/[id]/pdf': ['./node_modules/pdfkit/js/data/**'],
   },
