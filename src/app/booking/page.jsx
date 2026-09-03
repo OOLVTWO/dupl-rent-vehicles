@@ -460,20 +460,6 @@ function BookingPageInner() {
                       >
                         <i className="fa-solid fa-map-location-dot" style={{ fontSize: '16px' }}></i> View Zone Map
                       </button>
-                      {selectedZone && (
-                        <div style={{
-                          marginTop: '10px', padding: '12px 14px', borderRadius: 'var(--radius-md)',
-                          background: `${selectedZone.color}12`, border: `1px solid ${selectedZone.color}`,
-                        }}>
-                          <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--sharp-ink)', marginBottom: '4px' }}>
-                            <i className="fa-solid fa-truck-fast" style={{ marginRight: '6px', color: selectedZone.color }}></i>
-                            Delivery fee ({zoneLabelEn(selectedZone.zone_label)})
-                          </div>
-                          <div style={{ fontSize: '20px', fontWeight: 900, color: selectedZone.color, whiteSpace: 'nowrap' }}>
-                            {selectedZone.fee > 0 ? formatRupiah(selectedZone.fee) : 'FREE'}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   )}
 
@@ -485,13 +471,13 @@ function BookingPageInner() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px',
                       }}
                     >
-                      <div onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px', maxHeight: '90vh', width: '100%', position: 'relative', overflowY: 'auto' }}>
+                      <div onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px', width: '100%', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <button
                           type="button"
                           onClick={() => setShowMapModal(false)}
                           aria-label="Close"
                           style={{
-                            position: 'fixed', top: 'calc(5vh + 6px)', right: '16px', width: '34px', height: '34px', borderRadius: '50%',
+                            position: 'absolute', top: '-14px', right: '-8px', width: '34px', height: '34px', borderRadius: '50%',
                             background: '#fff', border: '1px solid var(--sharp-line)', color: 'var(--sharp-ink)', fontSize: '14px', cursor: 'pointer', zIndex: 301,
                           }}
                         >
@@ -501,7 +487,7 @@ function BookingPageInner() {
                         <img
                           src="/images/delivery-zone-map.webp"
                           alt="Delivery zone map — Green: Kerobokan/Seminyak/Legian/Kuta, Blue: Canggu/Uluwatu/Sanur & surrounding coastal areas, Yellow: Ubud"
-                          style={{ width: '100%', borderRadius: 'var(--radius-md)', background: '#fff', display: 'block' }}
+                          style={{ maxWidth: '100%', maxHeight: '80vh', width: 'auto', height: 'auto', objectFit: 'contain', borderRadius: 'var(--radius-md)', background: '#fff', display: 'block' }}
                         />
                       </div>
                     </div>
@@ -559,6 +545,16 @@ function BookingPageInner() {
                       <span style={{ color: 'var(--sharp-ink)', fontWeight: 700, textAlign: 'right' }}>{value || '-'}</span>
                     </div>
                   ))}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '8px 0', borderBottom: '1px dashed var(--sharp-line)', fontSize: '13px' }}>
+                    <span style={{ color: 'var(--sharp-muted)' }}>Vehicle Rental Cost</span>
+                    <span style={{ color: 'var(--sharp-ink)', fontWeight: 700 }}>{formatRupiah(Math.max(0, Number(reviewPayload.estimated_price) - Number(reviewPayload.delivery_fee || 0)))}</span>
+                  </div>
+                  {reviewPayload.fulfillment_method === 'delivery' && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '8px 0', borderBottom: '1px dashed var(--sharp-line)', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--sharp-muted)' }}>Delivery Fee</span>
+                      <span style={{ color: 'var(--sharp-ink)', fontWeight: 700 }}>{Number(reviewPayload.delivery_fee) > 0 ? formatRupiah(reviewPayload.delivery_fee) : 'FREE'}</span>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', paddingTop: '12px', fontSize: '15px' }}>
                     <span style={{ color: 'var(--sharp-ink)', fontWeight: 800 }}>Total Estimated</span>
                     <span style={{ color: 'var(--sharp-accent)', fontWeight: 900 }}>{formatRupiah(reviewPayload.estimated_price)}</span>
