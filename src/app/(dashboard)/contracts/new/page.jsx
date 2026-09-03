@@ -96,7 +96,12 @@ function NewContractInner() {
   const transactionId = searchParams.get('transactionId') || '';
   const vehicleIdParam = searchParams.get('vehicleId') || '';
   const bookingId = searchParams.get('bookingId') || '';
+  // Baik dari Booking maupun dari Transaksi, data customer/motor/tanggal
+  // udah pasti diketahui — jadi keduanya pakai tampilan ringkasan read-only
+  // yang sama, bukan form kosong yang bisa nyasar pilih motor lain.
   const isFromBooking = !!bookingId;
+  const isFromTransaction = !!transactionId;
+  const isPrefilled = isFromBooking || isFromTransaction;
 
   const [vehicles, setVehicles] = useState([]);
   const [loadingContext, setLoadingContext] = useState(true);
@@ -131,7 +136,7 @@ function NewContractInner() {
   useEffect(() => {
     Promise.resolve().then(async () => {
       const supabase = createClient();
-      const { data: vData } = await supabase.from('vehicles').select('id, name, plate_number, category, image_url, rate_per_day').order('name');
+      const { data: vData } = await supabase.from('vehicles').select('id, name, plate_number, category, image_url, rate_per_day, status').order('name');
       setVehicles(vData || []);
 
       if (transactionId) {
@@ -321,6 +326,10 @@ function NewContractInner() {
               <button className="btn btn-secondary" onClick={() => router.push('/bookings?tab=confirmed')}>
                 <i className="fa-solid fa-arrow-left" style={{ marginRight: '6px' }}></i> Kembali ke Booking
               </button>
+            ) : isFromTransaction ? (
+              <button className="btn btn-secondary" onClick={() => router.push('/transactions')}>
+                <i className="fa-solid fa-arrow-left" style={{ marginRight: '6px' }}></i> Kembali ke Transaksi
+              </button>
             ) : (
               <button className="btn btn-secondary" onClick={() => router.push('/contracts')}>
                 <i className="fa-solid fa-list" style={{ marginRight: '6px' }}></i> Lihat Laporan Kontrak
@@ -347,8 +356,8 @@ function NewContractInner() {
       <div className="page-header-row" style={{ marginBottom: '18px' }}>
         <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>Kontrak</h1>
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
-          {isFromBooking
-            ? 'Data booking sudah otomatis terisi — tinggal lengkapi no. ID, foto, dan tanda tangan customer.'
+          {isPrefilled
+            ? `Data ${isFromBooking ? 'booking' : 'transaksi'} sudah otomatis terisi — tinggal lengkapi no. ID, foto, dan tanda tangan customer.`
             : 'Isi data diri customer, ambil foto, lalu minta customer tanda tangan langsung di layar ini.'}
         </p>
       </div>
@@ -359,13 +368,13 @@ function NewContractInner() {
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
-          {isFromBooking ? (
+          {isPrefilled ? (
             <div className="card" style={{ marginBottom: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0, marginBottom: '4px' }}>
                 <i className="fa-solid fa-clipboard-check" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
-                Ringkasan Booking
+                Ringkasan {isFromBooking ? 'Booking' : 'Transaksi'}
               </h3>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 0, marginBottom: '10px' }}>Otomatis dari data booking, tidak perlu diisi ulang.</p>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 0, marginBottom: '10px' }}>Otomatis dari data {isFromBooking ? 'booking' : 'transaksi'}, tidak perlu diisi ulang.</p>
               <RecapRow icon="fa-solid fa-user" label="Nama Customer" value={form.customer_name} />
               <RecapRow icon="fa-solid fa-phone" label="Telepon / WhatsApp" value={form.customer_phone} />
               <RecapRow icon="fa-solid fa-location-dot" label="Alamat" value={form.customer_address} />
@@ -398,7 +407,12 @@ function NewContractInner() {
                   <i className="fa-solid fa-motorcycle" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
                   Detail Sewa
                 </h3>
-                <VehicleCombobox vehicles={vehicles} value={form.vehicle_id} onChange={(id) => handleChange('vehicle_id', id)} required={false} />
+                <VehicleCombobox
+                  vehicles={vehicles.filter(v => v.status === 'available' || v.id === form.vehicle_id)}
+                  value={form.vehicle_id}
+                  onChange={(id) => handleChange('vehicle_id', id)}
+                  required={false}
+                />
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
                   <div className="form-group">
                     <label className="form-label">Tanggal Mulai *</label>
@@ -446,7 +460,7 @@ function NewContractInner() {
             <SignaturePad onChange={setSignature} />
           </div>
 
-          {!isFromBooking && (
+          {!isPrefilled && (
             <div className="card" style={{ marginBottom: '16px' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Catatan (opsional)</label>
