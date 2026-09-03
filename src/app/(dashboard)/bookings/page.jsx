@@ -611,8 +611,9 @@ function BookingsPageInner() {
     const methodLine = b.fulfillment_method === 'delivery'
       ? `📦 *Method:* Delivery (${b.delivery_zone_name || '-'}) to ${b.customer_address || 'your address'}`
       : '📦 *Method:* Self pickup at our shop (Pererenan / Canggu)';
+    const assignedDriver = drivers.find(d => d.id === b.assigned_driver_id);
     const driverLine = b.fulfillment_method === 'delivery' && b.assigned_driver_name
-      ? `\n🧑‍✈️ *Your Driver:* ${b.assigned_driver_name}`
+      ? `\n🧑‍✈️ *Your Driver:* ${b.assigned_driver_name}${assignedDriver?.phone ? ` (WA: ${assignedDriver.phone})` : ''}`
       : '';
 
     const msg = `Hi ${b.customer_name}! 🛵\n\nGreat news — your booking with ${BUSINESS_NAME} is *confirmed*! ✅\n\n🏍️ *Scooter:* ${b.vehicle_name}\n📅 *Dates:* ${formatDate(b.start_date)} - ${formatDate(b.end_date)} (${b.duration_days} day${b.duration_days > 1 ? 's' : ''})\n${methodLine}${driverLine}\n💳 *Payment:* ${PAYMENT_META[b.payment_method]?.label || 'Cash'}\n💰 *Total:* ${formatRupiah(b.estimated_price)}\n\n${b.fulfillment_method === 'delivery' ? 'Our driver will contact you shortly before arrival.' : 'Please come to our shop at your scheduled pickup time.'}\n\nThank you for choosing us, see you soon! 🙏`;

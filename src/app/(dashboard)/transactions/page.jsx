@@ -303,6 +303,8 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
   const [fulfillment, setFulfillment] = useState('pickup'); // 'pickup' | 'delivery'
   const [deliveryZones, setDeliveryZones] = useState([]);
   const [selectedZoneId, setSelectedZoneId] = useState('');
+  const [drivers, setDrivers] = useState([]);
+  const [assignedDriverId, setAssignedDriverId] = useState('');
   const [bookingSaving, setBookingSaving] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingError, setBookingError] = useState('');
@@ -345,6 +347,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
       setRecordType('');
       setFulfillment('pickup');
       setSelectedZoneId('');
+      setAssignedDriverId('');
     }
   }
 
@@ -354,6 +357,10 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
       .then(r => r.ok ? r.json() : [])
       .then(data => setDeliveryZones(Array.isArray(data) ? data : []))
       .catch(() => setDeliveryZones([]));
+    fetch('/api/staff')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setDrivers((Array.isArray(data) ? data : []).filter(s => s.role === 'driver')))
+      .catch(() => setDrivers([]));
   }, [isOpen]);
 
   // ── Kalkulasi harga otomatis: pilih kombinasi termurah daily/weekly/monthly ──
@@ -547,6 +554,16 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
         return;
       }
     }
+    if (!editData && recordType === 'transaction' && fulfillment === 'delivery') {
+      if (!selectedZoneId) {
+        alert('Silakan pilih zona delivery terlebih dahulu!');
+        return;
+      }
+      if (!assignedDriverId) {
+        alert('Silakan tugaskan driver terlebih dahulu untuk transaksi delivery ini.');
+        return;
+      }
+    }
     setShowConfirm(true);
   };
 
@@ -590,7 +607,17 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
     }
 
     setLoading(true);
-    await onSubmit({ ...form, vehicle_id: cleanVehicleId, total_price: totalPrice });
+    const selectedDriver = drivers.find(d => d.id === assignedDriverId);
+    const selectedZoneObj = deliveryZones.find(z => z.id === selectedZoneId);
+    const extraFields = (!editData && recordType === 'transaction') ? {
+      fulfillment_method: fulfillment,
+      delivery_zone_id: fulfillment === 'delivery' ? (selectedZoneObj?.id || null) : null,
+      delivery_zone_name: fulfillment === 'delivery' ? (selectedZoneObj?.name || null) : null,
+      delivery_fee: fulfillment === 'delivery' ? (Number(selectedZoneObj?.fee) || 0) : 0,
+      assigned_driver_id: fulfillment === 'delivery' ? (selectedDriver?.id || null) : null,
+      assigned_driver_name: fulfillment === 'delivery' ? (selectedDriver?.full_name || null) : null,
+    } : {};
+    await onSubmit({ ...form, ...extraFields, vehicle_id: cleanVehicleId, total_price: totalPrice });
     setLoading(false);
   };
 
@@ -708,8 +735,8 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
             />
           )}
 
-          {/* ── Ambil di Toko / Diantar (khusus mode Booking) ── */}
-          {!editData && recordType === 'booking' && (
+          {/* ── Ambil di Toko / Diantar (kedua mode) ── */}
+          {!editData && (recordType === 'booking' || recordType === 'transaction') && (
             <div className="form-group">
               <label className="form-label">Ambil di Toko atau Diantar?</label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: fulfillment === 'delivery' ? '12px' : 0 }}>
@@ -764,6 +791,26 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
                   {deliveryZones.length === 0 && (
                     <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Belum ada zona delivery diatur. Cek di Pengaturan.</p>
                   )}
+                </div>
+              )}
+
+              {recordType === 'transaction' && fulfillment === 'delivery' && (
+                <div style={{ marginTop: '12px' }}>
+                  <label className="form-label" htmlFor="tx-assigned-driver">Tugaskan Driver <span className="required">*</span></label>
+                  <select
+                    id="tx-assigned-driver"
+                    className="form-control"
+                    value={assignedDriverId}
+                    onChange={(e) => setAssignedDriverId(e.target.value)}
+                  >
+                    <option value="">Belum ditugaskan</option>
+                    {drivers.map(d => (
+                      <option key={d.id} value={d.id}>{d.full_name}</option>
+                    ))}
+                  </select>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', marginBottom: 0 }}>
+                    Transaksi langsung nggak lewat Booking Confirmation, jadi driver-nya ditugaskan di sini.
+                  </p>
                 </div>
               )}
             </div>
@@ -2045,6 +2092,7 @@ const handleSubmit = async (formData) => {
                   <th>Status Motor</th>
                   <th>Status Pembayaran</th>
                   <th>Kontrak</th>
+                  <th>Ringkasan Pembayaran</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -2082,6 +2130,7 @@ const handleSubmit = async (formData) => {
                     </td>
                     <td data-label="Status Pembayaran" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Kontrak" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
+                    <td data-label="Ringkasan Pembayaran" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Aksi" data-label-align="left">
                       <Link href="/bookings" className="btn btn-sm" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid #8B5CF6', color: '#8B5CF6', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                         <i className="fa-solid fa-arrow-right"></i> Kelola di Booking
@@ -2204,14 +2253,9 @@ const handleSubmit = async (formData) => {
                         </span>
                       )}
                       {tx.payment_status === 'down_payment' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#3B82F6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                            <i className="fa-solid fa-coins" style={{ fontSize: '10px' }}></i>DP {formatRupiah(tx.dp_amount)}
-                          </span>
-                          <span style={{ fontSize: '10.5px', color: '#F59E0B', fontWeight: 600 }}>
-                            Sisa: {formatRupiah(Math.max(0, Number(tx.total_price || 0) - Number(tx.dp_amount || 0)))}
-                          </span>
-                        </div>
+                        <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#3B82F6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                          <i className="fa-solid fa-coins" style={{ fontSize: '10px' }}></i>DP {formatRupiah(tx.dp_amount)}
+                        </span>
                       )}
                       {tx.payment_status === 'unpaid' && (
                         <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#F59E0B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
@@ -2239,6 +2283,17 @@ const handleSubmit = async (formData) => {
                           </span>
                         )}
                       </div>
+                    </td>
+                    <td data-label="Ringkasan Pembayaran" style={{ verticalAlign: 'middle' }}>
+                      {tx.payment_status === 'down_payment' ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '11px' }}>
+                          <div style={{ color: 'var(--text-muted)' }}>Total: <strong style={{ color: 'var(--text-primary)' }}>{formatRupiah(tx.total_price)}</strong></div>
+                          <div style={{ color: 'var(--text-muted)' }}>DP: <strong style={{ color: '#3B82F6' }}>{formatRupiah(tx.dp_amount)}</strong></div>
+                          <div style={{ color: '#F59E0B', fontWeight: 700 }}>Sisa: {formatRupiah(Math.max(0, Number(tx.total_price || 0) - Number(tx.dp_amount || 0)))}</div>
+                        </div>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                      )}
                     </td>
                     <td data-label="Aksi" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       <div className="tx-actions-cell">
