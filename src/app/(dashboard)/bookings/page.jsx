@@ -474,6 +474,7 @@ function BookingsPageInner() {
   const [editingBooking, setEditingBooking] = useState(null);
   const [confirmTxBooking, setConfirmTxBooking] = useState(null);
   const [drivers, setDrivers] = useState([]);
+  const [directTxDeliveries, setDirectTxDeliveries] = useState([]);
   const [myUserId, setMyUserId] = useState(null);
   const [contractsByBookingId, setContractsByBookingId] = useState(new Map());
 
@@ -508,6 +509,13 @@ function BookingsPageInner() {
       const data = await res.json().catch(() => []);
       if (res.ok) setDrivers((Array.isArray(data) ? data : []).filter(s => s.role === 'driver'));
     } catch { /* ignore */ }
+    try {
+      const res = await fetch('/api/transactions');
+      const data = await res.json().catch(() => []);
+      if (res.ok) {
+        setDirectTxDeliveries((Array.isArray(data) ? data : []).filter(t => t.assigned_driver_id && t.fulfillment_method === 'delivery'));
+      }
+    } catch { /* ignore */ }
   }, []);
 
   useEffect(() => {
@@ -515,14 +523,22 @@ function BookingsPageInner() {
   }, [role, fetchDrivers]);
 
   // Berapa delivery yang sudah ditugaskan ke tiap driver bulan ini — biar
-  // pemerataan jelas kelihatan saat admin memilih siapa yang jalan.
+  // pemerataan jelas kelihatan saat admin memilih siapa yang jalan. Ini
+  // gabungan dari 2 sumber: booking yang delivery, DAN transaksi langsung
+  // yang delivery (dari mode "Transaksi Sekarang" di halaman Transaksi).
   const deliveryCountThisMonth = (driverId) => {
     const now = new Date();
-    return bookings.filter(b => {
-      if (b.assigned_driver_id !== driverId || b.fulfillment_method !== 'delivery') return false;
-      const d = new Date(b.created_at);
+    const inThisMonth = (dateStr) => {
+      const d = new Date(dateStr);
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    }).length;
+    };
+    const fromBookings = bookings.filter(b =>
+      b.assigned_driver_id === driverId && b.fulfillment_method === 'delivery' && inThisMonth(b.created_at)
+    ).length;
+    const fromDirectTx = directTxDeliveries.filter(t =>
+      t.assigned_driver_id === driverId && inThisMonth(t.created_at)
+    ).length;
+    return fromBookings + fromDirectTx;
   };
 
   const fetchBookings = useCallback(async () => {

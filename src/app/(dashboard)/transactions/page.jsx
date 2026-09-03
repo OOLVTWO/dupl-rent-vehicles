@@ -2280,9 +2280,9 @@ const handleSubmit = async (formData) => {
                             <i className="fa-solid fa-file-pen"></i> Belum ada kontrak
                           </Link>
                         )}
-                        {tx.booking_id && bookingDriverMap[tx.booking_id] && (
+                        {(tx.assigned_driver_name || (tx.booking_id && bookingDriverMap[tx.booking_id])) && (
                           <span style={{ fontSize: '11.5px', color: '#3B82F6', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                            <i className="fa-solid fa-motorcycle"></i> {bookingDriverMap[tx.booking_id]}
+                            <i className="fa-solid fa-motorcycle"></i> {tx.assigned_driver_name || bookingDriverMap[tx.booking_id]}
                           </span>
                         )}
                       </div>
