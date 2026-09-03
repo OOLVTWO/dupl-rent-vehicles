@@ -110,10 +110,6 @@ function NewContractInner() {
   const [success, setSuccess] = useState(false);
   const [createdContract, setCreatedContract] = useState(null);
   const [sharing, setSharing] = useState(false);
-  const [bookingFulfillment, setBookingFulfillment] = useState('');
-  const [confirmingDelivery, setConfirmingDelivery] = useState(false);
-  const [deliveryConfirmed, setDeliveryConfirmed] = useState(false);
-  const [deliveryError, setDeliveryError] = useState('');
 
   const [form, setForm] = useState({
     vehicle_id: vehicleIdParam,
@@ -156,7 +152,6 @@ function NewContractInner() {
       } else if (bookingId) {
         const { data: booking } = await supabase.from('bookings').select('*').eq('id', bookingId).maybeSingle();
         if (booking) {
-          setBookingFulfillment(booking.fulfillment_method || '');
           setForm(prev => ({
             ...prev,
             vehicle_id: booking.vehicle_id || prev.vehicle_id,
@@ -174,28 +169,6 @@ function NewContractInner() {
   }, [transactionId, bookingId]);
 
   const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
-
-  const handleConfirmDeliveryNow = async () => {
-    setConfirmingDelivery(true);
-    setDeliveryError('');
-    try {
-      const res = await fetch(`/api/bookings/${bookingId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'confirm_delivery' }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setDeliveryError(data.error || 'Gagal konfirmasi delivery.');
-        setConfirmingDelivery(false);
-        return;
-      }
-      setDeliveryConfirmed(true);
-    } catch {
-      setDeliveryError('Gagal terhubung ke server.');
-    }
-    setConfirmingDelivery(false);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -287,44 +260,44 @@ function NewContractInner() {
               </button>
             )}
 
-            {isFromBooking && bookingFulfillment === 'delivery' && (
-              deliveryConfirmed ? (
-                <div style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                  padding: '13px 16px', borderRadius: 'var(--radius-md)', background: 'rgba(34,197,94,0.12)',
-                  color: '#22C55E', fontWeight: 800, fontSize: '14px', border: '1px solid #22C55E',
-                }}>
-                  <i className="fa-solid fa-circle-check" style={{ fontSize: '18px' }}></i> Delivery Dikonfirmasi!
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleConfirmDeliveryNow}
-                  disabled={confirmingDelivery}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                    width: '100%', padding: '13px 16px', fontSize: '14px', fontWeight: 800,
-                    background: '#22C55E', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer',
-                  }}
-                >
-                  {confirmingDelivery ? (
-                    <><i className="fa-solid fa-spinner fa-spin"></i> Memproses...</>
-                  ) : (
-                    <><i className="fa-solid fa-circle-check" style={{ fontSize: '18px' }}></i> CONFIRM DELIVERED SEKARANG</>
-                  )}
-                </button>
-              )
-            )}
-
-            {deliveryError && (
-              <div className="alert alert-danger" style={{ textAlign: 'left' }}>
-                <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '6px' }}></i>{deliveryError}
-              </div>
+            {isFromBooking ? (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  setForm({ vehicle_id: '', vehicle_label: '', customer_name: '', customer_id_number: '', customer_phone: '', customer_address: '', start_date: '', end_date: '', notes: '' });
+                  setPassportPhoto(''); setVehiclePhoto(''); setSignature(''); setSuccess(false); setCreatedContract(null);
+                }}
+              >
+                <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Buat Kontrak Lain
+              </button>
+            ) : isFromTransaction ? (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  setForm({ vehicle_id: '', vehicle_label: '', customer_name: '', customer_id_number: '', customer_phone: '', customer_address: '', start_date: '', end_date: '', notes: '' });
+                  setPassportPhoto(''); setVehiclePhoto(''); setSignature(''); setSuccess(false); setCreatedContract(null);
+                }}
+              >
+                <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Buat Kontrak Lain
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  setForm({ vehicle_id: '', vehicle_label: '', customer_name: '', customer_id_number: '', customer_phone: '', customer_address: '', start_date: '', end_date: '', notes: '' });
+                  setPassportPhoto(''); setVehiclePhoto(''); setSignature(''); setSuccess(false); setCreatedContract(null);
+                }}
+              >
+                <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Buat Kontrak Lain
+              </button>
             )}
 
             {isFromBooking ? (
-              <button className="btn btn-secondary" onClick={() => router.push('/bookings?tab=confirmed')}>
-                <i className="fa-solid fa-arrow-left" style={{ marginRight: '6px' }}></i> Kembali ke Booking
+              <button className="btn btn-secondary" onClick={() => router.push('/dashboard')}>
+                <i className="fa-solid fa-house" style={{ marginRight: '6px' }}></i> Kembali ke Halaman Utama
               </button>
             ) : isFromTransaction ? (
               <button className="btn btn-secondary" onClick={() => router.push('/transactions')}>
@@ -336,16 +309,6 @@ function NewContractInner() {
               </button>
             )}
           </div>
-
-          <button
-            style={{ marginTop: '18px', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '12px', textDecoration: 'underline', cursor: 'pointer' }}
-            onClick={() => {
-              setForm({ vehicle_id: '', vehicle_label: '', customer_name: '', customer_id_number: '', customer_phone: '', customer_address: '', start_date: '', end_date: '', notes: '' });
-              setPassportPhoto(''); setVehiclePhoto(''); setSignature(''); setSuccess(false); setCreatedContract(null);
-            }}
-          >
-            Buat kontrak lain
-          </button>
         </div>
       </div>
     );

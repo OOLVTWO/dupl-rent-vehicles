@@ -230,6 +230,19 @@ export default function SettingsPage() {
     setPayoutBusyId(null);
   };
 
+  const rejectPayout = async (entryId) => {
+    if (!confirm('Tolak & hapus entry pembayaran ini? Aksi ini nggak bisa dibatalkan.')) return;
+    setPayoutBusyId(entryId);
+    try {
+      const res = await fetch(`/api/expenses/${entryId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setPayoutEntries(prev => prev.filter(e => e.id !== entryId));
+        fetchUnpaidPayouts();
+      }
+    } catch { /* ignore */ }
+    setPayoutBusyId(null);
+  };
+
   useEffect(() => {
     if (['staff', 'staff-income', 'staff-payout'].includes(activeTab)) {
       Promise.resolve().then(fetchStaff);
@@ -3013,19 +3026,28 @@ export default function SettingsPage() {
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
                     {payoutEntries.map((entry) => (
-                      <div key={entry.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--bg-border)' }}>
-                        <div>
-                          <div style={{ fontWeight: 700, fontSize: '13px' }}>{entry.title}</div>
+                      <div key={entry.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--bg-border)' }}>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ fontWeight: 700, fontSize: '13px', overflowWrap: 'anywhere' }}>{entry.title}</div>
                           <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{entry.expense_date}</div>
+                          <div style={{ fontWeight: 800, color: '#F59E0B', marginTop: '4px', whiteSpace: 'nowrap' }}>{formatRupiah(entry.amount)}</div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{ fontWeight: 800, color: '#F59E0B' }}>{formatRupiah(entry.amount)}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
                           <button
-                            className="btn btn-primary btn-sm"
+                            title="Tolak & Hapus"
+                            disabled={payoutBusyId === entry.id}
+                            onClick={() => rejectPayout(entry.id)}
+                            style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(239,68,68,0.12)', border: '1px solid #EF4444', color: '#EF4444', cursor: 'pointer', fontSize: '15px' }}
+                          >
+                            <i className="fa-solid fa-xmark"></i>
+                          </button>
+                          <button
+                            title="Tandai Lunas"
                             disabled={payoutBusyId === entry.id}
                             onClick={() => markPayoutPaid(entry.id)}
+                            style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(34,197,94,0.12)', border: '1px solid #22C55E', color: '#22C55E', cursor: 'pointer', fontSize: '15px' }}
                           >
-                            {payoutBusyId === entry.id ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Tandai Lunas'}
+                            {payoutBusyId === entry.id ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-check"></i>}
                           </button>
                         </div>
                       </div>

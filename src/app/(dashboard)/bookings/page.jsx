@@ -699,6 +699,8 @@ function BookingsPageInner() {
                   <th>Metode Pembayaran</th>
                   <th>Driver</th>
                   <th>Estimasi</th>
+                  <th>Status Kontrak</th>
+                  <th>Status Delivery</th>
                   <th>Status</th>
                   <th>Aksi</th>
                 </tr>
@@ -745,105 +747,121 @@ function BookingsPageInner() {
                           {PAYMENT_META[b.payment_method]?.label || 'Cash'}
                         </span>
                       </td>
-                      <td data-label="Estimasi" style={{ fontWeight: 800, fontSize: '13px' }}>{formatRupiah(b.estimated_price)}</td>
                       <td data-label="Driver" data-label-align="left">
                         {b.fulfillment_method !== 'delivery' ? (
                           <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>— (pickup)</span>
+                        ) : role === 'admin' ? (
+                          <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
+                            <select
+                              value={b.assigned_driver_id || ''}
+                              disabled={busyId === b.id}
+                              onChange={(e) => assignDriver(b.id, e.target.value)}
+                              style={{
+                                fontSize: '11.5px', fontWeight: 700, padding: '5px 26px 5px 10px',
+                                width: 'fit-content', maxWidth: '100%', height: 'auto',
+                                borderRadius: 'var(--radius-full, 999px)',
+                                border: `1px solid ${b.assigned_driver_id ? '#8B5CF6' : 'var(--bg-border)'}`,
+                                background: b.assigned_driver_id ? 'rgba(139,92,246,0.12)' : 'var(--bg-elevated)',
+                                color: b.assigned_driver_id ? '#8B5CF6' : 'var(--text-secondary)',
+                                appearance: 'none',
+                                backgroundImage: 'none',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <option value="">Belum ditugaskan</option>
+                              {drivers.map(d => (
+                                <option key={d.id} value={d.id}>
+                                  {d.full_name} ({deliveryCountThisMonth(d.id)}x)
+                                </option>
+                              ))}
+                            </select>
+                            <i className="fa-solid fa-chevron-down" style={{
+                              position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                              fontSize: '9px', color: b.assigned_driver_id ? '#8B5CF6' : 'var(--text-muted)', pointerEvents: 'none',
+                            }}></i>
+                          </div>
+                        ) : b.assigned_driver_name ? (
+                          <span className="badge" style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: '1px solid #8B5CF6' }}>
+                            <i className="fa-solid fa-motorcycle" style={{ marginRight: '4px' }}></i>{b.assigned_driver_name}
+                          </span>
                         ) : (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            {role === 'admin' ? (
-                              <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
-                                <select
-                                  value={b.assigned_driver_id || ''}
-                                  disabled={busyId === b.id}
-                                  onChange={(e) => assignDriver(b.id, e.target.value)}
-                                  style={{
-                                    fontSize: '11.5px', fontWeight: 700, padding: '5px 26px 5px 10px',
-                                    width: 'fit-content', maxWidth: '100%', height: 'auto',
-                                    borderRadius: 'var(--radius-full, 999px)',
-                                    border: `1px solid ${b.assigned_driver_id ? '#8B5CF6' : 'var(--bg-border)'}`,
-                                    background: b.assigned_driver_id ? 'rgba(139,92,246,0.12)' : 'var(--bg-elevated)',
-                                    color: b.assigned_driver_id ? '#8B5CF6' : 'var(--text-secondary)',
-                                    appearance: 'none',
-                                    backgroundImage: 'none',
-                                    cursor: 'pointer',
-                                  }}
-                                >
-                                  <option value="">Belum ditugaskan</option>
-                                  {drivers.map(d => (
-                                    <option key={d.id} value={d.id}>
-                                      {d.full_name} ({deliveryCountThisMonth(d.id)}x)
-                                    </option>
-                                  ))}
-                                </select>
-                                <i className="fa-solid fa-chevron-down" style={{
-                                  position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
-                                  fontSize: '9px', color: b.assigned_driver_id ? '#8B5CF6' : 'var(--text-muted)', pointerEvents: 'none',
-                                }}></i>
-                              </div>
-                            ) : b.assigned_driver_name ? (
-                              <span className="badge" style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: '1px solid #8B5CF6' }}>
-                                <i className="fa-solid fa-motorcycle" style={{ marginRight: '4px' }}></i>{b.assigned_driver_name}
+                          <span className="badge badge-muted"><i className="fa-solid fa-hourglass-half" style={{ marginRight: '4px' }}></i>Belum ditugaskan</span>
+                        )}
+                      </td>
+                      <td data-label="Estimasi" style={{ fontWeight: 800, fontSize: '13px' }}>{formatRupiah(b.estimated_price)}</td>
+                      <td data-label="Status Kontrak" data-label-align="left">
+                        {b.fulfillment_method === 'delivery' && b.assigned_driver_id ? (
+                          contractsByBookingId.has(b.id) ? (
+                            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#8B5CF6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                              <i className="fa-solid fa-file-signature"></i> Kontrak sudah dibuat
+                            </span>
+                          ) : (role === 'driver' && myUserId === b.assigned_driver_id) ? (
+                            b.start_date > getLocalDateStr() ? (
+                              <span
+                                title={`Baru bisa dipencet mulai ${new Date(b.start_date).toLocaleDateString('id-ID')}`}
+                                style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                              >
+                                <i className="fa-solid fa-lock"></i> Belum bisa — aktif {new Date(b.start_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
                               </span>
                             ) : (
-                              <span className="badge badge-muted"><i className="fa-solid fa-hourglass-half" style={{ marginRight: '4px' }}></i>Belum ditugaskan</span>
-                            )}
-
-                            {b.assigned_driver_id && (
-                              b.delivered_at ? (
-                                <span style={{ fontSize: '10.5px', color: '#22C55E', fontWeight: 700 }}>
-                                  <i className="fa-solid fa-circle-check" style={{ marginRight: '4px' }}></i>
-                                  Delivered {new Date(b.delivered_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                </span>
-                              ) : (role === 'driver' && myUserId === b.assigned_driver_id) && (
-                                contractsByBookingId.has(b.id) ? (
-                                  <button
-                                    type="button"
-                                    disabled={busyId === b.id}
-                                    onClick={() => confirmDelivery(b.id)}
-                                    style={{
-                                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                                      fontSize: '12.5px', fontWeight: 800, padding: '10px 14px', width: '100%', maxWidth: '220px',
-                                      background: '#22C55E', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer',
-                                    }}
-                                  >
-                                    <i className="fa-solid fa-circle-check" style={{ fontSize: '15px' }}></i>CONFIRM DELIVERED
-                                  </button>
-                                ) : (
-                                  b.start_date > getLocalDateStr() ? (
-                                    <div
-                                      title={`Baru bisa dipencet mulai ${new Date(b.start_date).toLocaleDateString('id-ID')}`}
-                                      style={{
-                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px',
-                                        fontSize: '12px', fontWeight: 700, padding: '10px 14px', width: '100%', maxWidth: '220px',
-                                        background: 'var(--bg-elevated)', color: 'var(--text-muted)', border: '1px dashed var(--bg-border)', borderRadius: 'var(--radius-md)',
-                                      }}
-                                    >
-                                      <span><i className="fa-solid fa-lock" style={{ marginRight: '6px' }}></i>Belum Bisa Buat Kontrak</span>
-                                      <span style={{ fontSize: '10.5px', fontWeight: 500 }}>Aktif mulai {new Date(b.start_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</span>
-                                    </div>
-                                  ) : (
-                                    <Link
-                                      href={`/contracts/new?bookingId=${b.id}`}
-                                      style={{
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                                        fontSize: '12px', fontWeight: 800, padding: '10px 14px', width: '100%', maxWidth: '220px',
-                                        background: '#8B5CF6', color: '#fff', borderRadius: 'var(--radius-md)', textDecoration: 'none',
-                                      }}
-                                    >
-                                      <i className="fa-solid fa-file-signature"></i> Buat Kontrak Dulu
-                                    </Link>
-                                  )
-                                )
-                              )
-                            )}
-                            {b.assigned_driver_id && role === 'admin' && !b.delivered_at && (
-                              <span style={{ fontSize: '10.5px', color: contractsByBookingId.has(b.id) ? '#8B5CF6' : '#94A3B8' }}>
-                                <i className={`fa-solid ${contractsByBookingId.has(b.id) ? 'fa-file-signature' : 'fa-hourglass-half'}`} style={{ marginRight: '4px' }}></i>
-                                {contractsByBookingId.has(b.id) ? 'Kontrak sudah dibuat' : 'Menunggu driver'}
+                              <Link
+                                href={`/contracts/new?bookingId=${b.id}`}
+                                style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                                  fontSize: '12px', fontWeight: 800, padding: '8px 14px',
+                                  background: '#8B5CF6', color: '#fff', borderRadius: 'var(--radius-md)', textDecoration: 'none',
+                                }}
+                              >
+                                <i className="fa-solid fa-file-signature"></i> Buat Kontrak Dulu
+                              </Link>
+                            )
+                          ) : (
+                            <span style={{ fontSize: '11.5px', color: '#94A3B8', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                              <i className="fa-solid fa-hourglass-half"></i> Menunggu driver
+                            </span>
+                          )
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                        )}
+                      </td>
+                      <td data-label="Status Delivery" data-label-align="left">
+                        {b.fulfillment_method === 'delivery' && b.assigned_driver_id ? (
+                          b.delivered_at ? (
+                            <span style={{ fontSize: '11.5px', color: '#22C55E', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                              <i className="fa-solid fa-circle-check"></i>
+                              Delivered {new Date(b.delivered_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          ) : (role === 'driver' && myUserId === b.assigned_driver_id) ? (
+                            contractsByBookingId.has(b.id) ? (
+                              <button
+                                type="button"
+                                disabled={busyId === b.id}
+                                onClick={() => confirmDelivery(b.id)}
+                                style={{
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                                  fontSize: '12.5px', fontWeight: 800, padding: '9px 14px', width: '100%', maxWidth: '200px',
+                                  background: '#22C55E', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer',
+                                }}
+                              >
+                                <i className="fa-solid fa-circle-check" style={{ fontSize: '15px' }}></i>CONFIRM DELIVERED
+                              </button>
+                            ) : (
+                              <span
+                                title="Isi kontrak dulu sebelum bisa confirm delivered"
+                                style={{
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                                  fontSize: '11.5px', fontWeight: 700, padding: '9px 14px', width: '100%', maxWidth: '200px',
+                                  background: 'var(--bg-elevated)', color: 'var(--text-muted)', border: '1px dashed var(--bg-border)', borderRadius: 'var(--radius-md)',
+                                }}
+                              >
+                                <i className="fa-solid fa-lock"></i> Isi kontrak dulu
                               </span>
-                            )}
-                          </div>
+                            )
+                          ) : (
+                            <span style={{ fontSize: '11.5px', color: '#94A3B8' }}>Belum di-delivery</span>
+                          )
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
                         )}
                       </td>
                       <td data-label="Status">

@@ -434,17 +434,17 @@ function BookingPageInner() {
                               key={zone.id}
                               onClick={() => handleChange('delivery_zone_id', zone.id)}
                               style={{
-                                padding: '12px', borderRadius: 'var(--radius-md)', cursor: 'pointer', textAlign: 'left',
+                                display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px',
+                                padding: '13px 14px', borderRadius: 'var(--radius-md)', cursor: 'pointer', textAlign: 'left',
                                 border: form.delivery_zone_id === zone.id ? `2px solid ${zone.color}` : '1px solid var(--sharp-line)',
                                 background: form.delivery_zone_id === zone.id ? `${zone.color}18` : 'var(--sharp-surface)',
                               }}
                             >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: zone.color, flexShrink: 0 }}></span>
-                                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--sharp-muted)' }}>{zoneLabelEn(zone.zone_label)}</span>
-                              </div>
-                              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--sharp-ink)' }}>{zone.name}</div>
-                              <div style={{ fontSize: '12px', color: 'var(--sharp-accent)', fontWeight: 700 }}>{formatRupiah(zone.fee)}</div>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 800, color: 'var(--sharp-ink)' }}>
+                                <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: zone.color, flexShrink: 0 }}></span>
+                                {zoneLabelEn(zone.zone_label)}
+                              </span>
+                              <span style={{ fontSize: '13px', color: 'var(--sharp-accent)', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>{formatRupiah(zone.fee)}</span>
                             </button>
                           ))}
                         </div>
@@ -485,14 +485,14 @@ function BookingPageInner() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px',
                       }}
                     >
-                      <div onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px', width: '100%', position: 'relative' }}>
+                      <div onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px', maxHeight: '90vh', width: '100%', position: 'relative', overflowY: 'auto' }}>
                         <button
                           type="button"
                           onClick={() => setShowMapModal(false)}
                           aria-label="Close"
                           style={{
-                            position: 'absolute', top: '-14px', right: '-8px', width: '34px', height: '34px', borderRadius: '50%',
-                            background: '#fff', border: '1px solid var(--sharp-line)', color: 'var(--sharp-ink)', fontSize: '14px', cursor: 'pointer',
+                            position: 'fixed', top: 'calc(5vh + 6px)', right: '16px', width: '34px', height: '34px', borderRadius: '50%',
+                            background: '#fff', border: '1px solid var(--sharp-line)', color: 'var(--sharp-ink)', fontSize: '14px', cursor: 'pointer', zIndex: 301,
                           }}
                         >
                           <i className="fa-solid fa-xmark"></i>
@@ -501,7 +501,7 @@ function BookingPageInner() {
                         <img
                           src="/images/delivery-zone-map.webp"
                           alt="Delivery zone map — Green: Kerobokan/Seminyak/Legian/Kuta, Blue: Canggu/Uluwatu/Sanur & surrounding coastal areas, Yellow: Ubud"
-                          style={{ width: '100%', borderRadius: 'var(--radius-md)', background: '#fff' }}
+                          style={{ width: '100%', borderRadius: 'var(--radius-md)', background: '#fff', display: 'block' }}
                         />
                       </div>
                     </div>
