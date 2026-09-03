@@ -609,14 +609,55 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
     setLoading(true);
     const selectedDriver = drivers.find(d => d.id === assignedDriverId);
     const selectedZoneObj = deliveryZones.find(z => z.id === selectedZoneId);
-    const extraFields = (!editData && recordType === 'transaction') ? {
-      fulfillment_method: fulfillment,
-      delivery_zone_id: fulfillment === 'delivery' ? (selectedZoneObj?.id || null) : null,
-      delivery_zone_name: fulfillment === 'delivery' ? (selectedZoneObj?.zone_label || null) : null,
-      delivery_fee: fulfillment === 'delivery' ? (Number(selectedZoneObj?.fee) || 0) : 0,
-      assigned_driver_id: fulfillment === 'delivery' ? (selectedDriver?.id || null) : null,
-      assigned_driver_name: fulfillment === 'delivery' ? (selectedDriver?.full_name || null) : null,
-    } : {};
+    let extraFields = {};
+
+    if (!editData && recordType === 'transaction') {
+      extraFields = {
+        fulfillment_method: fulfillment,
+        delivery_zone_id: fulfillment === 'delivery' ? (selectedZoneObj?.id || null) : null,
+        delivery_zone_name: fulfillment === 'delivery' ? (selectedZoneObj?.zone_label || null) : null,
+        delivery_fee: fulfillment === 'delivery' ? (Number(selectedZoneObj?.fee) || 0) : 0,
+        assigned_driver_id: fulfillment === 'delivery' ? (selectedDriver?.id || null) : null,
+        assigned_driver_name: fulfillment === 'delivery' ? (selectedDriver?.full_name || null) : null,
+      };
+
+      // Transaksi sekarang tapi mau diantar (misalnya walk-in ke toko hari
+      // ini, tapi minta diantar sore ini ke lokasi lain) tetap butuh
+      // driver-nya TTD kontrak & confirm delivery — jadi bikinkan juga
+      // record Booking (status langsung 'confirmed') yang saling terhubung,
+      // biar driver bisa lihat & prosesnya lewat halaman Booking yang udah
+      // ada (Status Kontrak, Status Delivery, Confirm Delivered).
+      if (fulfillment === 'delivery' && selectedDriver) {
+        try {
+          const supabase = createClient();
+          const vehicleObj = vehicles.find(v => v.id === cleanVehicleId);
+          const { data: createdBooking, error: bookingErr } = await supabase.from('bookings').insert([{
+            vehicle_id: cleanVehicleId,
+            vehicle_name: vehicleObj?.name || '',
+            vehicle_category: vehicleObj?.category || null,
+            customer_name: form.renter_name.trim(),
+            customer_phone: form.renter_phone.trim(),
+            customer_address: form.renter_address.trim() || null,
+            fulfillment_method: 'delivery',
+            payment_method: form.payment_method,
+            delivery_zone_id: selectedZoneObj?.id || null,
+            delivery_zone_name: selectedZoneObj?.zone_label || null,
+            delivery_fee: Number(selectedZoneObj?.fee) || 0,
+            start_date: form.start_date,
+            end_date: form.end_date,
+            duration_days: Math.max(1, Math.ceil((new Date(form.end_date) - new Date(form.start_date)) / 86400000)),
+            estimated_price: totalPrice,
+            status: 'confirmed',
+            assigned_driver_id: selectedDriver.id,
+            assigned_driver_name: selectedDriver.full_name,
+          }]).select('id').single();
+          if (!bookingErr && createdBooking?.id) {
+            extraFields.booking_id = createdBooking.id;
+          }
+        } catch { /* transaksi tetap lanjut jalan walau booking gagal dibuat */ }
+      }
+    }
+
     await onSubmit({ ...form, ...extraFields, vehicle_id: cleanVehicleId, total_price: totalPrice });
     setLoading(false);
   };
