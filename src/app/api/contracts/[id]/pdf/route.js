@@ -170,6 +170,9 @@ export async function GET(request, { params }) {
     });
   } catch (err) {
     console.error('PDF generation error:', err);
-    return new Response('Gagal membuat PDF kontrak.', { status: 500 });
+    return new Response(
+      `Gagal membuat PDF kontrak.\n\nDetail error (buat debug): ${err?.message || err}\n\n${err?.stack || ''}`,
+      { status: 500, headers: { 'Content-Type': 'text/plain; charset=utf-8' } }
+    );
   }
 }
