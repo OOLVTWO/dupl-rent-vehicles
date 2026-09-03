@@ -522,6 +522,10 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
       alert('Silakan pilih unit motor terlebih dahulu!');
       return;
     }
+    if (!editData && form.start_date && form.start_date > getLocalDateStr()) {
+      alert('Tanggal mulai masih di masa depan. Transaksi langsung menandai motor "Disewa" mulai sekarang — kalau ini reservasi untuk nanti, catat sebagai Booking (Pending) dulu, bukan Transaksi.');
+      return;
+    }
     setShowConfirm(true);
   };
 
@@ -1767,6 +1771,7 @@ const handleSubmit = async (formData) => {
                   <th>Total & Diskon</th>
                   <th>Denda / Deposit</th>
                   <th>Status</th>
+                  <th>Kontrak</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -1877,27 +1882,27 @@ const handleSubmit = async (formData) => {
                           </span>
                         </div>
                       )}
-                      <div style={{ marginTop: '4px' }}>
+                    </td>
+                    <td data-label="Kontrak" data-label-align="left" style={{ verticalAlign: 'middle' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         {(contractedIds.has(tx.id) || (tx.booking_id && contractedIds.has(tx.booking_id))) ? (
-                          <span style={{ fontSize: '10px', color: '#8B5CF6', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                            <i className="fa-solid fa-file-signature" style={{ fontSize: '9px' }}></i> Kontrak sudah TTD
+                          <span style={{ fontSize: '11.5px', color: '#8B5CF6', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                            <i className="fa-solid fa-file-signature"></i> Sudah TTD
                           </span>
                         ) : (
                           <Link
                             href={`/contracts/new?transactionId=${tx.id}`}
-                            style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px', textDecoration: 'underline' }}
+                            style={{ fontSize: '11.5px', color: 'var(--text-muted)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '5px', textDecoration: 'underline' }}
                           >
-                            <i className="fa-solid fa-file-pen" style={{ fontSize: '9px' }}></i> Belum ada kontrak
+                            <i className="fa-solid fa-file-pen"></i> Belum ada kontrak
                           </Link>
                         )}
-                      </div>
-                      {tx.booking_id && bookingDriverMap[tx.booking_id] && (
-                        <div style={{ marginTop: '4px' }}>
-                          <span style={{ fontSize: '10px', color: '#3B82F6', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                            <i className="fa-solid fa-motorcycle" style={{ fontSize: '9px' }}></i> Driver: {bookingDriverMap[tx.booking_id]}
+                        {tx.booking_id && bookingDriverMap[tx.booking_id] && (
+                          <span style={{ fontSize: '11.5px', color: '#3B82F6', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                            <i className="fa-solid fa-motorcycle"></i> {bookingDriverMap[tx.booking_id]}
                           </span>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </td>
                     <td data-label="Aksi" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       <div className="tx-actions-cell">

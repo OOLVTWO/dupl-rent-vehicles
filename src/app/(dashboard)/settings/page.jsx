@@ -1837,30 +1837,6 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {['staff', 'staff-income', 'staff-payout'].includes(activeTab) && (
-        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px', marginBottom: '20px', WebkitOverflowScrolling: 'touch' }}>
-          {[
-            { id: 'staff', label: 'Akun Staff', icon: 'fa-solid fa-user-tie' },
-            { id: 'staff-income', label: 'Input Pendapatan', icon: 'fa-solid fa-sack-dollar' },
-            { id: 'staff-payout', label: 'Konfirmasi Pembayaran', icon: 'fa-solid fa-hand-holding-dollar' },
-          ].map(t => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setActiveTab(t.id)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '7px', flexShrink: 0,
-                padding: '10px 16px', borderRadius: '10px', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
-                border: activeTab === t.id ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
-                background: activeTab === t.id ? 'var(--brand-primary)' : 'var(--bg-elevated)',
-                color: activeTab === t.id ? '#fff' : 'var(--text-secondary)',
-              }}
-            >
-              <i className={t.icon}></i>{t.label}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* TAB: AKUN STAFF (Admin / Driver) */}
       {activeTab === 'staff' && (
@@ -1915,22 +1891,6 @@ export default function SettingsPage() {
                         <td data-label="Telepon" style={{ fontSize: '12.5px' }}>{s.phone || '-'}</td>
                         <td data-label="Aksi" data-label-align="left">
                           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                            {s.role === 'driver' && unpaidByStaff[s.id] > 0 && (
-                              <button
-                                className="btn btn-sm"
-                                title="Ada ongkos delivery/gaji belum dibayar"
-                                onClick={() => openPayoutModal(s)}
-                                style={{ background: 'rgba(245,158,11,0.12)', color: '#F59E0B', border: '1px solid #F59E0B', fontSize: '11px', fontWeight: 700 }}
-                              >
-                                <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '4px' }}></i>
-                                {formatRupiah(unpaidByStaff[s.id])}
-                              </button>
-                            )}
-                            {s.role === 'driver' && (
-                              <button className="btn btn-sm" title="Input Pemasukan (Gaji, Bonus, dll)" onClick={() => openIncomeModal(s)} style={{ background: 'rgba(34,197,94,0.12)', color: '#22C55E', border: '1px solid #22C55E' }}>
-                                <i className="fa-solid fa-sack-dollar"></i>
-                              </button>
-                            )}
                             <button className="btn btn-secondary btn-sm" title="Edit" onClick={() => openEditStaff(s)}>
                               <i className="fa-solid fa-pen-to-square"></i>
                             </button>
