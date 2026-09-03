@@ -299,7 +299,7 @@ function SmartPriceRecommendationPanel({ vehicle, startDate, endDate, selectedOp
 // (dari "function TransactionModal" sampai "}" penutupnya, sebelum "// ===== MODAL KIRIM INVOICE WHATSAPP =====")
 
 function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles, editData }) {
-  const [recordType, setRecordType] = useState('transaction'); // 'transaction' | 'booking'
+  const [recordType, setRecordType] = useState(''); // '' | 'transaction' | 'booking'
   const [fulfillment, setFulfillment] = useState('pickup'); // 'pickup' | 'delivery'
   const [deliveryZones, setDeliveryZones] = useState([]);
   const [selectedZoneId, setSelectedZoneId] = useState('');
@@ -333,6 +333,20 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
   const [uploading, setUploading] = useState(false);
   const [showOptional, setShowOptional] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  // Reset Jenis Pencatatan tiap kali modal dibuka fresh buat entry baru —
+  // pola resmi "adjust state during render" (bukan setState sinkron di
+  // dalam effect, yang bisa memicu cascading render).
+  const [prevOpenKey, setPrevOpenKey] = useState(null);
+  const openKey = isOpen && !editData ? 'new' : null;
+  if (openKey !== prevOpenKey) {
+    setPrevOpenKey(openKey);
+    if (openKey === 'new') {
+      setRecordType('');
+      setFulfillment('pickup');
+      setSelectedZoneId('');
+    }
+  }
 
   useEffect(() => {
     if (!isOpen) return;
@@ -506,6 +520,10 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!editData && !recordType) {
+      alert('Silakan pilih dulu: Transaksi Langsung atau Booking (Reservasi).');
+      return;
+    }
     const cleanVehicleId = (form.vehicle_id || '').trim();
     if (!cleanVehicleId) {
       alert('Silakan pilih unit motor terlebih dahulu!');
@@ -611,37 +629,56 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
           {/* ── Jenis Pencatatan: Transaksi langsung atau Booking (reservasi tanggal lain) ── */}
           {!editData && (
             <div className="form-group">
-              <label className="form-label">Jenis Pencatatan</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <label className="form-label">Jenis Pencatatan <span className="required">*</span></label>
+              <p style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: 0, marginBottom: '10px' }}>Pilih salah satu sebelum lanjut.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <button
                   type="button"
                   onClick={() => setRecordType('transaction')}
                   style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textAlign: 'center',
-                    padding: '12px 10px', borderRadius: '10px', cursor: 'pointer', fontWeight: 700,
-                    border: recordType === 'transaction' ? '2px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+                    display: 'flex', alignItems: 'center', gap: '14px', textAlign: 'left', width: '100%',
+                    padding: '16px', borderRadius: '12px', cursor: 'pointer', fontWeight: 700,
+                    border: recordType === 'transaction' ? '2px solid var(--brand-primary)' : '1.5px solid var(--bg-border)',
                     background: recordType === 'transaction' ? 'rgba(37,99,235,0.1)' : 'transparent',
                     color: recordType === 'transaction' ? 'var(--brand-primary-light)' : 'var(--text-secondary)',
                   }}
                 >
-                  <i className="fa-solid fa-key" style={{ fontSize: '16px' }}></i>
-                  <span style={{ fontSize: '13px' }}>Transaksi Langsung</span>
-                  <span style={{ fontSize: '10.5px', fontWeight: 500, opacity: 0.8 }}>Sewa dimulai sekarang</span>
+                  <div style={{
+                    width: '22px', height: '22px', borderRadius: '50%', flexShrink: 0,
+                    border: `2px solid ${recordType === 'transaction' ? 'var(--brand-primary)' : 'var(--bg-border)'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {recordType === 'transaction' && <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: 'var(--brand-primary)' }} />}
+                  </div>
+                  <i className="fa-solid fa-key" style={{ fontSize: '20px', flexShrink: 0 }}></i>
+                  <div>
+                    <div style={{ fontSize: '14.5px' }}>Transaksi Langsung</div>
+                    <div style={{ fontSize: '11.5px', fontWeight: 500, opacity: 0.8 }}>Sewa dimulai sekarang, motor langsung &quot;Disewa&quot;</div>
+                  </div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setRecordType('booking')}
                   style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textAlign: 'center',
-                    padding: '12px 10px', borderRadius: '10px', cursor: 'pointer', fontWeight: 700,
-                    border: recordType === 'booking' ? '2px solid #8B5CF6' : '1px solid var(--bg-border)',
+                    display: 'flex', alignItems: 'center', gap: '14px', textAlign: 'left', width: '100%',
+                    padding: '16px', borderRadius: '12px', cursor: 'pointer', fontWeight: 700,
+                    border: recordType === 'booking' ? '2px solid #8B5CF6' : '1.5px solid var(--bg-border)',
                     background: recordType === 'booking' ? 'rgba(139,92,246,0.1)' : 'transparent',
                     color: recordType === 'booking' ? '#8B5CF6' : 'var(--text-secondary)',
                   }}
                 >
-                  <i className="fa-solid fa-calendar-plus" style={{ fontSize: '16px' }}></i>
-                  <span style={{ fontSize: '13px' }}>Booking (Reservasi)</span>
-                  <span style={{ fontSize: '10.5px', fontWeight: 500, opacity: 0.8 }}>Untuk tanggal lain / nanti</span>
+                  <div style={{
+                    width: '22px', height: '22px', borderRadius: '50%', flexShrink: 0,
+                    border: `2px solid ${recordType === 'booking' ? '#8B5CF6' : 'var(--bg-border)'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {recordType === 'booking' && <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#8B5CF6' }} />}
+                  </div>
+                  <i className="fa-solid fa-calendar-plus" style={{ fontSize: '20px', flexShrink: 0 }}></i>
+                  <div>
+                    <div style={{ fontSize: '14.5px' }}>Booking (Reservasi)</div>
+                    <div style={{ fontSize: '11.5px', fontWeight: 500, opacity: 0.8 }}>Untuk tanggal lain / nanti, motor tetap tersedia</div>
+                  </div>
                 </button>
               </div>
               {recordType === 'booking' && (
@@ -736,9 +773,9 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
             <div className="alert alert-warning" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px' }}>
               <i className="fa-solid fa-triangle-exclamation" style={{ marginTop: '2px' }}></i>
               <span>
-                Tanggal mulai ini masih di masa depan, tapi mode-nya masih &quot;Transaksi Langsung&quot; — motornya bakal kesetel
-                &quot;Disewa&quot; <strong>mulai sekarang juga</strong>. Kalau maksudnya reservasi buat tanggal nanti, ganti ke mode
-                <strong> Booking (Reservasi)</strong> di atas.
+                Tanggal mulai ini masih di masa depan, tapi mode-nya masih &quot;Transaksi Langsung&quot; — tombol simpan
+                <strong> dinonaktifkan dulu</strong> karena nggak sesuai flow (Transaksi Langsung cuma buat sewa yang mulai hari ini).
+                Ganti ke mode <strong>Booking (Reservasi)</strong> di atas buat tanggal nanti.
               </span>
             </div>
           )}
@@ -867,6 +904,12 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
                   onChange={handleChange}
                   required
                 />
+                {totalPrice > 0 && form.dp_amount && (
+                  <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(59,130,246,0.08)', borderRadius: '8px', border: '1px solid rgba(59,130,246,0.3)', fontSize: '12px', color: '#3B82F6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>Sisa yang harus dilunasi:</span>
+                    <strong>{formatRupiah(Math.max(0, totalPrice - Number(form.dp_amount || 0)))}</strong>
+                  </div>
+                )}
               </div>
             )}
             {form.payment_status === 'unpaid' && (
@@ -1016,7 +1059,11 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
           {/* ── Footer ── */}
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" onClick={onClose}>Batal</button>
-            <button type="submit" className="btn btn-primary" disabled={loading || uploading || bookingSaving}>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={loading || uploading || bookingSaving || (!editData && recordType === 'transaction' && form.start_date && form.start_date > getLocalDateStr())}
+            >
               {(loading || bookingSaving) ? (
                 <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '4px' }}></i> Menyimpan...</>
               ) : !editData && recordType === 'booking' ? (
@@ -2003,9 +2050,11 @@ const handleSubmit = async (formData) => {
                   <th>Motor</th>
                   <th>Mulai / Selesai</th>
                   <th>KM Odometer</th>
-                  <th>Total & Diskon</th>
+                  <th>Total</th>
+                  <th>Diskon</th>
                   <th>Denda / Deposit</th>
-                  <th>Status</th>
+                  <th>Status Motor</th>
+                  <th>Status Pembayaran</th>
                   <th>Kontrak</th>
                   <th>Aksi</th>
                 </tr>
@@ -2031,19 +2080,18 @@ const handleSubmit = async (formData) => {
                       </div>
                     </td>
                     <td data-label="KM Odometer" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
-                    <td data-label="Total & Diskon">
+                    <td data-label="Total">
                       <strong style={{ fontSize: '13px', color: '#8B5CF6' }}>{formatRupiah(b.estimated_price)}</strong>
                     </td>
+                    <td data-label="Diskon" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Denda / Deposit" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
-                    <td data-label="Status" style={{ verticalAlign: 'middle' }}>
-                      <div>
-                        <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}>Status Motor</div>
-                        <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#8B5CF6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                          <i className="fa-solid fa-calendar-days" style={{ fontSize: '10px' }}></i>
-                          Booking ({b.status === 'confirmed' ? 'Confirmed' : 'Pending'})
-                        </span>
-                      </div>
+                    <td data-label="Status Motor" style={{ verticalAlign: 'middle' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#8B5CF6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <i className="fa-solid fa-calendar-days" style={{ fontSize: '10px' }}></i>
+                        Booking ({b.status === 'confirmed' ? 'Confirmed' : 'Pending'})
+                      </span>
                     </td>
+                    <td data-label="Status Pembayaran" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Kontrak" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Aksi" data-label-align="left">
                       <Link href="/bookings" className="btn btn-sm" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid #8B5CF6', color: '#8B5CF6', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
@@ -2125,17 +2173,17 @@ const handleSubmit = async (formData) => {
                         <div>End: <strong>{tx.km_end ? `${tx.km_end} KM` : '-'}</strong></div>
                       </div>
                     </td>
-                    <td data-label="Total & Diskon">
-                      <div className="tx-price-cell">
-                        <strong style={{ fontSize: '14px', color: '#22C55E' }}>{formatRupiah(tx.total_price)}</strong>
-                        {tx.discount > 0 && (
-                          <div>
-                            <span className="tx-info-pill" style={{ color: '#F59E0B', borderColor: 'rgba(245, 158, 11, 0.3)', background: 'rgba(245, 158, 11, 0.1)' }}>
-                              Diskon: -{formatRupiah(tx.discount)}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                    <td data-label="Total">
+                      <strong style={{ fontSize: '14px', color: '#22C55E' }}>{formatRupiah(tx.total_price)}</strong>
+                    </td>
+                    <td data-label="Diskon">
+                      {tx.discount > 0 ? (
+                        <span className="tx-info-pill" style={{ color: '#F59E0B', borderColor: 'rgba(245, 158, 11, 0.3)', background: 'rgba(245, 158, 11, 0.1)' }}>
+                          -{formatRupiah(tx.discount)}
+                        </span>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                      )}
                     </td>
                     <td data-label="Denda / Deposit">
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '12px' }}>
@@ -2149,39 +2197,38 @@ const handleSubmit = async (formData) => {
                         )}
                       </div>
                     </td>
-                    <td data-label="Status" style={{ verticalAlign: 'middle' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <div>
-                          <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}>Status Motor</div>
-                          {(() => {
-                            const map = { active: { icon: 'fa-solid fa-bolt', label: 'Sewa Aktif', color: '#3B82F6' }, completed: { icon: 'fa-solid fa-circle-check', label: 'Selesai', color: '#22C55E' }, cancelled: { icon: 'fa-solid fa-circle-xmark', label: 'Dibatalkan', color: '#EF4444' } };
-                            const m = map[tx.status] || map.active;
-                            return (
-                              <span style={{ fontSize: '11.5px', fontWeight: 700, color: m.color, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                                <i className={m.icon} style={{ fontSize: '10px' }}></i>{m.label}
-                              </span>
-                            );
-                          })()}
+                    <td data-label="Status Motor" style={{ verticalAlign: 'middle' }}>
+                      {(() => {
+                        const map = { active: { icon: 'fa-solid fa-bolt', label: 'Sewa Aktif', color: '#3B82F6' }, completed: { icon: 'fa-solid fa-circle-check', label: 'Selesai', color: '#22C55E' }, cancelled: { icon: 'fa-solid fa-circle-xmark', label: 'Dibatalkan', color: '#EF4444' } };
+                        const m = map[tx.status] || map.active;
+                        return (
+                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: m.color, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                            <i className={m.icon} style={{ fontSize: '10px' }}></i>{m.label}
+                          </span>
+                        );
+                      })()}
+                    </td>
+                    <td data-label="Status Pembayaran" style={{ verticalAlign: 'middle' }}>
+                      {tx.payment_status === 'paid' && (
+                        <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#22C55E', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                          <i className="fa-solid fa-circle-check" style={{ fontSize: '10px' }}></i>Lunas
+                        </span>
+                      )}
+                      {tx.payment_status === 'down_payment' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#3B82F6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                            <i className="fa-solid fa-coins" style={{ fontSize: '10px' }}></i>DP {formatRupiah(tx.dp_amount)}
+                          </span>
+                          <span style={{ fontSize: '10.5px', color: '#F59E0B', fontWeight: 600 }}>
+                            Sisa: {formatRupiah(Math.max(0, Number(tx.total_price || 0) - Number(tx.dp_amount || 0)))}
+                          </span>
                         </div>
-                        <div>
-                          <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}>Status Pembayaran</div>
-                          {tx.payment_status === 'paid' && (
-                            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#22C55E', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                              <i className="fa-solid fa-circle-check" style={{ fontSize: '10px' }}></i>Lunas
-                            </span>
-                          )}
-                          {tx.payment_status === 'down_payment' && (
-                            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#3B82F6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                              <i className="fa-solid fa-coins" style={{ fontSize: '10px' }}></i>DP {formatRupiah(tx.dp_amount)}
-                            </span>
-                          )}
-                          {tx.payment_status === 'unpaid' && (
-                            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#F59E0B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                              <i className="fa-solid fa-clock" style={{ fontSize: '10px' }}></i>Belum Bayar
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                      )}
+                      {tx.payment_status === 'unpaid' && (
+                        <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#F59E0B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                          <i className="fa-solid fa-clock" style={{ fontSize: '10px' }}></i>Belum Bayar
+                        </span>
+                      )}
                     </td>
                     <td data-label="Kontrak" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
