@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase/client';
 import { compressImage } from '@/lib/imageCompressor';
 import SignaturePad from '@/components/contracts/SignaturePad';
 import VehicleCombobox from '@/components/shared/VehicleCombobox';
-import { sharePdfToWhatsApp } from '@/lib/shareFile';
 
 function formatDate(d) {
   if (!d) return '-';
@@ -109,7 +108,6 @@ function NewContractInner() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [createdContract, setCreatedContract] = useState(null);
-  const [sharing, setSharing] = useState(false);
 
   const [form, setForm] = useState({
     vehicle_id: vehicleIdParam,
@@ -233,32 +231,6 @@ function NewContractInner() {
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {createdContract?.id && (
-              <button
-                type="button"
-                className="btn btn-primary"
-                disabled={sharing}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                onClick={async () => {
-                  setSharing(true);
-                  await sharePdfToWhatsApp(
-                    `/api/contracts/${createdContract.id}/pdf`,
-                    `contract-${form.customer_name}.pdf`,
-                    form.customer_phone,
-                    `Halo ${form.customer_name}, berikut kontrak sewa Anda — mohon tunggu sebentar, file PDF-nya akan menyusul terkirim 🙏`,
-                    'Kontrak Sewa',
-                    `Kontrak sewa untuk ${form.customer_name} — Demo Rental Preview`
-                  );
-                  setSharing(false);
-                }}
-              >
-                {sharing ? (
-                  <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i> Menyiapkan PDF...</>
-                ) : (
-                  <><i className="fa-brands fa-whatsapp" style={{ marginRight: '6px' }}></i> Kirim PDF ke Customer</>
-                )}
-              </button>
-            )}
 
             {isFromBooking ? (
               <button
