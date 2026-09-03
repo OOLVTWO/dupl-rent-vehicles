@@ -313,40 +313,64 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
 
-        <div style={{ background: 'var(--bg-elevated)', borderRadius: '10px', padding: '12px 14px', marginBottom: '16px', fontSize: '12.5px' }}>
-          <div style={{ fontWeight: 700, marginBottom: '4px' }}>{booking.customer_name} — {booking.vehicle_name}</div>
-          <div style={{ color: 'var(--text-muted)' }}>{booking.customer_phone} · {formatDate(booking.start_date)} — {formatDate(booking.end_date)}</div>
-          {contract?.customer_id_number && (
-            <div style={{ color: 'var(--text-muted)' }}>ID: {contract.customer_id_number}</div>
-          )}
-          {booking.payment_method && (
-            <div style={{ color: 'var(--text-muted)' }}>
-              <i className="fa-solid fa-wallet" style={{ marginRight: '4px' }}></i>
-              Customer pilih saat booking: <strong>{BOOKING_PAYMENT_LABEL[booking.payment_method] || booking.payment_method}</strong>
+        <div style={{ background: 'var(--bg-elevated)', borderRadius: '12px', padding: '14px 16px', marginBottom: '20px', border: '1px solid var(--bg-border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+            <div style={{
+              width: '38px', height: '38px', borderRadius: '10px', flexShrink: 0,
+              background: 'var(--brand-primary-bg, rgba(59,130,246,0.12))', color: 'var(--brand-primary)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px',
+            }}>
+              <i className="fa-solid fa-motorcycle"></i>
             </div>
-          )}
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--text-primary)' }}>{booking.customer_name}</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{booking.vehicle_name}</div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', fontSize: '12.5px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
+              <i className="fa-solid fa-phone" style={{ width: '14px', color: 'var(--text-muted)' }}></i> {booking.customer_phone}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
+              <i className="fa-solid fa-calendar-days" style={{ width: '14px', color: 'var(--text-muted)' }}></i>
+              {formatDate(booking.start_date)} — {formatDate(booking.end_date)}
+            </div>
+            {contract?.customer_id_number && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
+                <i className="fa-solid fa-id-card" style={{ width: '14px', color: 'var(--text-muted)' }}></i> {contract.customer_id_number}
+              </div>
+            )}
+            {booking.payment_method && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
+                <i className="fa-solid fa-wallet" style={{ width: '14px', color: 'var(--text-muted)' }}></i>
+                Dipilih saat booking: <strong style={{ color: 'var(--text-primary)' }}>{BOOKING_PAYMENT_LABEL[booking.payment_method] || booking.payment_method}</strong>
+              </div>
+            )}
+          </div>
+
           {!contract && (
-            <div style={{ color: '#F59E0B', marginTop: '4px' }}>
-              <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '4px' }}></i>
-              Belum ada kontrak terhubung — no. ID customer tidak terisi otomatis.
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: '#F59E0B', marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed var(--bg-border)', fontSize: '12px' }}>
+              <i className="fa-solid fa-triangle-exclamation" style={{ marginTop: '2px' }}></i>
+              <span>Belum ada kontrak terhubung — no. ID customer tidak terisi otomatis.</span>
             </div>
           )}
         </div>
 
-        <form onSubmit={handleConfirm}>
+        <form onSubmit={handleConfirm} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Deposit (Rp)</label>
               <input type="number" min="0" className="form-control" value={deposit} onChange={(e) => setDeposit(e.target.value)} placeholder="0" />
             </div>
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">KM Awal</label>
               <input type="number" min="0" className="form-control" value={kmStart} onChange={(e) => setKmStart(e.target.value)} placeholder="0" />
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Metode Pembayaran</label>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" style={{ marginBottom: '8px' }}>Metode Pembayaran</label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px' }}>
               {Object.entries(PAYMENT_META).map(([key, meta]) => (
                 <button
@@ -355,37 +379,39 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
                   onClick={() => setPaymentMethod(key)}
                   style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
-                    padding: '10px 8px', borderRadius: '10px', cursor: 'pointer', fontSize: '12px', fontWeight: 700,
+                    padding: '12px 8px', borderRadius: '10px', cursor: 'pointer', fontSize: '12px', fontWeight: 700,
                     border: paymentMethod === key ? '2px solid var(--brand-primary)' : '1px solid var(--bg-border)',
                     background: paymentMethod === key ? 'rgba(37,99,235,0.1)' : 'transparent',
                     color: paymentMethod === key ? 'var(--brand-primary-light)' : 'var(--text-secondary)',
                   }}
                 >
-                  <i className={meta.icon} style={{ fontSize: '15px' }}></i>
+                  <i className={meta.icon} style={{ fontSize: '16px' }}></i>
                   {meta.label}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Status Pembayaran</label>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" style={{ marginBottom: '8px' }}>Status Pembayaran</label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               {[
-                { key: 'paid', label: 'Sudah Lunas', color: '#22C55E' },
-                { key: 'unpaid', label: 'Belum Bayar', color: '#F59E0B' },
+                { key: 'paid', label: 'Sudah Lunas', icon: 'fa-solid fa-circle-check', color: '#22C55E' },
+                { key: 'unpaid', label: 'Belum Bayar', icon: 'fa-solid fa-clock', color: '#F59E0B' },
               ].map(opt => (
                 <button
                   key={opt.key}
                   type="button"
                   onClick={() => setPaymentStatus(opt.key)}
                   style={{
-                    padding: '10px', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+                    padding: '12px', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px',
                     border: paymentStatus === opt.key ? `2px solid ${opt.color}` : '1px solid var(--bg-border)',
-                    background: paymentStatus === opt.key ? `${opt.color}22` : 'transparent',
+                    background: paymentStatus === opt.key ? `${opt.color}18` : 'transparent',
                     color: paymentStatus === opt.key ? opt.color : 'var(--text-secondary)',
                   }}
                 >
+                  <i className={opt.icon}></i>
                   {opt.label}
                 </button>
               ))}
@@ -393,12 +419,12 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
           </div>
 
           {error && (
-            <div className="alert alert-danger" style={{ marginBottom: '12px' }}>
+            <div className="alert alert-danger" style={{ marginBottom: 0 }}>
               <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '6px' }}></i>{error}
             </div>
           )}
 
-          <div className="modal-footer">
+          <div className="modal-footer" style={{ marginTop: '2px' }}>
             <button type="button" className="btn btn-secondary" onClick={onClose}>Batal</button>
             <button type="submit" className="btn btn-primary" disabled={saving}>
               {saving ? <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>Menyimpan...</> : <><i className="fa-solid fa-check" style={{ marginRight: '6px' }}></i>Konfirmasi Transaksi</>}

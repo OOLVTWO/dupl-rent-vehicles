@@ -1462,6 +1462,7 @@ function TransactionsPageInner() {
   const [lunasToast, setLunasToast] = useState({ open: false, renterName: '' });
   const [saveToast, setSaveToast] = useState({ open: false, isEdit: false, renterName: '' });
   const [errorToast, setErrorToast] = useState({ open: false, message: '' });
+  const [contractedIds, setContractedIds] = useState(new Set());
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -1518,6 +1519,23 @@ function TransactionsPageInner() {
 
     setTransactions(txList);
     setVehicles(vList);
+
+    // Cek transaksi mana yang udah punya kontrak terhubung (via
+    // transaction_id ATAU booking_id-nya) — biar tombol "Buat Kontrak"
+    // nggak nampilin CTA yang sama walau kontraknya udah ada.
+    try {
+      const cRes = await fetch('/api/contracts');
+      const cData = cRes.ok ? await cRes.json() : [];
+      if (Array.isArray(cData)) {
+        const ids = new Set();
+        cData.forEach(c => {
+          if (c.transaction_id) ids.add(c.transaction_id);
+          if (c.booking_id) ids.add(c.booking_id);
+        });
+        setContractedIds(ids);
+      }
+    } catch { /* ignore */ }
+
     setLoading(false);
   }, []);
 
@@ -1848,14 +1866,27 @@ const handleSubmit = async (formData) => {
                           <i className="fa-brands fa-whatsapp"></i>
                         </button>
 
-                        <Link
-                          href={`/contracts/new?transactionId=${tx.id}`}
-                          className="btn btn-sm"
-                          title="Buat Kontrak Sewa"
-                          style={{ padding: '7px 10px', background: 'rgba(139,92,246,0.15)', border: '1px solid #8B5CF6', color: '#8B5CF6' }}
-                        >
-                          <i className="fa-solid fa-file-signature"></i>
-                        </Link>
+                        {(contractedIds.has(tx.id) || (tx.booking_id && contractedIds.has(tx.booking_id))) ? (
+                          <span
+                            title="Kontrak sudah dibuat & ditandatangani"
+                            style={{
+                              display: 'inline-flex', alignItems: 'center', gap: '5px',
+                              padding: '7px 10px', borderRadius: 'var(--radius-md)', fontSize: '11px', fontWeight: 700,
+                              background: 'rgba(34,197,94,0.12)', border: '1px solid #22C55E', color: '#22C55E',
+                            }}
+                          >
+                            <i className="fa-solid fa-circle-check"></i>
+                          </span>
+                        ) : (
+                          <Link
+                            href={`/contracts/new?transactionId=${tx.id}`}
+                            className="btn btn-sm"
+                            title="Buat Kontrak Sewa"
+                            style={{ padding: '7px 10px', background: 'rgba(139,92,246,0.15)', border: '1px solid #8B5CF6', color: '#8B5CF6' }}
+                          >
+                            <i className="fa-solid fa-file-signature"></i>
+                          </Link>
+                        )}
 
                         {/* Tandai Lunas button for unpaid active transactions */}
                         {role === 'admin' && tx.status === 'active' && tx.payment_status === 'unpaid' && (

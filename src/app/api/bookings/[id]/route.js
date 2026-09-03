@@ -220,7 +220,22 @@ export async function DELETE(request, { params }) {
   const { id } = await params;
   const supabase = await createAdminClient();
 
+  const { data: booking } = await supabase
+    .from('bookings')
+    .select('vehicle_id, status')
+    .eq('id', id)
+    .single();
+
   const { error } = await supabase.from('bookings').delete().eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Kalau booking yang dihapus masih dalam status aktif (motornya lagi
+  // ke-tandain booked/rented), balikin motornya jadi available lagi —
+  // sebelumnya ini nggak ada, jadi motor bisa "nyangkut" statusnya kalau
+  // booking-nya dihapus langsung tanpa dibatalkan/diselesaikan dulu.
+  if (booking && booking.vehicle_id && ['pending', 'confirmed'].includes(booking.status)) {
+    await supabase.from('vehicles').update({ status: 'available' }).eq('id', booking.vehicle_id);
+  }
+
   return NextResponse.json({ success: true });
 }
