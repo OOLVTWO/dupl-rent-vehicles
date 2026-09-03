@@ -769,17 +769,6 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
             </div>
           )}
 
-          {!editData && recordType === 'transaction' && form.start_date && form.start_date > getLocalDateStr() && (
-            <div className="alert alert-warning" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px' }}>
-              <i className="fa-solid fa-triangle-exclamation" style={{ marginTop: '2px' }}></i>
-              <span>
-                Tanggal mulai ini masih di masa depan, tapi mode-nya masih &quot;Transaksi Langsung&quot; — tombol simpan
-                <strong> dinonaktifkan dulu</strong> karena nggak sesuai flow (Transaksi Langsung cuma buat sewa yang mulai hari ini).
-                Ganti ke mode <strong>Booking (Reservasi)</strong> di atas buat tanggal nanti.
-              </span>
-            </div>
-          )}
-
           {/* ── Nama & No. HP ── */}
           <div className="form-row cols-2">
             <div className="form-group">
@@ -850,17 +839,6 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
               />
             </div>
           </div>
-
-          {form.start_date && form.start_date > getLocalDateStr() && (
-            <div className="alert alert-warning" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px' }}>
-              <i className="fa-solid fa-triangle-exclamation" style={{ marginTop: '2px' }}></i>
-              <span>
-                Tanggal mulai ini masih di masa depan. Transaksi langsung membuat motornya kesetel &quot;Disewa&quot; <strong>mulai sekarang juga</strong>,
-                bukan cuma pas tanggal itu tiba. Kalau maksudnya cuma catat rencana/reservasi customer untuk tanggal nanti, sebaiknya
-                dicatat sebagai <strong>Booking (Pending)</strong> dulu, bukan Transaksi — biar motornya tetap kelihatan tersedia sampai hari-H.
-              </span>
-            </div>
-          )}
 
           {/* ── Alamat ── */}
           <div className="form-group">
@@ -1053,6 +1031,17 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
                   <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '4px' }}></i> Mengompresi gambar...
                 </div>
               )}
+            </div>
+          )}
+
+          {!editData && recordType === 'transaction' && form.start_date && form.start_date > getLocalDateStr() && (
+            <div className="alert alert-warning" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px' }}>
+              <i className="fa-solid fa-triangle-exclamation" style={{ marginTop: '2px' }}></i>
+              <span>
+                Tanggal mulai ini masih di masa depan, tapi mode-nya masih &quot;Transaksi Langsung&quot; — tombol simpan
+                <strong> dinonaktifkan dulu</strong> karena nggak sesuai flow (Transaksi Langsung cuma buat sewa yang mulai hari ini).
+                Ganti ke mode <strong>Booking (Reservasi)</strong> di atas buat tanggal nanti.
+              </span>
             </div>
           )}
 
