@@ -655,6 +655,17 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
             </div>
           </div>
 
+          {form.start_date && form.start_date > getLocalDateStr() && (
+            <div className="alert alert-warning" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px' }}>
+              <i className="fa-solid fa-triangle-exclamation" style={{ marginTop: '2px' }}></i>
+              <span>
+                Tanggal mulai ini masih di masa depan. Transaksi langsung membuat motornya kesetel &quot;Disewa&quot; <strong>mulai sekarang juga</strong>,
+                bukan cuma pas tanggal itu tiba. Kalau maksudnya cuma catat rencana/reservasi customer untuk tanggal nanti, sebaiknya
+                dicatat sebagai <strong>Booking (Pending)</strong> dulu, bukan Transaksi — biar motornya tetap kelihatan tersedia sampai hari-H.
+              </span>
+            </div>
+          )}
+
           {/* ── Alamat ── */}
           <div className="form-group">
             <label className="form-label" htmlFor="tx-address">
@@ -1463,6 +1474,7 @@ function TransactionsPageInner() {
   const [saveToast, setSaveToast] = useState({ open: false, isEdit: false, renterName: '' });
   const [errorToast, setErrorToast] = useState({ open: false, message: '' });
   const [contractedIds, setContractedIds] = useState(new Set());
+  const [bookingDriverMap, setBookingDriverMap] = useState({});
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -1533,6 +1545,18 @@ function TransactionsPageInner() {
           if (c.booking_id) ids.add(c.booking_id);
         });
         setContractedIds(ids);
+      }
+    } catch { /* ignore */ }
+
+    // Info driver yang nganter (kalau transaksi ini berasal dari booking
+    // delivery yang sudah di-assign ke driver tertentu).
+    try {
+      const bRes = await fetch('/api/bookings');
+      const bData = bRes.ok ? await bRes.json() : [];
+      if (Array.isArray(bData)) {
+        const map = {};
+        bData.forEach(b => { if (b.assigned_driver_name) map[b.id] = b.assigned_driver_name; });
+        setBookingDriverMap(map);
       }
     } catch { /* ignore */ }
 
@@ -1853,6 +1877,27 @@ const handleSubmit = async (formData) => {
                           </span>
                         </div>
                       )}
+                      <div style={{ marginTop: '4px' }}>
+                        {(contractedIds.has(tx.id) || (tx.booking_id && contractedIds.has(tx.booking_id))) ? (
+                          <span style={{ fontSize: '10px', color: '#8B5CF6', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <i className="fa-solid fa-file-signature" style={{ fontSize: '9px' }}></i> Kontrak sudah TTD
+                          </span>
+                        ) : (
+                          <Link
+                            href={`/contracts/new?transactionId=${tx.id}`}
+                            style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px', textDecoration: 'underline' }}
+                          >
+                            <i className="fa-solid fa-file-pen" style={{ fontSize: '9px' }}></i> Belum ada kontrak
+                          </Link>
+                        )}
+                      </div>
+                      {tx.booking_id && bookingDriverMap[tx.booking_id] && (
+                        <div style={{ marginTop: '4px' }}>
+                          <span style={{ fontSize: '10px', color: '#3B82F6', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <i className="fa-solid fa-motorcycle" style={{ fontSize: '9px' }}></i> Driver: {bookingDriverMap[tx.booking_id]}
+                          </span>
+                        </div>
+                      )}
                     </td>
                     <td data-label="Aksi" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       <div className="tx-actions-cell">
@@ -1865,28 +1910,6 @@ const handleSubmit = async (formData) => {
                         >
                           <i className="fa-brands fa-whatsapp"></i>
                         </button>
-
-                        {(contractedIds.has(tx.id) || (tx.booking_id && contractedIds.has(tx.booking_id))) ? (
-                          <span
-                            title="Kontrak sudah dibuat & ditandatangani"
-                            style={{
-                              display: 'inline-flex', alignItems: 'center', gap: '5px',
-                              padding: '7px 10px', borderRadius: 'var(--radius-md)', fontSize: '11px', fontWeight: 700,
-                              background: 'rgba(34,197,94,0.12)', border: '1px solid #22C55E', color: '#22C55E',
-                            }}
-                          >
-                            <i className="fa-solid fa-circle-check"></i>
-                          </span>
-                        ) : (
-                          <Link
-                            href={`/contracts/new?transactionId=${tx.id}`}
-                            className="btn btn-sm"
-                            title="Buat Kontrak Sewa"
-                            style={{ padding: '7px 10px', background: 'rgba(139,92,246,0.15)', border: '1px solid #8B5CF6', color: '#8B5CF6' }}
-                          >
-                            <i className="fa-solid fa-file-signature"></i>
-                          </Link>
-                        )}
 
                         {/* Tandai Lunas button for unpaid active transactions */}
                         {role === 'admin' && tx.status === 'active' && tx.payment_status === 'unpaid' && (

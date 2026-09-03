@@ -16,7 +16,7 @@ import {
 } from '@/lib/countryCodes';
 import { updateFavicon } from '@/lib/favicon';
 
-const VALID_SETTINGS_TABS = ['storage', 'payment', 'wacustom', 'security', 'business', 'staff', 'delivery'];
+const VALID_SETTINGS_TABS = ['storage', 'payment', 'wacustom', 'security', 'business', 'staff', 'staff-income', 'staff-payout', 'delivery'];
 
 // Reads ?tab= so the sidebar "Pengaturan" dropdown links land on the right
 // section. Split out because useSearchParams() requires a Suspense boundary.
@@ -196,7 +196,7 @@ export default function SettingsPage() {
   };
 
   useEffect(() => {
-    if (activeTab === 'staff') {
+    if (['staff', 'staff-income', 'staff-payout'].includes(activeTab)) {
       Promise.resolve().then(fetchStaff);
       Promise.resolve().then(fetchUnpaidPayouts);
     }
@@ -1004,8 +1004,10 @@ export default function SettingsPage() {
 
       {(() => {
         const headerMap = {
-          storage: { icon: 'fa-solid fa-database', title: 'Database & Storage', sub: 'Kelola koneksi database dan backup data.' },
-          staff:   { icon: 'fa-solid fa-user-tie',  title: 'Employee',           sub: 'Kelola akun admin & driver, plus konfirmasi pembayaran mereka.' },
+          storage:       { icon: 'fa-solid fa-database',     title: 'Database & Storage', sub: 'Kelola koneksi database dan backup data.' },
+          staff:         { icon: 'fa-solid fa-user-tie',      title: 'Employee',           sub: 'Kelola akun admin & driver.' },
+          'staff-income': { icon: 'fa-solid fa-sack-dollar',   title: 'Employee',           sub: 'Input pendapatan (gaji, bonus) untuk masing-masing driver.' },
+          'staff-payout': { icon: 'fa-solid fa-hand-holding-dollar', title: 'Employee',      sub: 'Konfirmasi pembayaran fee delivery / pendapatan driver.' },
         };
         const h = headerMap[activeTab] || { icon: 'fa-solid fa-gear', title: 'Pengaturan', sub: 'Metode pembayaran, keamanan akun, template WA, zona delivery, dan konfigurasi rental.' };
         return (
@@ -1835,6 +1837,31 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {['staff', 'staff-income', 'staff-payout'].includes(activeTab) && (
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px', marginBottom: '20px', WebkitOverflowScrolling: 'touch' }}>
+          {[
+            { id: 'staff', label: 'Akun Staff', icon: 'fa-solid fa-user-tie' },
+            { id: 'staff-income', label: 'Input Pendapatan', icon: 'fa-solid fa-sack-dollar' },
+            { id: 'staff-payout', label: 'Konfirmasi Pembayaran', icon: 'fa-solid fa-hand-holding-dollar' },
+          ].map(t => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setActiveTab(t.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '7px', flexShrink: 0,
+                padding: '10px 16px', borderRadius: '10px', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+                border: activeTab === t.id ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+                background: activeTab === t.id ? 'var(--brand-primary)' : 'var(--bg-elevated)',
+                color: activeTab === t.id ? '#fff' : 'var(--text-secondary)',
+              }}
+            >
+              <i className={t.icon}></i>{t.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* TAB: AKUN STAFF (Admin / Driver) */}
       {activeTab === 'staff' && (
         <div style={{ maxWidth: '100%' }}>
@@ -2132,6 +2159,85 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* TAB: INPUT PENDAPATAN DRIVER */}
+      {activeTab === 'staff-income' && (
+        <div style={{ maxWidth: '100%' }}>
+          <div className="card">
+            <h3 style={{ fontSize: '16px', fontWeight: 700, marginTop: 0, marginBottom: '4px' }}>
+              <i className="fa-solid fa-sack-dollar" style={{ marginRight: '8px', color: '#22C55E' }}></i>
+              Input Pendapatan Driver
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: 0, marginBottom: '18px' }}>
+              Gaji, bonus, atau pendapatan lain di luar ongkos delivery otomatis. Muncul di History Pendapatan driver ybs.
+            </p>
+
+            {staffLoading ? (
+              <div className="table-empty"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>Memuat...</div>
+            ) : staffList.filter(s => s.role === 'driver').length === 0 ? (
+              <div className="table-empty"><p>Belum ada akun driver.</p></div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {staffList.filter(s => s.role === 'driver').map((s) => (
+                  <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--bg-border)', background: 'var(--bg-elevated)' }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '13.5px' }}>{s.full_name}</div>
+                      <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>{s.email}</div>
+                    </div>
+                    <button className="btn btn-primary btn-sm" onClick={() => openIncomeModal(s)}>
+                      <i className="fa-solid fa-plus" style={{ marginRight: '5px' }}></i>Input Pendapatan
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB: KONFIRMASI PEMBAYARAN DRIVER */}
+      {activeTab === 'staff-payout' && (
+        <div style={{ maxWidth: '100%' }}>
+          <div className="card">
+            <h3 style={{ fontSize: '16px', fontWeight: 700, marginTop: 0, marginBottom: '4px' }}>
+              <i className="fa-solid fa-hand-holding-dollar" style={{ marginRight: '8px', color: '#F59E0B' }}></i>
+              Konfirmasi Pembayaran Driver
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: 0, marginBottom: '18px' }}>
+              Fee delivery yang otomatis kecatat begitu driver Confirm Delivered, plus pendapatan lain yang belum ditandai lunas.
+            </p>
+
+            {staffLoading ? (
+              <div className="table-empty"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>Memuat...</div>
+            ) : staffList.filter(s => s.role === 'driver').length === 0 ? (
+              <div className="table-empty"><p>Belum ada akun driver.</p></div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {staffList.filter(s => s.role === 'driver').map((s) => {
+                  const unpaid = unpaidByStaff[s.id] || 0;
+                  return (
+                    <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: '12px 14px', borderRadius: '10px', border: `1px solid ${unpaid > 0 ? '#F59E0B' : 'var(--bg-border)'}`, background: unpaid > 0 ? 'rgba(245,158,11,0.08)' : 'var(--bg-elevated)' }}>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: '13.5px' }}>{s.full_name}</div>
+                        <div style={{ fontSize: '11.5px', color: unpaid > 0 ? '#F59E0B' : '#22C55E', fontWeight: 600 }}>
+                          {unpaid > 0 ? `${formatRupiah(unpaid)} belum dibayar` : 'Semua sudah lunas'}
+                        </div>
+                      </div>
+                      {unpaid > 0 ? (
+                        <button className="btn btn-primary btn-sm" onClick={() => openPayoutModal(s)}>
+                          <i className="fa-solid fa-eye" style={{ marginRight: '5px' }}></i>Lihat &amp; Bayar
+                        </button>
+                      ) : (
+                        <i className="fa-solid fa-circle-check" style={{ color: '#22C55E', fontSize: '18px' }}></i>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

@@ -632,22 +632,16 @@ function BookingsPageInner() {
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '18px' }}>
-        {TABS.map(t => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setTab(t.key)}
-            style={{
-              padding: '7px 14px', borderRadius: 'var(--radius-full, 999px)', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer',
-              border: tab === t.key ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
-              background: tab === t.key ? 'var(--brand-primary-bg, rgba(59,130,246,0.12))' : 'transparent',
-              color: tab === t.key ? 'var(--brand-primary)' : 'var(--text-secondary)',
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div style={{ marginBottom: '18px', maxWidth: '260px' }}>
+        <select
+          className="form-control"
+          value={tab}
+          onChange={(e) => setTab(e.target.value)}
+        >
+          {TABS.map(t => (
+            <option key={t.key} value={t.key}>{t.label}</option>
+          ))}
+        </select>
       </div>
 
       {error && (
