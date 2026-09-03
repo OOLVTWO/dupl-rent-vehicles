@@ -36,6 +36,7 @@ export async function PUT(request, { params }) {
   if ('damage_fee' in updateData) updateData.damage_fee = parseFloat(updateData.damage_fee) || 0;
   if ('km_start' in updateData) updateData.km_start = parseInt(updateData.km_start) || 0;
   if ('km_end' in updateData) updateData.km_end = parseInt(updateData.km_end) || 0;
+  if ('dp_amount' in updateData) updateData.dp_amount = parseFloat(updateData.dp_amount) || 0;
   // Keep payment_status as-is (string 'paid' or 'unpaid')
 
   let { data, error } = await supabase
@@ -48,7 +49,7 @@ export async function PUT(request, { params }) {
   // Smart Fallback jika kolom baru belum di-migrate di Supabase database
   if (error && (error.message.includes('Could not find the') || error.message.includes('schema cache'))) {
     console.warn('Fallback update without unmigrated columns due to Supabase schema cache:', error.message);
-    const { customer_image_url, handover_image_url: _hou, renter_address: _ra, discount: _d, damage_fee: _df, km_start: _ks, km_end: _ke, issues_reported: _ir, ...fallbackUpdate } = updateData;
+    const { customer_image_url, handover_image_url: _hou, renter_address: _ra, discount: _d, damage_fee: _df, km_start: _ks, km_end: _ke, dp_amount: _dpa, issues_reported: _ir, ...fallbackUpdate } = updateData;
 
     const retry = await supabase
       .from('transactions')

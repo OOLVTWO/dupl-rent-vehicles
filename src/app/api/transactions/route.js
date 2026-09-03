@@ -3,7 +3,7 @@ import { requireAdmin, readJsonBody, missingFields, toNonNegativeNumber } from '
 import { NextResponse } from 'next/server';
 
 const VALID_STATUS = ['active', 'completed', 'cancelled'];
-const VALID_PAYMENT = ['paid', 'unpaid'];
+const VALID_PAYMENT = ['paid', 'unpaid', 'down_payment'];
 
 // GET /api/transactions
 export async function GET(request) {
@@ -74,7 +74,7 @@ export async function POST(request) {
     return NextResponse.json({ error: `payment_status tidak valid: ${paymentStatus}` }, { status: 400 });
   }
 
-  const { duration_days, deposit, total_price, damage_fee, discount, km_start, km_end, vehicles, payment_status, ...insertData } = body;
+  const { duration_days, deposit, total_price, damage_fee, discount, km_start, km_end, dp_amount, vehicles, payment_status, ...insertData } = body;
 
   // FIX #2: Cleanup hanya field _id yang BENAR-BENAR kosong, tapi JANGAN hapus vehicle_id
   // karena sudah divalidasi di atas. Gunakan rawVehicleId yang sudah di-trim.
@@ -115,6 +115,7 @@ export async function POST(request) {
     discount: toNonNegativeNumber(discount, 0),
     km_start: toNonNegativeNumber(km_start, 0),
     km_end: toNonNegativeNumber(km_end, 0),
+    dp_amount: toNonNegativeNumber(dp_amount, 0),
     payment_status: paymentStatus,
   };
 
@@ -143,6 +144,7 @@ export async function POST(request) {
       damage_fee: _df,
       km_start: _ks,
       km_end: _ke,
+      dp_amount: _dpa,
       issues_reported: _ir,
       handover_image_url: _hou, // tetap buang jika schema lama tidak ada kolom ini
       ...fallbackPayload

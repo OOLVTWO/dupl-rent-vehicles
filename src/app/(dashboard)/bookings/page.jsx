@@ -666,7 +666,8 @@ function BookingsPageInner() {
                   <th>Customer</th>
                   <th>Motor</th>
                   <th>Tanggal Sewa</th>
-                  <th>Metode</th>
+                  <th>Metode Pengambilan</th>
+                  <th>Metode Pembayaran</th>
                   <th>Driver</th>
                   <th>Estimasi</th>
                   <th>Status</th>
@@ -703,17 +704,24 @@ function BookingsPageInner() {
                         {formatDate(b.start_date)} — {formatDate(b.end_date)}
                         <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{b.duration_days} hari</div>
                       </td>
-                      <td data-label="Metode" data-label-align="left">
+                      <td data-label="Metode Pengambilan" data-label-align="left">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                           <span className="badge" style={{ background: b.fulfillment_method === 'delivery' ? 'rgba(59,130,246,0.15)' : 'rgba(148,163,184,0.2)', color: b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8', border: `1px solid ${b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8'}` }}>
                             <i className={`fa-solid ${b.fulfillment_method === 'delivery' ? 'fa-truck-fast' : 'fa-store'}`} style={{ marginRight: '4px' }}></i>
                             {b.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup'}
                           </span>
-                          <span className="badge badge-muted">
-                            <i className={PAYMENT_META[b.payment_method]?.icon || 'fa-solid fa-money-bill-wave'} style={{ marginRight: '4px' }}></i>
-                            {PAYMENT_META[b.payment_method]?.label || 'Cash'}
-                          </span>
+                          {b.fulfillment_method === 'delivery' && b.delivery_zone_name && (
+                            <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
+                              <i className="fa-solid fa-location-dot" style={{ marginRight: '3px' }}></i>{b.delivery_zone_name} · {formatRupiah(b.delivery_fee)}
+                            </span>
+                          )}
                         </div>
+                      </td>
+                      <td data-label="Metode Pembayaran" data-label-align="left">
+                        <span className="badge badge-muted">
+                          <i className={PAYMENT_META[b.payment_method]?.icon || 'fa-solid fa-money-bill-wave'} style={{ marginRight: '4px' }}></i>
+                          {PAYMENT_META[b.payment_method]?.label || 'Cash'}
+                        </span>
                       </td>
                       <td data-label="Estimasi" style={{ fontWeight: 800, fontSize: '13px' }}>{formatRupiah(b.estimated_price)}</td>
                       <td data-label="Driver" data-label-align="left">
@@ -721,11 +729,6 @@ function BookingsPageInner() {
                           <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>— (pickup)</span>
                         ) : (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            {b.delivery_zone_name && (
-                              <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
-                                <i className="fa-solid fa-location-dot" style={{ marginRight: '3px' }}></i>{b.delivery_zone_name} · {formatRupiah(b.delivery_fee)}
-                              </span>
-                            )}
                             {role === 'admin' ? (
                               <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
                                 <select

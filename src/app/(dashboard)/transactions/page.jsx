@@ -23,35 +23,6 @@ function formatRupiah(amount) {
   }).format(amount || 0);
 }
 
-const statusBadge = (status, paymentStatus) => {
-  // If active but unpaid, show special badge
-  if (status === 'active' && paymentStatus === 'unpaid') {
-    return (
-      <span className="tx-status-pill" style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B', borderColor: 'rgba(245,158,11,0.4)' }}>
-        <i className="fa-solid fa-clock" style={{ fontSize: '11px' }}></i> Belum Bayar
-      </span>
-    );
-  }
-  const map = {
-    active: (
-      <span className="tx-status-pill active">
-        <i className="fa-solid fa-bolt" style={{ fontSize: '11px' }}></i> Sewa Aktif
-      </span>
-    ),
-    completed: (
-      <span className="tx-status-pill completed">
-        <i className="fa-solid fa-circle-check" style={{ fontSize: '11px' }}></i> Selesai
-      </span>
-    ),
-    cancelled: (
-      <span className="tx-status-pill cancelled">
-        <i className="fa-solid fa-circle-xmark" style={{ fontSize: '11px' }}></i> Dibatalkan
-      </span>
-    ),
-  };
-  return map[status] || <span className="tx-status-pill">{status}</span>;
-};
-
 // ===== SEARCHABLE COUNTRY CODE PICKER WITH FLAG CDN =====
 function CountryCodePicker({ value, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -327,7 +298,7 @@ function SmartPriceRecommendationPanel({ vehicle, startDate, endDate, selectedOp
 // Ganti seluruh function TransactionModal dari baris 9568 sampai 10170
 // (dari "function TransactionModal" sampai "}" penutupnya, sebelum "// ===== MODAL KIRIM INVOICE WHATSAPP =====")
 
-function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
+function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles, editData }) {
   const [recordType, setRecordType] = useState('transaction'); // 'transaction' | 'booking'
   const [fulfillment, setFulfillment] = useState('pickup'); // 'pickup' | 'delivery'
   const [deliveryZones, setDeliveryZones] = useState([]);
@@ -350,6 +321,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
     km_start: '',
     payment_method: 'cash',
     payment_status: 'paid',
+    dp_amount: '',
     status: 'active',
     notes: '',
   });
@@ -443,6 +415,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
           km_start: editData.km_start || '',
           payment_method: editData.payment_method || 'cash',
           payment_status: editData.payment_status || 'paid',
+          dp_amount: editData.dp_amount || '',
           status: editData.status || 'active',
           notes: editData.notes || '',
         });
@@ -478,6 +451,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
           km_start: '',
           payment_method: 'cash',
           payment_status: 'paid',
+          dp_amount: '',
           status: 'active',
           notes: '',
         });
@@ -537,6 +511,14 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
       alert('Silakan pilih unit motor terlebih dahulu!');
       return;
     }
+    if (!form.renter_address.trim()) {
+      alert('Alamat / Villa wajib diisi.');
+      return;
+    }
+    if (form.payment_status === 'down_payment' && !String(form.dp_amount).trim()) {
+      alert('Jumlah DP yang sudah dibayar wajib diisi.');
+      return;
+    }
     if (!editData && recordType === 'booking') {
       if (fulfillment === 'delivery' && !selectedZoneId) {
         alert('Silakan pilih zona delivery terlebih dahulu!');
@@ -581,6 +563,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
         }]);
         if (error) throw error;
         setBookingSuccess(true);
+        onBookingSaved?.();
       } catch (err) {
         setBookingError(err?.message || 'Gagal menyimpan booking.');
       }
@@ -749,6 +732,17 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
             </div>
           )}
 
+          {!editData && recordType === 'transaction' && form.start_date && form.start_date > getLocalDateStr() && (
+            <div className="alert alert-warning" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px' }}>
+              <i className="fa-solid fa-triangle-exclamation" style={{ marginTop: '2px' }}></i>
+              <span>
+                Tanggal mulai ini masih di masa depan, tapi mode-nya masih &quot;Transaksi Langsung&quot; — motornya bakal kesetel
+                &quot;Disewa&quot; <strong>mulai sekarang juga</strong>. Kalau maksudnya reservasi buat tanggal nanti, ganti ke mode
+                <strong> Booking (Reservasi)</strong> di atas.
+              </span>
+            </div>
+          )}
+
           {/* ── Nama & No. HP ── */}
           <div className="form-row cols-2">
             <div className="form-group">
@@ -834,9 +828,9 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
           {/* ── Alamat ── */}
           <div className="form-group">
             <label className="form-label" htmlFor="tx-address">
-              <i className="fa-solid fa-location-dot" style={{ marginRight: '6px', color: 'var(--brand-primary)' }}></i> Alamat / Villa / Hotel
+              <i className="fa-solid fa-location-dot" style={{ marginRight: '6px', color: 'var(--brand-primary)' }}></i> Alamat / Villa / Hotel <span className="required">*</span>
             </label>
-            <input id="tx-address" name="renter_address" type="text" className="form-control" placeholder="e.g. Villa Bamboo, Jl. Pererenan" value={form.renter_address || ''} onChange={handleChange} />
+            <input id="tx-address" name="renter_address" type="text" className="form-control" placeholder="e.g. Villa Bamboo, Jl. Pererenan" value={form.renter_address || ''} onChange={handleChange} required />
           </div>
 
                {/* ── Status Pembayaran ── */}
@@ -845,16 +839,36 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
               <i className="fa-solid fa-money-bill-wave" style={{ marginRight: '6px', color: '#22C55E' }}></i>
               Status Pembayaran <span className="required">*</span>
             </label>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
               <button type="button" onClick={() => setForm(prev => ({ ...prev, payment_status: 'paid' }))}
-                style={{ flex: 1, padding: '12px 16px', borderRadius: '10px', border: `2px solid ${form.payment_status !== 'unpaid' ? '#22C55E' : 'var(--bg-border)'}`, background: form.payment_status !== 'unpaid' ? 'rgba(34,197,94,0.15)' : 'var(--bg-elevated)', color: form.payment_status !== 'unpaid' ? '#22C55E' : 'var(--text-secondary)', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                <i className="fa-solid fa-circle-check"></i> Lunas / Paid
+                style={{ padding: '11px 6px', borderRadius: '10px', border: `2px solid ${form.payment_status === 'paid' ? '#22C55E' : 'var(--bg-border)'}`, background: form.payment_status === 'paid' ? 'rgba(34,197,94,0.15)' : 'var(--bg-elevated)', color: form.payment_status === 'paid' ? '#22C55E' : 'var(--text-secondary)', fontWeight: 700, fontSize: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                <i className="fa-solid fa-circle-check"></i> Lunas
+              </button>
+              <button type="button" onClick={() => setForm(prev => ({ ...prev, payment_status: 'down_payment' }))}
+                style={{ padding: '11px 6px', borderRadius: '10px', border: `2px solid ${form.payment_status === 'down_payment' ? '#3B82F6' : 'var(--bg-border)'}`, background: form.payment_status === 'down_payment' ? 'rgba(59,130,246,0.15)' : 'var(--bg-elevated)', color: form.payment_status === 'down_payment' ? '#3B82F6' : 'var(--text-secondary)', fontWeight: 700, fontSize: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                <i className="fa-solid fa-coins"></i> Down Payment
               </button>
               <button type="button" onClick={() => setForm(prev => ({ ...prev, payment_status: 'unpaid' }))}
-                style={{ flex: 1, padding: '12px 16px', borderRadius: '10px', border: `2px solid ${form.payment_status === 'unpaid' ? '#F59E0B' : 'var(--bg-border)'}`, background: form.payment_status === 'unpaid' ? 'rgba(245,158,11,0.15)' : 'var(--bg-elevated)', color: form.payment_status === 'unpaid' ? '#F59E0B' : 'var(--text-secondary)', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                style={{ padding: '11px 6px', borderRadius: '10px', border: `2px solid ${form.payment_status === 'unpaid' ? '#F59E0B' : 'var(--bg-border)'}`, background: form.payment_status === 'unpaid' ? 'rgba(245,158,11,0.15)' : 'var(--bg-elevated)', color: form.payment_status === 'unpaid' ? '#F59E0B' : 'var(--text-secondary)', fontWeight: 700, fontSize: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
                 <i className="fa-solid fa-clock"></i> Belum Bayar
               </button>
             </div>
+            {form.payment_status === 'down_payment' && (
+              <div className="form-group" style={{ marginTop: '10px', marginBottom: 0 }}>
+                <label className="form-label" htmlFor="tx-dp-amount">Jumlah DP yang sudah dibayar (Rp) <span className="required">*</span></label>
+                <input
+                  id="tx-dp-amount"
+                  name="dp_amount"
+                  type="number"
+                  min="0"
+                  className="form-control"
+                  placeholder="e.g. 300000"
+                  value={form.dp_amount}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            )}
             {form.payment_status === 'unpaid' && (
               <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(245,158,11,0.08)', borderRadius: '8px', border: '1px solid rgba(245,158,11,0.3)', fontSize: '12px', color: '#F59E0B', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <i className="fa-solid fa-triangle-exclamation"></i>
@@ -1082,7 +1096,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, vehicles, editData }) {
               </div>
               <h3 style={{ margin: '0 0 6px 0', fontSize: '17px' }}>Booking Tersimpan!</h3>
               <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '22px' }}>
-                Reservasi untuk <strong>{form.renter_name}</strong> masuk ke Booking Confirmation dengan status Pending — motor tetap kelihatan tersedia sampai booking-nya dikonfirmasi.
+                Reservasi untuk <strong>{form.renter_name}</strong> masuk ke Booking Confirmation dengan status Pending — juga langsung kelihatan di list Transaksi ini (ditandai ungu). Motor tetap kelihatan tersedia sampai booking-nya dikonfirmasi.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <Link href="/bookings" className="btn btn-primary" style={{ textDecoration: 'none' }}>
@@ -1680,6 +1694,7 @@ function TransactionsPageInner() {
   const [errorToast, setErrorToast] = useState({ open: false, message: '' });
   const [contractedIds, setContractedIds] = useState(new Set());
   const [bookingDriverMap, setBookingDriverMap] = useState({});
+  const [pendingBookingRows, setPendingBookingRows] = useState([]);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -1754,7 +1769,11 @@ function TransactionsPageInner() {
     } catch { /* ignore */ }
 
     // Info driver yang nganter (kalau transaksi ini berasal dari booking
-    // delivery yang sudah di-assign ke driver tertentu).
+    // delivery yang sudah di-assign ke driver tertentu). Sekalian identifikasi
+    // booking pending/confirmed yang BELUM punya transaksi — ini juga
+    // ditampilkan di list Transaksi (status "Booking"), biar tamu walk-in
+    // yang dicatat sebagai reservasi tetap kelihatan di sini, nggak cuma di
+    // Booking Confirmation aja.
     try {
       const bRes = await fetch('/api/bookings');
       const bData = bRes.ok ? await bRes.json() : [];
@@ -1762,6 +1781,10 @@ function TransactionsPageInner() {
         const map = {};
         bData.forEach(b => { if (b.assigned_driver_name) map[b.id] = b.assigned_driver_name; });
         setBookingDriverMap(map);
+
+        const txBookingIds = new Set((txList || []).map(t => t.booking_id).filter(Boolean));
+        const pending = bData.filter(b => ['pending', 'confirmed'].includes(b.status) && !txBookingIds.has(b.id));
+        setPendingBookingRows(pending);
       }
     } catch { /* ignore */ }
 
@@ -1909,6 +1932,17 @@ const handleSubmit = async (formData) => {
     return matchSearch && matchStatus;
   });
 
+  // Booking pending/confirmed (belum jadi transaksi) tetap ditampilkan di
+  // sini juga, biar walk-in yang dicatat lewat mode "Booking" nggak
+  // "hilang" dari daftar utama — cuma muncul waktu filter status "Semua".
+  const filteredBookingRows = statusFilter === 'all'
+    ? pendingBookingRows.filter(b =>
+        b.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.customer_phone?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.vehicle_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
+
   return (
     <div className="fade-in">
       <div className="page-header">
@@ -1977,6 +2011,47 @@ const handleSubmit = async (formData) => {
                 </tr>
               </thead>
               <tbody>
+                {filteredBookingRows.map((b, idx) => (
+                  <tr key={`booking-${b.id}`} style={{ background: 'rgba(139,92,246,0.04)' }}>
+                    <td data-label="#" style={{ fontWeight: 700, color: 'var(--text-muted)' }}>B{idx + 1}</td>
+                    <td data-label="Customer" data-label-align="left">
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        <strong style={{ fontSize: '14px', color: 'var(--text-primary)' }}>{b.customer_name}</strong>
+                        <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
+                          <i className="fa-solid fa-phone" style={{ marginRight: '4px', fontSize: '10px' }}></i>{b.customer_phone}
+                        </span>
+                      </div>
+                    </td>
+                    <td data-label="Motor" data-label-align="left">
+                      <strong style={{ fontSize: '13.5px', color: 'var(--text-primary)' }}>{b.vehicle_name || '-'}</strong>
+                    </td>
+                    <td data-label="Mulai / Selesai" data-label-align="left">
+                      <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>
+                        {new Date(b.start_date).toLocaleDateString('id-ID')} — {new Date(b.end_date).toLocaleDateString('id-ID')}
+                      </div>
+                    </td>
+                    <td data-label="KM Odometer" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
+                    <td data-label="Total & Diskon">
+                      <strong style={{ fontSize: '13px', color: '#8B5CF6' }}>{formatRupiah(b.estimated_price)}</strong>
+                    </td>
+                    <td data-label="Denda / Deposit" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
+                    <td data-label="Status" style={{ verticalAlign: 'middle' }}>
+                      <div>
+                        <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}>Status Motor</div>
+                        <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#8B5CF6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                          <i className="fa-solid fa-calendar-days" style={{ fontSize: '10px' }}></i>
+                          Booking ({b.status === 'confirmed' ? 'Confirmed' : 'Pending'})
+                        </span>
+                      </div>
+                    </td>
+                    <td data-label="Kontrak" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
+                    <td data-label="Aksi" data-label-align="left">
+                      <Link href="/bookings" className="btn btn-sm" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid #8B5CF6', color: '#8B5CF6', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <i className="fa-solid fa-arrow-right"></i> Kelola di Booking
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
                 {filtered.map((tx, idx) => (
                   <tr key={tx.id}>
                     <td data-label="#" style={{ fontWeight: 700, color: 'var(--text-muted)' }}>{idx + 1}</td>
@@ -2075,14 +2150,38 @@ const handleSubmit = async (formData) => {
                       </div>
                     </td>
                     <td data-label="Status" style={{ verticalAlign: 'middle' }}>
-                      {statusBadge(tx.status, tx.payment_status)}
-                      {tx.status === 'active' && tx.payment_status !== 'unpaid' && (
-                        <div style={{ marginTop: '4px' }}>
-                          <span style={{ fontSize: '10px', color: '#22C55E', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                            <i className="fa-solid fa-circle-check" style={{ fontSize: '9px' }}></i> Lunas
-                          </span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div>
+                          <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}>Status Motor</div>
+                          {(() => {
+                            const map = { active: { icon: 'fa-solid fa-bolt', label: 'Sewa Aktif', color: '#3B82F6' }, completed: { icon: 'fa-solid fa-circle-check', label: 'Selesai', color: '#22C55E' }, cancelled: { icon: 'fa-solid fa-circle-xmark', label: 'Dibatalkan', color: '#EF4444' } };
+                            const m = map[tx.status] || map.active;
+                            return (
+                              <span style={{ fontSize: '11.5px', fontWeight: 700, color: m.color, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                <i className={m.icon} style={{ fontSize: '10px' }}></i>{m.label}
+                              </span>
+                            );
+                          })()}
                         </div>
-                      )}
+                        <div>
+                          <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}>Status Pembayaran</div>
+                          {tx.payment_status === 'paid' && (
+                            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#22C55E', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                              <i className="fa-solid fa-circle-check" style={{ fontSize: '10px' }}></i>Lunas
+                            </span>
+                          )}
+                          {tx.payment_status === 'down_payment' && (
+                            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#3B82F6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                              <i className="fa-solid fa-coins" style={{ fontSize: '10px' }}></i>DP {formatRupiah(tx.dp_amount)}
+                            </span>
+                          )}
+                          {tx.payment_status === 'unpaid' && (
+                            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#F59E0B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                              <i className="fa-solid fa-clock" style={{ fontSize: '10px' }}></i>Belum Bayar
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </td>
                     <td data-label="Kontrak" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -2177,6 +2276,7 @@ const handleSubmit = async (formData) => {
         isOpen={showModal}
         onClose={() => { setShowModal(false); setEditData(null); setSourceBookingId(null); }}
         onSubmit={handleSubmit}
+        onBookingSaved={fetchAll}
         vehicles={vehicles}
         editData={editData}
       />
