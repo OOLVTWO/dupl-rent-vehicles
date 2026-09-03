@@ -164,6 +164,22 @@ export default function SettingsPage() {
     }
     setHistoryLoading(false);
   };
+
+  const handleDeleteHistoryEntry = async (entryId) => {
+    if (!confirm('Hapus entry pendapatan ini? Aksi ini nggak bisa dibatalkan.')) return;
+    try {
+      const res = await fetch(`/api/expenses/${entryId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setHistoryEntries(prev => prev.filter(e => e.id !== entryId));
+        fetchUnpaidPayouts();
+      } else {
+        alert('Gagal menghapus entry.');
+      }
+    } catch {
+      alert('Gagal terhubung ke server.');
+    }
+  };
+
   const [unpaidByStaff, setUnpaidByStaff] = useState({});
   const [payoutModalStaff, setPayoutModalStaff] = useState(null);
   const [payoutEntries, setPayoutEntries] = useState([]);
@@ -2874,16 +2890,24 @@ export default function SettingsPage() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '360px', overflowY: 'auto' }}>
                 {historyEntries.map(entry => (
-                  <div key={entry.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--bg-border)' }}>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '13px' }}>{entry.title}</div>
+                  <div key={entry.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--bg-border)' }}>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: '13px', overflowWrap: 'anywhere' }}>{entry.title}</div>
                       <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{entry.expense_date}</div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontWeight: 800, color: '#22C55E', fontSize: '13px' }}>{formatRupiah(entry.amount)}</div>
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: entry.payment_status === 'paid' ? '#22C55E' : '#F59E0B' }}>
+                    <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                      <div style={{ fontWeight: 800, color: '#22C55E', fontSize: '13px', whiteSpace: 'nowrap' }}>{formatRupiah(entry.amount)}</div>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: entry.payment_status === 'paid' ? '#22C55E' : '#F59E0B', whiteSpace: 'nowrap' }}>
                         {entry.payment_status === 'paid' ? 'Lunas' : 'Belum Dibayar'}
                       </span>
+                      <button
+                        type="button"
+                        title="Hapus entry ini"
+                        onClick={() => handleDeleteHistoryEntry(entry.id)}
+                        style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', padding: '2px', fontSize: '12px' }}
+                      >
+                        <i className="fa-solid fa-trash-can"></i>
+                      </button>
                     </div>
                   </div>
                 ))}
