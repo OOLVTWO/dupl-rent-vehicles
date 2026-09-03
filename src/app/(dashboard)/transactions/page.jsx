@@ -2130,7 +2130,7 @@ const handleSubmit = async (formData) => {
                     </td>
                     <td data-label="Status Pembayaran" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Kontrak" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
-                    <td data-label="Ringkasan Pembayaran" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
+                    <td data-label="Ringkasan Pembayaran" data-label-align="left" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Aksi" data-label-align="left">
                       <Link href="/bookings" className="btn btn-sm" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid #8B5CF6', color: '#8B5CF6', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                         <i className="fa-solid fa-arrow-right"></i> Kelola di Booking
@@ -2284,12 +2284,18 @@ const handleSubmit = async (formData) => {
                         )}
                       </div>
                     </td>
-                    <td data-label="Ringkasan Pembayaran" style={{ verticalAlign: 'middle' }}>
+                    <td data-label="Ringkasan Pembayaran" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       {tx.payment_status === 'down_payment' ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '11px' }}>
-                          <div style={{ color: 'var(--text-muted)' }}>Total: <strong style={{ color: 'var(--text-primary)' }}>{formatRupiah(tx.total_price)}</strong></div>
-                          <div style={{ color: 'var(--text-muted)' }}>DP: <strong style={{ color: '#3B82F6' }}>{formatRupiah(tx.dp_amount)}</strong></div>
-                          <div style={{ color: '#F59E0B', fontWeight: 700 }}>Sisa: {formatRupiah(Math.max(0, Number(tx.total_price || 0) - Number(tx.dp_amount || 0)))}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                            Total Sewa: <strong style={{ color: 'var(--text-primary)' }}>{formatRupiah(tx.total_price)}</strong>
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                            Sudah DP: <strong style={{ color: '#3B82F6' }}>{formatRupiah(tx.dp_amount)}</strong>
+                          </div>
+                          <div style={{ fontSize: '13px', color: '#F59E0B', fontWeight: 800, marginTop: '2px' }}>
+                            Total yang harus dibayar: {formatRupiah(Math.max(0, Number(tx.total_price || 0) - Number(tx.dp_amount || 0)))}
+                          </div>
                         </div>
                       ) : (
                         <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
