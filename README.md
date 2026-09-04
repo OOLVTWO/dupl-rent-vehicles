@@ -56,13 +56,15 @@ Panel kendali khusus pengelola rental yang dilindungi oleh autentikasi **Supabas
 - **📊 Directory & Rekap Investor**: Tab khusus rekapitulasi jumlah investor aktif, unit titipan per investor, serta tombol kontak WhatsApp langsung.
 
 #### 📋 Manajemen Transaksi Rental (`/transactions`)
+- **Kode Otomatis yang Gampang Dibaca**: setiap Booking dan Transaksi dapat kode singkat otomatis dari database (bukan UUID panjang) — Booking format `[Inisial Merek][Inisial Model][2 digit]` (misal `YF43` untuk Yamaha Fazzio), Transaksi format `T[3 digit]` (misal `T123`). Dijamin unik lewat trigger database, jadi berlaku otomatis dari mana pun record dibuat (form admin maupun booking publik).
 - **Dua Jenis Pencatatan**: Setiap transaksi baru wajib memilih salah satu — **Transaksi Langsung** (sewa mulai sekarang, walk-in) atau **Booking (Reservasi)** (untuk tanggal lain, motor tetap tersedia sampai dikonfirmasi). Tidak ada default; admin harus memilih secara sadar.
-- **Ambil di Toko / Diantar**: Kedua mode di atas mendukung pilihan fulfillment. Kalau Diantar, admin memilih zona delivery (Hijau/Biru/Kuning, sesuai peta zona) dan menugaskan driver langsung dari form ini.
-- **Transaksi Sekarang + Diantar + Driver** secara otomatis membuat record Booking (status Confirmed) yang saling terhubung — supaya driver bisa melihatnya di halaman Booking, tanda tangan kontrak, dan konfirmasi delivery dari sana. Transaksi aktifnya sendiri (dan hitungan mundur Tracking Sewa) baru benar-benar dibuat setelah driver konfirmasi delivery, bukan sejak form disimpan — jadi jam sewa tidak mulai lebih dulu dari serah terima fisik.
-- **Status Pembayaran 3 Tingkat**: Lunas / **Down Payment** (wajib isi nominal DP, sisa tagihan dihitung otomatis) / Belum Bayar.
+- **Ambil di Toko / Diantar**: Kedua mode di atas mendukung pilihan fulfillment — selalu tampil dari awal, tidak menunggu Jenis Pencatatan dipilih dulu. Kalau Diantar, admin memilih zona delivery (Hijau/Biru/Kuning, sesuai peta zona) dan menugaskan driver langsung dari form ini.
+- **Transaksi Sekarang + Diantar + Driver** secara otomatis membuat record Booking (status **Pending**, bukan langsung Confirmed) yang saling terhubung — admin tetap wajib klik Confirm di halaman Booking supaya status motor di Fleet publik ikut ter-update jadi Booked. Transaksi aktifnya sendiri (dan hitungan mundur Tracking Sewa) baru benar-benar dibuat setelah driver konfirmasi delivery, bukan sejak form disimpan — jadi jam sewa tidak mulai lebih dulu dari serah terima fisik.
+- **Atribut / Perlengkapan Tambahan**: admin bisa centang aksesoris tambahan (Box Shad, Surf Rack, dll — lihat bagian Data Master Atribut Motor) langsung dari form yang sama persis dengan yang dilihat customer di halaman booking publik, termasuk quantity stepper untuk atribut seperti Raincoat.
+- **Status Pembayaran 3 Tingkat**: Lunas / **Down Payment** (wajib isi nominal DP, sisa tagihan dihitung otomatis) / Belum Bayar. Ringkasan Pembayaran (kartu berwarna sesuai status) selalu menunjukkan sisa yang harus dibayar dan otomatis sinkron begitu status pembayaran transaksi terkait berubah — termasuk untuk booking yang sudah dikonversi jadi transaksi aktif.
 - **No. KTP/Paspor/SIM wajib diisi** di semua transaksi — data ini otomatis mengisi form Kontrak nanti, jadi customer tidak perlu mengisi ulang saat tanda tangan.
-- **Tampilan Detail Terstruktur**: Status Motor, Status Pembayaran, Kontrak, Driver, Zona Delivery, dan Ringkasan Pembayaran (Total/DP/Sisa) masing-masing punya bagian sendiri yang jelas — tidak lagi ditumpuk jadi satu kolom.
-- **List Gabungan dengan Booking**: Reservasi yang dibuat lewat mode Booking langsung tampil juga di daftar Transaksi (ditandai ungu, status "Booking (Pending/Confirmed)"), jadi admin punya satu tempat untuk melihat semuanya.
+- **Tampilan Detail Terstruktur**: Merk Motor, Nama Motor, Plat Motor, Status Motor, Status Pembayaran, Kontrak, Driver, Zona Delivery, Atribut Tambahan, Catatan, dan Ringkasan Pembayaran masing-masing punya kolom sendiri yang jelas — tidak lagi ditumpuk jadi satu.
+- **List Gabungan dengan Booking**: Reservasi yang dibuat lewat mode Booking langsung tampil juga di daftar Transaksi (ditandai ungu, status "Booking (Pending/Confirmed)"), jadi admin punya satu tempat untuk melihat semuanya — baik sudah ada transaksi aktifnya maupun belum.
 
 #### 💰 Keuangan & Arus Kas (`/expenses`)
 - **Pencatatan Pemasukan & Pengeluaran**: Pengelompokan kategori (Gaji, Bensin, Servis, Sparepart, Layanan Tambahan).
@@ -76,6 +78,11 @@ Panel kendali khusus pengelola rental yang dilindungi oleh autentikasi **Supabas
   - *Sheet 1: Ringkasan Bagi Hasil & Kop Laporan Resmi* (Kolom lapang 45ch tanpa teks terpotong).
   - *Sheet 2: Rincian Transaksi Sewa Motor Investor*.
   - *Sheet 3: Rincian Biaya Perawatan & Servis Motor*.
+
+#### 🎒 Data Master Atribut Motor (`/attributes`)
+- Kelola aksesoris tambahan yang bisa dipilih customer maupun admin saat booking/transaksi: **Helmet & Phone Holder** (selalu disertakan gratis, tampil sebagai info — bukan pilihan), **Raincoat** (gratis, opsional, mendukung quantity 1–2 lewat stepper +/-), **Box Shad & Surf Rack** (berbayar flat Rp200.000, berlaku sampai motor dikembalikan).
+- Tiap atribut punya **stok (quantity)**, **harga**, flag **selalu disertakan / opsional**, ikon, dan **urutan tampil** yang bisa diatur — otomatis kehabisan stok akan mem-block pilihan tersebut di form (tombol jadi disabled) baik di halaman publik maupun form admin.
+- Wajib memilih minimal satu atribut ATAU tombol **"I Don't Need Any Additional Equipment"** di halaman booking publik sebelum lanjut ke Review — kalau customer berubah pikiran dan meng-uncheck opsi itu, pilihan sebelumnya otomatis dikembalikan (bukan direset ulang).
 
 #### 🙋 Data Customer (`/customers`)
 - Daftar master customer dengan agregasi otomatis dari histori transaksi (nama, telepon, jumlah sewa, total belanja).
@@ -96,23 +103,22 @@ Panel kendali khusus pengelola rental yang dilindungi oleh autentikasi **Supabas
 
 ### 📥 1. Booking Confirmation — Booking Online Terintegrasi (`/booking` → `/bookings`)
 - Tombol **"Book Now"** di tiap unit motor pada halaman publik (`/fleet`) membuka halaman booking khusus (`/booking`), bukan langsung ke WhatsApp.
-- Customer mengisi form: nama, telepon, pilih **Ambil di Toko** atau **Delivery** (+ alamat), lalu konfirmasi.
-- Setelah submit, booking otomatis tersimpan ke database dan tersedia di menu **Booking Confirmation** pada Admin Panel — lengkap dengan tombol untuk mengirim notifikasi WhatsApp ke pengelola.
-- Admin bisa mengubah status (Pending / Confirmed / Completed / Cancelled) kapan saja secara bebas, serta mengedit detail booking (nama, tanggal, dll.) lewat tombol Edit.
+- Customer mengisi form lengkap: nama, No. KTP/Paspor, WhatsApp (dengan kode negara), alamat (wajib), pilih **Ambil di Toko** atau **Delivery**, metode pembayaran, dan atribut tambahan — semuanya wajib dipilih, tidak ada yang default otomatis.
+- Setelah submit, booking otomatis tersimpan ke database dengan **Kode Booking** otomatis (misal `HS19`) dan tersedia di menu **Booking Confirmation** pada Admin Panel berstatus **Pending** — lengkap dengan tombol untuk mengirim notifikasi WhatsApp ke pengelola.
+- Admin klik **Confirm** untuk mengonfirmasi booking — begitu dikonfirmasi, status motor di halaman Fleet publik otomatis berubah jadi **Booked** (tidak bisa dipilih customer lain lagi). Admin juga bisa mengedit detail booking (nama, tanggal, motor, dll.) lewat tombol Edit — form edit sekarang selengkap form Tambah Transaksi (termasuk pemilihan motor, zona delivery, dan status pembayaran).
 - Data booking dilindungi Row Level Security: publik hanya bisa **mengirim** booking, tidak bisa membaca data booking milik orang lain.
 
 ### 👥 2. Sistem Role Staff — Admin & Driver (`/settings?tab=staff`)
 - Login sekarang punya pilihan peran: **Admin** (akses penuh) atau **Driver** (akses terbatas).
 - Admin bisa membuat, mengedit, dan menghapus akun staff dari **Settings → Akun Staff**.
-- Batasan akses akun **Driver**:
+- Batasan akses akun **Driver** — hanya bisa membuka Dashboard, Booking, Tracking Sewa, Kontrak, dan History Pendapatan:
   | Halaman | Akses Driver |
   |---|---|
-  | Transaksi | Bisa tambah baru; tidak bisa edit/hapus/tandai lunas |
-  | Booking Confirmation | Lihat saja |
-  | Tracking Sewa & Ketersediaan | Lihat saja |
-  | Keuangan | Kelola pengeluaran penuh; pemasukan hanya bisa dilihat |
-  | Kontrak | Bisa membuat & melihat laporan |
-  | Data Motor, Customer, Laporan, Pengaturan, Maintenance, Galeri | Tidak dapat diakses (otomatis dialihkan) |
+  | Booking Confirmation | Lihat booking yang ditugaskan ke dirinya sendiri saja; bisa Confirm Delivered, tidak bisa ubah status/edit/hapus/Konfirmasi Transaksi |
+  | Kontrak | Picker hanya menampilkan booking miliknya sendiri yang belum ditandatangani; bisa membuat kontrak (foto + TTD) |
+  | Tracking Sewa | Lihat saja (hitungan mundur sewa aktif) |
+  | History Pendapatan | Lihat riwayat pendapatan dirinya sendiri (ongkos delivery otomatis + gaji/bonus dari admin) |
+  | Transaksi, Keuangan, Data Motor, Customer, Laporan, Pengaturan, Maintenance, Galeri, Employee | Tidak dapat diakses sama sekali (otomatis dialihkan) |
 - Proteksi berlapis: selain disembunyikan di UI, setiap endpoint API terkait juga divalidasi ulang di server (`requireAdmin()` di `src/lib/apiAuth.js`) dan proxy Next.js (`src/proxy.js`) memblokir akses langsung lewat URL.
 
 ### ✍️ 3. Kontrak Sewa Digital — Picker-First & Tanda Tangan (`/contracts`, `/contracts/new`)
@@ -150,6 +156,59 @@ Sidebar menampilkan badge angka real-time (polling tiap 60 detik) pada beberapa 
 - **Tracking Sewa** — jumlah sewa aktif yang sudah lewat tanggal kembali.
 - **Kontrak** — jumlah transaksi/booking yang belum ada kontraknya (Admin melihat semua; Driver hanya melihat yang ditugaskan ke dirinya sendiri dan sudah bisa dikerjakan).
 - **Konfirmasi Pembayaran** — jumlah pendapatan driver yang belum dikonfirmasi lunas.
+
+---
+
+## 🔄 ALUR PENGGUNAAN SISTEM (END-TO-END)
+
+Bagian ini menjelaskan urutan langkah nyata dari sudut pandang tiap peran — dari customer booking sampai transaksi selesai.
+
+### 👤 A. Alur Customer — Booking dari Halaman Publik
+
+1. Buka **`/fleet`**, pilih tanggal sewa di kalkulator harga → sistem hitung estimasi otomatis (Harian/Mingguan/Bulanan, mana yang lebih murah).
+2. Pilih motor yang tersedia (badge **Available Now**; motor yang sedang disewa/dibooking tampil **Rented/Booked** dan tidak bisa dipilih) → klik **Book Now**.
+3. Diarahkan ke **`/booking`** (bukan langsung WhatsApp) — isi form berurutan: Nama Lengkap, No. KTP/Paspor (buat pre-fill Kontrak nanti), No. WhatsApp (dengan kode negara + bendera), Alamat (selalu wajib).
+4. Pilih **Fulfillment** (Self Pickup / Delivery — wajib pilih salah satu, tidak ada default). Kalau Delivery: isi alamat lengkap + pilih zona di peta.
+5. Pilih **Payment Method** (wajib pilih, tidak ada default) — pembayaran sendiri baru dilakukan tunai/QRIS/kartu langsung ke driver saat motor diantar/diambil, bukan di form ini.
+6. Pilih **Additional Equipment** — wajib centang minimal satu ATAU pilih "I Don't Need Any Additional Equipment". Atribut berbayar (Box Shad, Surf Rack) otomatis masuk ke total harga; Raincoat pakai stepper quantity.
+7. Klik **Review Booking** → cek ringkasan lengkap (motor, tanggal, delivery fee, extras, T&C) → centang persetujuan → **Confirm Booking**.
+8. Booking tersimpan dengan **Kode Booking** otomatis (misal `HS19`) berstatus **Pending** — customer dapat notifikasi WhatsApp ke pemilik rental untuk konfirmasi lebih cepat (tombol "Notify via WhatsApp" di layar sukses).
+
+### 🛡️ B. Alur Admin — Mengelola Booking Masuk
+
+1. Buka **`/bookings`** — booking baru (dari publik maupun dari form admin mode Booking) muncul dengan status **Pending**.
+2. Klik ✓ **Confirm** — status jadi **Confirmed**, dan **motor otomatis berubah jadi "Booked" di halaman Fleet publik** (tidak bisa dipilih customer lain lagi). *(Motor baru benar-benar "Rented" saat driver konfirmasi delivery, bukan saat Confirm booking.)*
+3. Kalau metode Delivery: tugaskan **Driver** dari dropdown assignment di kolom Driver.
+4. Driver kemudian membuat **Kontrak** (lihat alur C) dan **Confirm Delivered** dari HP-nya sendiri — status "Status Kontrak" dan "Status Delivery" di baris booking ini akan ter-update otomatis begitu driver menyelesaikan langkahnya.
+5. Setelah delivery dikonfirmasi, tombol **Konfirmasi Transaksi** aktif — klik ini untuk mengonversi booking jadi transaksi aktif sungguhan (mengisi KM Awal, mengonfirmasi/menyesuaikan status pembayaran final, dll). Transaksi barunya otomatis dapat **Kode Transaksi** (misal `T650`) dan langsung tampil normal di `/transactions`.
+
+### ✍️ C. Alur Driver — Kontrak & Konfirmasi Delivery
+
+1. Login sebagai Driver → Dashboard hanya menampilkan menu yang relevan (Booking, Kontrak, Tracking Sewa, History Pendapatan).
+2. Buka **Booking** — hanya melihat booking yang ditugaskan ke dirinya sendiri.
+3. Buka **Kontrak** → pilih dari daftar booking yang belum ditandatangani (bukan form kosong) → data customer, motor, dan No. KTP **sudah otomatis terisi** dari data booking.
+4. Ambil foto Passport/KTP dan foto Customer + Motor langsung dari HP, minta customer tanda tangan di layar (canvas sentuh) → **Save Contract**.
+5. Layar sukses menampilkan tombol **"Go to Booking — Confirm Delivery"** (langsung lanjut ke langkah berikutnya) atau kembali ke Dashboard.
+6. Di halaman Booking, klik **Confirm Delivered** (tombol hanya aktif kalau Kontrak sudah dibuat) — ongkos delivery otomatis tercatat sebagai pendapatan driver (status belum dibayar).
+7. Driver bisa cek riwayat pendapatannya sendiri (ongkos delivery otomatis + gaji/bonus dari admin) di **History Pendapatan**.
+
+### 💵 D. Alur Admin — Transaksi Langsung (Walk-in, Tanpa Booking)
+
+1. Buka **`/transactions`** → **Transaksi Baru** → pilih **Transaksi Langsung**.
+2. Pilih **Ambil di Toko** (motor langsung berstatus Disewa begitu form disimpan) atau **Diantar** (perlu tugaskan driver — ini otomatis membuat Booking status Pending di belakang layar, ikuti alur B mulai dari langkah 2).
+3. Isi data customer, pilih motor, atribut tambahan, dan status pembayaran seperti biasa → Simpan.
+
+### 🔁 E. Siklus Penuh Satu Transaksi (Ringkasan)
+
+```
+Booking Pending → Admin Confirm (motor jadi Booked di Fleet)
+    → Driver buat Kontrak (foto + TTD)
+    → Driver Confirm Delivered (motor jadi Rented, income driver tercatat)
+    → Admin Konfirmasi Transaksi (jadi transaksi aktif, Kode Transaksi digenerate)
+    → Sewa berjalan (Tracking Sewa menghitung mundur)
+    → Admin "Selesaikan Transaksi" saat motor kembali (isi KM Akhir, denda kalau ada)
+    → Motor kembali Available di Fleet, transaksi Completed
+```
 
 ---
 
