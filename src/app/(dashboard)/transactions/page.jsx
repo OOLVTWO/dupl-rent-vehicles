@@ -643,7 +643,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
           end_date: form.end_date,
           duration_days: Math.max(1, Math.ceil((new Date(form.end_date) - new Date(form.start_date)) / 86400000)),
           estimated_price: totalPrice,
-          status: 'confirmed',
+          status: 'pending',
           assigned_driver_id: selectedDriver.id,
           assigned_driver_name: selectedDriver.full_name,
         }]);
@@ -1164,7 +1164,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
               </h3>
               <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '22px' }}>
                 {recordType === 'transaction' ? (
-                  <>Reservasi untuk <strong>{form.renter_name}</strong> masuk ke Booking Confirmation dengan status Confirmed dan driver udah ditugaskan. Transaksinya (dan hitungan mundur Tracking Sewa) baru mulai begitu driver konfirmasi udah delivery — biar nggak mulai duluan sebelum motornya beneran diterima customer.</>
+                  <>Reservasi untuk <strong>{form.renter_name}</strong> masuk ke Booking Confirmation dengan status Pending dan driver udah ditugaskan. Buka Booking Confirmation lalu klik Confirm untuk mengunci motornya (jadi Booked di Fleet) — transaksi aktif & hitungan mundur Tracking Sewa baru mulai begitu driver konfirmasi udah delivery.</>
                 ) : (
                   <>Reservasi untuk <strong>{form.renter_name}</strong> masuk ke Booking Confirmation dengan status Pending — juga langsung kelihatan di list Transaksi ini (ditandai ungu). Motor tetap kelihatan tersedia sampai booking-nya dikonfirmasi.</>
                 )}
