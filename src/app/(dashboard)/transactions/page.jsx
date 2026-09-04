@@ -2179,7 +2179,6 @@ const handleSubmit = async (formData) => {
                   <th>Atribut Tambahan</th>
                   <th>Mulai / Selesai</th>
                   <th>KM Odometer</th>
-                  <th>Total</th>
                   <th>Diskon</th>
                   <th>Denda / Deposit</th>
                   <th>Status Motor</th>
@@ -2241,9 +2240,6 @@ const handleSubmit = async (formData) => {
                       </div>
                     </td>
                     <td data-label="KM Odometer" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
-                    <td data-label="Total">
-                      <strong style={{ fontSize: '13px', color: '#8B5CF6' }}>{formatRupiah(b.estimated_price)}</strong>
-                    </td>
                     <td data-label="Diskon" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Denda / Deposit" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Status Motor" style={{ verticalAlign: 'middle' }}>
@@ -2397,9 +2393,6 @@ const handleSubmit = async (formData) => {
                         <div>Start: <strong>{tx.km_start ? `${tx.km_start} KM` : '-'}</strong></div>
                         <div>End: <strong>{tx.km_end ? `${tx.km_end} KM` : '-'}</strong></div>
                       </div>
-                    </td>
-                    <td data-label="Total">
-                      <strong style={{ fontSize: '14px', color: '#22C55E' }}>{formatRupiah(tx.total_price)}</strong>
                     </td>
                     <td data-label="Diskon">
                       {tx.discount > 0 ? (

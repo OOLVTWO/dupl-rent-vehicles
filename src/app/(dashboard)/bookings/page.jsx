@@ -438,7 +438,6 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
         body: JSON.stringify({
           booking_id: booking.id,
           vehicle_id: booking.vehicle_id,
-          vehicle_category: booking.vehicle_category || null,
           renter_name: booking.customer_name,
           renter_phone: booking.customer_phone,
           renter_address: booking.customer_address,
@@ -922,7 +921,6 @@ function BookingsPageInner() {
                   <th>Metode Pembayaran</th>
                   <th>Status Pembayaran</th>
                   <th>Driver</th>
-                  <th>Estimasi</th>
                   <th>Status Kontrak</th>
                   <th>Status Delivery</th>
                   <th>Status</th>
@@ -1062,7 +1060,6 @@ function BookingsPageInner() {
                           <span className="badge badge-muted"><i className="fa-solid fa-hourglass-half" style={{ marginRight: '4px' }}></i>Belum ditugaskan</span>
                         )}
                       </td>
-                      <td data-label="Estimasi" style={{ fontWeight: 800, fontSize: '13px' }}>{formatRupiah(b.estimated_price)}</td>
                       <td data-label="Status Kontrak" data-label-align="left">
                         {b.fulfillment_method === 'delivery' && b.assigned_driver_id ? (
                           contractsByBookingId.has(b.id) ? (
@@ -1112,20 +1109,20 @@ function BookingsPageInner() {
                                 disabled={busyId === b.id}
                                 onClick={() => confirmDelivery(b.id)}
                                 style={{
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                                  fontSize: '13px', fontWeight: 800, padding: '11px 18px', width: '100%', maxWidth: '220px',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                                  fontSize: '12px', fontWeight: 800, padding: '8px 14px', width: '100%', maxWidth: '175px',
                                   background: 'linear-gradient(135deg, #22C55E, #16A34A)', color: '#fff', border: 'none',
                                   borderRadius: 'var(--radius-full, 999px)', cursor: busyId === b.id ? 'wait' : 'pointer',
-                                  boxShadow: '0 4px 14px rgba(34,197,94,0.35)', letterSpacing: '0.2px',
+                                  boxShadow: '0 2px 8px rgba(34,197,94,0.3)', letterSpacing: '0.1px',
                                   opacity: busyId === b.id ? 0.7 : 1, transition: 'transform 0.15s ease, box-shadow 0.15s ease',
                                 }}
                               >
                                 {busyId === b.id ? (
-                                  <><i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '14px' }}></i> Processing...</>
+                                  <><i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '12px' }}></i> Processing...</>
                                 ) : (
                                   <>
-                                    <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                      <i className="fa-solid fa-check" style={{ fontSize: '11px' }}></i>
+                                    <span style={{ width: '15px', height: '15px', borderRadius: '50%', background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                      <i className="fa-solid fa-check" style={{ fontSize: '9px' }}></i>
                                     </span>
                                     Confirm Delivered
                                   </>

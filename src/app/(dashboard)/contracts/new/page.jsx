@@ -362,13 +362,23 @@ function NewContractInner() {
               </button>
             )}
 
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => router.push('/contracts/new')}
-            >
-              <i className="fa-solid fa-file-circle-plus" style={{ marginRight: '6px' }}></i> Buat Kontrak Lainnya
-            </button>
+            {isFromBooking ? (
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => router.push('/dashboard')}
+              >
+                <i className="fa-solid fa-house" style={{ marginRight: '6px' }}></i> Kembali ke Halaman Dashboard
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => router.push('/contracts/new')}
+              >
+                <i className="fa-solid fa-file-circle-plus" style={{ marginRight: '6px' }}></i> Buat Kontrak Lainnya
+              </button>
+            )}
           </div>
         </div>
       </div>
