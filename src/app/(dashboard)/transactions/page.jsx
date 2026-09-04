@@ -35,7 +35,7 @@ function CountryCodePicker({ value, onChange }) {
   );
 
   return (
-    <div style={{ position: 'relative', width: '160px', flexShrink: 0 }}>
+    <div style={{ position: 'relative', width: '108px', flexShrink: 0 }}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -44,24 +44,24 @@ function CountryCodePicker({ value, onChange }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '6px',
+          gap: '4px',
           fontWeight: 600,
           cursor: 'pointer',
-          padding: '8px 12px',
+          padding: '8px 8px',
           background: 'var(--bg-elevated)',
           borderColor: 'var(--bg-border)'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0 }}>
           <img
             src={getFlagImageUrl(currentCountry.iso)}
             alt={currentCountry.country}
-            style={{ width: '20px', height: '14px', borderRadius: '2px', objectFit: 'cover' }}
+            style={{ width: '18px', height: '13px', borderRadius: '2px', objectFit: 'cover', flexShrink: 0 }}
             onError={(e) => { e.target.style.display = 'none'; }}
           />
-          <span>{currentCountry.code}</span>
+          <span style={{ fontSize: '13px', whiteSpace: 'nowrap' }}>{currentCountry.code}</span>
         </div>
-        <i className={`fa-solid fa-chevron-${isOpen ? 'up' : 'down'}`} style={{ fontSize: '11px', color: 'var(--text-muted)' }}></i>
+        <i className={`fa-solid fa-chevron-${isOpen ? 'up' : 'down'}`} style={{ fontSize: '10px', color: 'var(--text-muted)', flexShrink: 0 }}></i>
       </button>
 
       {isOpen && (
@@ -2064,7 +2064,7 @@ const handleSubmit = async (formData) => {
             <table className="table table--stack-mobile">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>Kode</th>
                   <th>Customer</th>
                   <th>Motor</th>
                   <th>Mulai / Selesai</th>
@@ -2087,7 +2087,7 @@ const handleSubmit = async (formData) => {
               <tbody>
                 {filteredBookingRows.map((b, idx) => (
                   <tr key={`booking-${b.id}`} style={{ background: 'rgba(139,92,246,0.04)' }}>
-                    <td data-label="#" style={{ fontWeight: 700, color: 'var(--text-muted)' }}>B{idx + 1}</td>
+                    <td data-label="Kode" style={{ fontWeight: 800, color: '#8B5CF6', fontSize: '13px', letterSpacing: '0.5px' }}>{b.booking_code || `B${idx + 1}`}</td>
                     <td data-label="Customer" data-label-align="left">
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                         <strong style={{ fontSize: '14px', color: 'var(--text-primary)' }}>{b.customer_name}</strong>
@@ -2176,7 +2176,7 @@ const handleSubmit = async (formData) => {
                 ))}
                 {filtered.map((tx, idx) => (
                   <tr key={tx.id}>
-                    <td data-label="#" style={{ fontWeight: 700, color: 'var(--text-muted)' }}>{idx + 1}</td>
+                    <td data-label="Kode" style={{ fontWeight: 800, color: 'var(--brand-primary-light)', fontSize: '13px', letterSpacing: '0.5px' }}>{tx.transaction_code || `#${idx + 1}`}</td>
                     <td data-label="Customer" data-label-align="left">
                       <div className="tx-customer-cell">
                         <div style={{ display: 'flex', position: 'relative', flexShrink: 0 }}>

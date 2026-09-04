@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { generateBookingCode } from '@/lib/bookingCode';
 import { getWhatsAppShareUrl, getWaGatewayConfig, sendWhatsAppGateway } from '@/lib/countryCodes';
 import '@/styles/sharp-system.css';
 import SharpButton from '@/components/fleet/SharpButton';
@@ -211,6 +212,7 @@ function BookingPageInner() {
 
     setError('');
     setReviewPayload({
+      booking_code: generateBookingCode(vehicle.name, vehicle.category),
       vehicle_id: vehicle.id || null,
       vehicle_name: vehicle.name,
       vehicle_category: vehicle.category || null,
@@ -272,7 +274,7 @@ function BookingPageInner() {
       ? `\n🛵 *Delivery Fee:* ${formatRupiah(b.delivery_fee)}`
       : '';
 
-    const msg = `Hi ${OWNER_NAME}! 👋 I'd like to confirm my scooter booking:\n\n👤 *Name:* ${b.customer_name}\n📞 *Phone:* ${b.customer_phone}\n🏍️ *Scooter:* ${b.vehicle_name}\n📅 *Dates:* ${formatEnDate(b.start_date)} - ${formatEnDate(b.end_date)} (${b.duration_days} day${b.duration_days > 1 ? 's' : ''})\n📦 *Method:* ${methodLabel}${deliveryFeeLine}\n💳 *Payment:* ${paymentLabel}${paymentNote}\n💰 *Estimated Total:* ${formatRupiah(b.estimated_price)}\n\nLooking forward to hearing from you, thank you! 🙏`;
+    const msg = `Hi ${OWNER_NAME}! 👋 I'd like to confirm my scooter booking:\n\n🔖 *Booking Code:* ${b.booking_code || '-'}\n👤 *Name:* ${b.customer_name}\n📞 *Phone:* ${b.customer_phone}\n🏍️ *Scooter:* ${b.vehicle_name}\n📅 *Dates:* ${formatEnDate(b.start_date)} - ${formatEnDate(b.end_date)} (${b.duration_days} day${b.duration_days > 1 ? 's' : ''})\n📦 *Method:* ${methodLabel}${deliveryFeeLine}\n💳 *Payment:* ${paymentLabel}${paymentNote}\n💰 *Estimated Total:* ${formatRupiah(b.estimated_price)}\n\nLooking forward to hearing from you, thank you! 🙏`;
 
     const gateway = getWaGatewayConfig();
     if (gateway.enabled) {
@@ -556,6 +558,10 @@ function BookingPageInner() {
 
                 {/* ── Summary Card ── */}
                 <div style={{ background: 'var(--sharp-surface)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-md)', padding: '16px', marginBottom: '18px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', paddingBottom: '10px', marginBottom: '4px', borderBottom: '1px dashed var(--sharp-line)' }}>
+                    <span style={{ color: 'var(--sharp-muted)', fontSize: '13px' }}>Booking Code</span>
+                    <span style={{ color: 'var(--sharp-accent)', fontWeight: 900, fontSize: '17px', letterSpacing: '1px' }}>{reviewPayload.booking_code}</span>
+                  </div>
                   {[
                     ['Vehicle', reviewPayload.vehicle_name],
                     ['Renter', reviewPayload.customer_name],
@@ -653,6 +659,12 @@ function BookingPageInner() {
                   <i className="fa-solid fa-check"></i>
                 </div>
                 <h1 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--sharp-ink)', margin: '0 0 6px 0' }}>Booking Confirmed!</h1>
+                {confirmedBooking.booking_code && (
+                  <div style={{ display: 'inline-block', background: 'rgba(37,99,235,0.1)', border: '1px solid var(--sharp-accent)', borderRadius: 'var(--radius-full, 999px)', padding: '5px 16px', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--sharp-muted)', marginRight: '6px' }}>Booking Code</span>
+                    <strong style={{ fontSize: '15px', color: 'var(--sharp-accent)', letterSpacing: '1px' }}>{confirmedBooking.booking_code}</strong>
+                  </div>
+                )}
                 <p style={{ fontSize: '13px', color: 'var(--sharp-muted)', margin: '0 0 20px 0' }}>
                   Your request has been sent to our system. Notify us on WhatsApp to speed things up.
                 </p>

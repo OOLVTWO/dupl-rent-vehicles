@@ -643,7 +643,7 @@ function BookingsPageInner() {
       ? `\n🧑‍✈️ *Your Driver:* ${b.assigned_driver_name}${assignedDriver?.phone ? ` (WA: ${assignedDriver.phone})` : ''}`
       : '';
 
-    const msg = `Hi ${b.customer_name}! 🛵\n\nGreat news — your booking with ${BUSINESS_NAME} is *confirmed*! ✅\n\n🏍️ *Scooter:* ${b.vehicle_name}\n📅 *Dates:* ${formatDate(b.start_date)} - ${formatDate(b.end_date)} (${b.duration_days} day${b.duration_days > 1 ? 's' : ''})\n${methodLine}${driverLine}\n💳 *Payment:* ${PAYMENT_META[b.payment_method]?.label || 'Cash'}\n💰 *Total:* ${formatRupiah(b.estimated_price)}\n\n${b.fulfillment_method === 'delivery' ? 'Our driver will contact you shortly before arrival.' : 'Please come to our shop at your scheduled pickup time.'}\n\nThank you for choosing us, see you soon! 🙏`;
+    const msg = `Hi ${b.customer_name}! 🛵\n\nGreat news — your booking with ${BUSINESS_NAME} is *confirmed*! ✅\n\n🔖 *Booking Code:* ${b.booking_code || '-'}\n🏍️ *Scooter:* ${b.vehicle_name}\n📅 *Dates:* ${formatDate(b.start_date)} - ${formatDate(b.end_date)} (${b.duration_days} day${b.duration_days > 1 ? 's' : ''})\n${methodLine}${driverLine}\n💳 *Payment:* ${PAYMENT_META[b.payment_method]?.label || 'Cash'}\n💰 *Total:* ${formatRupiah(b.estimated_price)}\n\n${b.fulfillment_method === 'delivery' ? 'Our driver will contact you shortly before arrival.' : 'Please come to our shop at your scheduled pickup time.'}\n\nThank you for choosing us, see you soon! 🙏`;
 
     window.open(getWhatsAppShareUrl(b.customer_phone, msg), '_blank');
   };
@@ -742,6 +742,7 @@ function BookingsPageInner() {
             <table className="table table--stack-mobile">
               <thead>
                 <tr>
+                  <th>Kode Booking</th>
                   <th>Customer</th>
                   <th>Motor</th>
                   <th>Tanggal Sewa</th>
@@ -766,6 +767,7 @@ function BookingsPageInner() {
                   );
                   return (
                     <tr key={b.id}>
+                      <td data-label="Kode Booking" style={{ fontWeight: 800, color: '#8B5CF6', fontSize: '13px', letterSpacing: '0.5px' }}>{b.booking_code || '-'}</td>
                       <td data-label="Customer" data-label-align="left">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', width: '100%', minWidth: 0 }}>
                           <strong style={{ fontSize: '14px', color: 'var(--text-primary)' }}>{b.customer_name}</strong>
