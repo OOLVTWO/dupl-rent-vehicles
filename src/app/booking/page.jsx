@@ -222,8 +222,8 @@ function BookingPageInner() {
       setError('Please select Pick Up at Store or Delivery.');
       return;
     }
-    if (form.fulfillment === 'delivery' && !form.address.trim()) {
-      setError('Address is required for delivery.');
+    if (!form.address.trim()) {
+      setError('Address is required.');
       return;
     }
     if (form.fulfillment === 'delivery' && !selectedZone) {
@@ -405,7 +405,7 @@ function BookingPageInner() {
 
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
-                      Fulfillment <span style={{ color: '#EF4444' }}>*</span>
+                      Fulfillment *
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
                       {[
@@ -433,7 +433,7 @@ function BookingPageInner() {
 
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
-                      Payment Method <span style={{ color: '#EF4444' }}>*</span>
+                      Payment Method *
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '10px' }}>
                       {[
@@ -555,15 +555,15 @@ function BookingPageInner() {
 
                   <div style={{ marginBottom: '18px' }}>
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
-                      {form.fulfillment === 'delivery' ? 'Delivery Address *' : 'Address (optional)'}
+                      {form.fulfillment === 'delivery' ? 'Delivery Address *' : 'Address *'}
                     </label>
                     <textarea
                       className="sharp-input"
                       style={{ width: '100%', resize: 'vertical', minHeight: '64px' }}
                       value={form.address}
                       onChange={(e) => handleChange('address', e.target.value)}
-                      placeholder={form.fulfillment === 'delivery' ? 'Villa / hotel name & full address' : 'Optional'}
-                      required={form.fulfillment === 'delivery'}
+                      placeholder={form.fulfillment === 'delivery' ? 'Villa / hotel name & full address' : 'Your address'}
+                      required
                     />
                   </div>
 
