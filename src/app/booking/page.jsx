@@ -405,6 +405,20 @@ function BookingPageInner() {
 
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
+                      {form.fulfillment === 'delivery' ? 'Delivery Address *' : 'Address *'}
+                    </label>
+                    <textarea
+                      className="sharp-input"
+                      style={{ width: '100%', resize: 'vertical', minHeight: '64px' }}
+                      value={form.address}
+                      onChange={(e) => handleChange('address', e.target.value)}
+                      placeholder={form.fulfillment === 'delivery' ? 'Villa / hotel name & full address' : 'Your address'}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: '14px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
                       Fulfillment *
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
@@ -552,20 +566,6 @@ function BookingPageInner() {
                     </div>,
                     document.body
                   )}
-
-                  <div style={{ marginBottom: '18px' }}>
-                    <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
-                      {form.fulfillment === 'delivery' ? 'Delivery Address *' : 'Address *'}
-                    </label>
-                    <textarea
-                      className="sharp-input"
-                      style={{ width: '100%', resize: 'vertical', minHeight: '64px' }}
-                      value={form.address}
-                      onChange={(e) => handleChange('address', e.target.value)}
-                      placeholder={form.fulfillment === 'delivery' ? 'Villa / hotel name & full address' : 'Your address'}
-                      required
-                    />
-                  </div>
 
                   {error && (
                     <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444', borderRadius: 'var(--radius-md)', padding: '10px 12px', fontSize: '12.5px', marginBottom: '14px' }}>

@@ -10,14 +10,14 @@ const TEXT = {
     outOfStock: 'Stok Habis',
     validNote: 'Berlaku sampai pemakaian motor selesai',
     free: 'Gratis',
-    includedNote: (names) => <><strong>{names}</strong> sudah otomatis disertakan gratis untuk setiap penyewaan.</>,
+    includedNote: (names) => <><strong>{names}</strong> sudah otomatis disertakan gratis dari Demo Rental Preview.</>,
   },
   en: {
     heading: 'Additional Equipment',
     outOfStock: 'Out of Stock',
     validNote: 'Valid until the end of your rental',
     free: 'Free',
-    includedNote: (names) => <><strong>{names}</strong> {names.includes('&') || names.includes(',') ? 'are' : 'is'} automatically included free with every rental.</>,
+    includedNote: (names) => <><strong>{names}</strong> {names.includes('&') || names.includes(',') ? 'are' : 'is'} automatically included free by Demo Rental Preview.</>,
   },
 };
 
