@@ -8,6 +8,7 @@ import { splitVehicleName } from '@/lib/bookingCode';
 import PaymentSummaryCell from '@/components/shared/PaymentSummaryCell';
 import { getWhatsAppShareUrl } from '@/lib/countryCodes';
 import VehicleCombobox from '@/components/shared/VehicleCombobox';
+import CountryCodePicker from '@/components/shared/CountryCodePicker';
 import { useRole } from '@/lib/RoleContext';
 import { createClient } from '@/lib/supabase/client';
 
@@ -96,6 +97,21 @@ function EditBookingModal({ booking, onClose, onSaved, vehicles, deliveryZones, 
   const [fulfillment, setFulfillment] = useState(booking.fulfillment_method || 'pickup');
   const [selectedZoneId, setSelectedZoneId] = useState(booking.delivery_zone_id || '');
   const [assignedDriverId, setAssignedDriverId] = useState(booking.assigned_driver_id || '');
+  const [countryCode, setCountryCode] = useState(() => {
+    if (booking.customer_phone) {
+      const parts = booking.customer_phone.trim().split(' ');
+      if (parts.length > 1 && parts[0].startsWith('+')) return parts[0];
+    }
+    return '+62';
+  });
+  const [phoneNumber, setPhoneNumber] = useState(() => {
+    if (booking.customer_phone) {
+      const parts = booking.customer_phone.trim().split(' ');
+      if (parts.length > 1 && parts[0].startsWith('+')) return parts.slice(1).join(' ');
+      return booking.customer_phone;
+    }
+    return '';
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -194,13 +210,28 @@ function EditBookingModal({ booking, onClose, onSaved, vehicles, deliveryZones, 
 
           <div className="form-group">
             <label className="form-label">Nomor WhatsApp <span className="required">*</span></label>
-            <input
-              type="tel"
-              className="form-control"
-              value={form.customer_phone}
-              onChange={(e) => handleChange('customer_phone', e.target.value)}
-              required
-            />
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap' }}>
+              <CountryCodePicker
+                value={countryCode}
+                onChange={(newCode) => {
+                  setCountryCode(newCode);
+                  handleChange('customer_phone', `${newCode} ${phoneNumber}`);
+                }}
+              />
+              <input
+                type="tel"
+                className="form-control"
+                style={{ flex: 1, minWidth: 0 }}
+                placeholder="812345678"
+                value={phoneNumber}
+                onChange={(e) => {
+                  const newNum = e.target.value;
+                  setPhoneNumber(newNum);
+                  handleChange('customer_phone', `${countryCode} ${newNum}`);
+                }}
+                required
+              />
+            </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
@@ -1008,21 +1039,28 @@ function BookingsPageInner() {
                         </span>
                       </td>
                       <td data-label="Status Pembayaran" data-label-align="left">
-                        {b.payment_status === 'paid' && (
-                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#22C55E', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                            <i className="fa-solid fa-circle-check" style={{ fontSize: '10px' }}></i>Lunas
-                          </span>
-                        )}
-                        {b.payment_status === 'down_payment' && (
-                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#3B82F6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                            <i className="fa-solid fa-coins" style={{ fontSize: '10px' }}></i>DP {formatRupiah(b.dp_amount)}
-                          </span>
-                        )}
-                        {(!b.payment_status || b.payment_status === 'unpaid') && (
-                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#F59E0B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                            <i className="fa-solid fa-clock" style={{ fontSize: '10px' }}></i>Belum Bayar
-                          </span>
-                        )}
+                        {(() => {
+                          const syncedStatus = (txByBookingId.get(b.id)?.payment_status) || b.payment_status || 'unpaid';
+                          if (syncedStatus === 'paid') {
+                            return (
+                              <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#22C55E', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                <i className="fa-solid fa-circle-check" style={{ fontSize: '10px' }}></i>Lunas
+                              </span>
+                            );
+                          }
+                          if (syncedStatus === 'down_payment') {
+                            return (
+                              <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#3B82F6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                <i className="fa-solid fa-coins" style={{ fontSize: '10px' }}></i>DP
+                              </span>
+                            );
+                          }
+                          return (
+                            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#F59E0B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                              <i className="fa-solid fa-clock" style={{ fontSize: '10px' }}></i>Belum Bayar
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td data-label="Driver" data-label-align="left">
                         {b.fulfillment_method !== 'delivery' ? (

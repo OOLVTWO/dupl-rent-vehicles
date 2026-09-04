@@ -5,8 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { fetchCustomers, upsertCustomer, syncTransactionsToCustomers, deleteCustomer } from '@/lib/customers';
 import { exportCustomersToExcel, formatRupiah } from '@/lib/excel';
-import { COUNTRY_CODES, getFlagImageUrl } from '@/lib/countryCodes';
 import { compressImage } from '@/lib/imageCompressor';
+import CountryCodePicker from '@/components/shared/CountryCodePicker';
 
 const VALID_CUSTOMER_TABS = ['all', 'repeat', 'new'];
 
@@ -20,125 +20,6 @@ function TabFromQuery({ onTab }) {
     if (tab && VALID_CUSTOMER_TABS.includes(tab)) onTab(tab);
   }, [searchParams, onTab]);
   return null;
-}
-
-// Country Code Picker Helper for Customer Modal
-function CountryCodePicker({ value, onChange }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState('');
-
-  const currentCountry = COUNTRY_CODES.find(c => c.code === value) || COUNTRY_CODES[0];
-  const filtered = COUNTRY_CODES.filter(c =>
-    c.country.toLowerCase().includes(search.toLowerCase()) ||
-    c.code.includes(search)
-  );
-
-  return (
-    <div style={{ position: 'relative', width: '150px', flexShrink: 0 }}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="form-control"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '6px',
-          fontWeight: 600,
-          cursor: 'pointer',
-          padding: '8px 12px',
-          background: 'var(--bg-elevated)',
-          borderColor: 'var(--bg-border)'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <img
-            src={getFlagImageUrl(currentCountry.iso)}
-            alt={currentCountry.country}
-            style={{ width: '18px', height: '12px', borderRadius: '2px', objectFit: 'cover' }}
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
-          <span style={{ fontSize: '13px' }}>{currentCountry.code}</span>
-        </div>
-        <i className={`fa-solid fa-chevron-${isOpen ? 'up' : 'down'}`} style={{ fontSize: '10px', color: 'var(--text-muted)' }}></i>
-      </button>
-
-      {isOpen && (
-        <div style={{
-          position: 'absolute',
-          top: 'calc(100% + 4px)',
-          left: 0,
-          width: '260px',
-          maxHeight: '260px',
-          background: 'var(--bg-elevated)',
-          border: '1px solid var(--brand-primary)',
-          borderRadius: '10px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.35)',
-          zIndex: 9999,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          <div style={{ padding: '8px', borderBottom: '1px solid var(--bg-border)' }}>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Cari negara / kode..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              autoFocus
-              style={{ fontSize: '12px', padding: '6px 10px' }}
-            />
-          </div>
-
-          <div style={{ overflowY: 'auto', flex: 1, padding: '4px' }}>
-            {filtered.length === 0 ? (
-              <div style={{ padding: '12px', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center' }}>
-                Tidak ditemukan
-              </div>
-            ) : (
-              filtered.map(c => {
-                const isSelected = c.code === value;
-                return (
-                  <div
-                    key={`${c.iso}-${c.code}`}
-                    onClick={() => {
-                      onChange(c.code);
-                      setIsOpen(false);
-                      setSearch('');
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '8px 10px',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      background: isSelected ? 'rgba(37, 99, 235, 0.15)' : 'transparent',
-                      color: isSelected ? 'var(--brand-primary-light)' : 'var(--text-primary)',
-                      fontSize: '12px',
-                      fontWeight: isSelected ? 700 : 500
-                    }}
-                  >
-                    <img
-                      src={getFlagImageUrl(c.iso)}
-                      alt={c.country}
-                      style={{ width: '18px', height: '12px', borderRadius: '2px', objectFit: 'cover' }}
-                      onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                    <strong style={{ minWidth: '40px' }}>{c.code}</strong>
-                    <span style={{ color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {c.country}
-                    </span>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }
 
 export default function CustomersPage() {

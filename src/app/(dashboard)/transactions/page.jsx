@@ -5,12 +5,13 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useRole } from '@/lib/RoleContext';
 import VehicleCombobox from '@/components/shared/VehicleCombobox';
+import CountryCodePicker from '@/components/shared/CountryCodePicker';
 import CustomerPickerCombobox from '@/components/shared/CustomerPickerCombobox';
 import { getPaymentMethodMeta } from '@/lib/paymentMethods';
 import { splitVehicleName } from '@/lib/bookingCode';
 import PaymentSummaryCell from '@/components/shared/PaymentSummaryCell';
 import AttributeSelector from '@/components/shared/AttributeSelector';
-import { COUNTRY_CODES, getWhatsAppShareUrl, generateInvoiceText, getFlagImageUrl } from '@/lib/countryCodes';
+import { getWhatsAppShareUrl, generateInvoiceText } from '@/lib/countryCodes';
 import { createClient } from '@/lib/supabase/client';
 import { fetchCustomers, upsertCustomer } from '@/lib/customers';
 import { getLocalDateStr } from '@/lib/finance';
@@ -23,126 +24,6 @@ function formatRupiah(amount) {
     currency: 'IDR',
     minimumFractionDigits: 0,
   }).format(amount || 0);
-}
-
-// ===== SEARCHABLE COUNTRY CODE PICKER WITH FLAG CDN =====
-function CountryCodePicker({ value, onChange }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState('');
-
-  const currentCountry = COUNTRY_CODES.find(c => c.code === value) || COUNTRY_CODES[0];
-
-  const filtered = COUNTRY_CODES.filter(c =>
-    c.country.toLowerCase().includes(search.toLowerCase()) ||
-    c.code.includes(search)
-  );
-
-  return (
-    <div style={{ position: 'relative', width: '108px', flexShrink: 0 }}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="form-control"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '4px',
-          fontWeight: 600,
-          cursor: 'pointer',
-          padding: '8px 8px',
-          background: 'var(--bg-elevated)',
-          borderColor: 'var(--bg-border)'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0 }}>
-          <img
-            src={getFlagImageUrl(currentCountry.iso)}
-            alt={currentCountry.country}
-            style={{ width: '18px', height: '13px', borderRadius: '2px', objectFit: 'cover', flexShrink: 0 }}
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
-          <span style={{ fontSize: '13px', whiteSpace: 'nowrap' }}>{currentCountry.code}</span>
-        </div>
-        <i className={`fa-solid fa-chevron-${isOpen ? 'up' : 'down'}`} style={{ fontSize: '10px', color: 'var(--text-muted)', flexShrink: 0 }}></i>
-      </button>
-
-      {isOpen && (
-        <div style={{
-          position: 'absolute',
-          top: 'calc(100% + 4px)',
-          left: 0,
-          width: '270px',
-          maxHeight: '280px',
-          background: 'var(--bg-elevated)',
-          border: '1px solid var(--brand-primary)',
-          borderRadius: '10px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.35)',
-          zIndex: 9999,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          <div style={{ padding: '8px', borderBottom: '1px solid var(--bg-border)' }}>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Cari 221 negara / kode..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              autoFocus
-              style={{ fontSize: '12px', padding: '6px 10px' }}
-            />
-          </div>
-
-          <div style={{ overflowY: 'auto', flex: 1, padding: '4px' }}>
-            {filtered.length === 0 ? (
-              <div style={{ padding: '12px', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center' }}>
-                Tidak ditemukan
-              </div>
-            ) : (
-              filtered.map(c => {
-                const isSelected = c.code === value;
-                return (
-                  <div
-                    key={`${c.iso}-${c.code}`}
-                    onClick={() => {
-                      onChange(c.code);
-                      setIsOpen(false);
-                      setSearch('');
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      padding: '8px 10px',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      background: isSelected ? 'rgba(37, 99, 235, 0.15)' : 'transparent',
-                      color: isSelected ? 'var(--brand-primary-light)' : 'var(--text-primary)',
-                      fontSize: '12px',
-                      fontWeight: isSelected ? 700 : 500
-                    }}
-                  >
-                    <img
-                      src={getFlagImageUrl(c.iso)}
-                      alt={c.country}
-                      style={{ width: '20px', height: '14px', borderRadius: '2px', objectFit: 'cover' }}
-                      onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                    <strong style={{ minWidth: '42px' }}>{c.code}</strong>
-                    <span style={{ color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {c.country}
-                    </span>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }
 
 // ===== SMART PRICE RECOMMENDATION PANEL =====
@@ -2256,7 +2137,7 @@ const handleSubmit = async (formData) => {
                       )}
                       {b.payment_status === 'down_payment' && (
                         <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#3B82F6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                          <i className="fa-solid fa-coins" style={{ fontSize: '10px' }}></i>DP {formatRupiah(b.dp_amount)}
+                          <i className="fa-solid fa-coins" style={{ fontSize: '10px' }}></i>DP
                         </span>
                       )}
                       {(!b.payment_status || b.payment_status === 'unpaid') && (
@@ -2324,26 +2205,18 @@ const handleSubmit = async (formData) => {
                             </div>
                           )}
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0, width: '100%' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', minWidth: 0, width: '100%' }}>
                           <strong style={{ fontSize: '14px', color: 'var(--text-primary)' }}>{tx.renter_name}</strong>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}><i className="fa-solid fa-phone" style={{ marginRight: '4px', fontSize: '10px' }}></i>{tx.renter_phone}</span>
-                            {tx.payment_method && (
-                              <span className="tx-info-pill" style={{ color: getPaymentMethodMeta(tx.payment_method).color, borderColor: `${getPaymentMethodMeta(tx.payment_method).color}40`, background: `${getPaymentMethodMeta(tx.payment_method).color}15` }}>
-                                <i className={getPaymentMethodMeta(tx.payment_method).icon} style={{ fontSize: '10px' }}></i>
-                                {getPaymentMethodMeta(tx.payment_method).label}
-                              </span>
-                            )}
-                          </div>
+                          <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}><i className="fa-solid fa-phone" style={{ marginRight: '5px', fontSize: '10px' }}></i>{tx.renter_phone}</span>
                           {tx.renter_address && (
                             <div style={{ fontSize: '11px', color: 'var(--brand-primary-light)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }} title={tx.renter_address}>
-                              <i className="fa-solid fa-location-dot" style={{ marginRight: '4px' }}></i>
+                              <i className="fa-solid fa-location-dot" style={{ marginRight: '5px' }}></i>
                               {tx.renter_address}
                             </div>
                           )}
                           {tx.renter_id_number && (
                             <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                              <i className="fa-solid fa-id-card" style={{ marginRight: '4px' }}></i>
+                              <i className="fa-solid fa-id-card" style={{ marginRight: '5px' }}></i>
                               {tx.renter_id_number}
                             </div>
                           )}
@@ -2434,7 +2307,7 @@ const handleSubmit = async (formData) => {
                       )}
                       {tx.payment_status === 'down_payment' && (
                         <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#3B82F6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                          <i className="fa-solid fa-coins" style={{ fontSize: '10px' }}></i>DP {formatRupiah(tx.dp_amount)}
+                          <i className="fa-solid fa-coins" style={{ fontSize: '10px' }}></i>DP
                         </span>
                       )}
                       {tx.payment_status === 'unpaid' && (
