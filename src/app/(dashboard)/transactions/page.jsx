@@ -71,10 +71,10 @@ function CountryCodePicker({ value, onChange }) {
           left: 0,
           width: '270px',
           maxHeight: '280px',
-          background: '#0F172A',
+          background: 'var(--bg-elevated)',
           border: '1px solid var(--brand-primary)',
           borderRadius: '10px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.35)',
           zIndex: 9999,
           overflow: 'hidden',
           display: 'flex',
@@ -590,8 +590,8 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
           status: 'pending',
         }]);
         if (error) throw error;
+        await onBookingSaved?.();
         setBookingSuccess(true);
-        onBookingSaved?.();
       } catch (err) {
         setBookingError(err?.message || 'Gagal menyimpan booking.');
       }
@@ -639,8 +639,8 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
           assigned_driver_name: selectedDriver.full_name,
         }]);
         if (bookingErr) throw bookingErr;
+        await onBookingSaved?.();
         setBookingSuccess(true);
-        onBookingSaved?.();
       } catch (err) {
         setBookingError(err?.message || 'Gagal menyimpan booking.');
       }
@@ -2075,7 +2075,6 @@ const handleSubmit = async (formData) => {
                   <th>Status Motor</th>
                   <th>Status Pembayaran</th>
                   <th>Metode Pembayaran</th>
-                  <th>ID Referensi</th>
                   <th>Kontrak</th>
                   <th>Driver</th>
                   <th>Zona Delivery</th>
@@ -2097,7 +2096,17 @@ const handleSubmit = async (formData) => {
                       </div>
                     </td>
                     <td data-label="Motor" data-label-align="left">
-                      <strong style={{ fontSize: '13.5px', color: 'var(--text-primary)' }}>{b.vehicle_name || '-'}</strong>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <strong style={{ fontSize: '13.5px', color: 'var(--text-primary)' }}>{b.vehicle_name || '-'}</strong>
+                        {(() => {
+                          const veh = vehicles.find(v => v.id === b.vehicle_id);
+                          return veh?.plate_number ? (
+                            <span className="tx-info-pill" style={{ color: 'var(--brand-primary-light)', borderColor: 'rgba(37, 99, 235, 0.35)', background: 'rgba(37, 99, 235, 0.12)', padding: '3px 9px', width: 'fit-content' }}>
+                              <i className="fa-solid fa-motorcycle" style={{ fontSize: '10px', marginRight: '5px' }}></i>{veh.plate_number}
+                            </span>
+                          ) : null;
+                        })()}
+                      </div>
                     </td>
                     <td data-label="Mulai / Selesai" data-label-align="left">
                       <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>
@@ -2138,9 +2147,6 @@ const handleSubmit = async (formData) => {
                         <i className={getPaymentMethodMeta(b.payment_method).icon} style={{ fontSize: '10px' }}></i>
                         {getPaymentMethodMeta(b.payment_method).label}
                       </span>
-                    </td>
-                    <td data-label="ID Referensi" style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                      <div>Booking: {b.id.slice(0, 8)}</div>
                     </td>
                     <td data-label="Kontrak" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Driver" data-label-align="left">
@@ -2310,12 +2316,6 @@ const handleSubmit = async (formData) => {
                         <i className={getPaymentMethodMeta(tx.payment_method).icon} style={{ fontSize: '10px' }}></i>
                         {getPaymentMethodMeta(tx.payment_method).label}
                       </span>
-                    </td>
-                    <td data-label="ID Referensi" style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontFamily: 'monospace', verticalAlign: 'middle' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <div>Transaksi: {tx.id.slice(0, 8)}</div>
-                        {tx.booking_id && <div>Booking: {tx.booking_id.slice(0, 8)}</div>}
-                      </div>
                     </td>
                     <td data-label="Kontrak" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       {(contractedIds.has(tx.id) || (tx.booking_id && contractedIds.has(tx.booking_id))) ? (

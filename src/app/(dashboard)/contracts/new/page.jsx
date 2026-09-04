@@ -353,7 +353,7 @@ function NewContractInner() {
               className="btn btn-primary"
               onClick={() => router.push('/contracts/new')}
             >
-              <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Buat Kontrak Lain
+              <i className="fa-solid fa-list" style={{ marginRight: '6px' }}></i> Kembali ke Kontrak
             </button>
 
             {isFromBooking ? (

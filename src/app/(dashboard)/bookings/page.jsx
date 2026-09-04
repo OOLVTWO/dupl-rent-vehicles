@@ -475,10 +475,10 @@ function BookingsPageInner() {
   const [editingBooking, setEditingBooking] = useState(null);
   const [confirmTxBooking, setConfirmTxBooking] = useState(null);
   const [drivers, setDrivers] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
   const [directTxDeliveries, setDirectTxDeliveries] = useState([]);
   const [myUserId, setMyUserId] = useState(null);
   const [contractsByBookingId, setContractsByBookingId] = useState(new Map());
-  const [txIdByBookingId, setTxIdByBookingId] = useState(new Map());
 
   useEffect(() => {
     Promise.resolve().then(async () => {
@@ -498,15 +498,6 @@ function BookingsPageInner() {
         const map = new Map();
         (Array.isArray(data) ? data : []).forEach(c => { if (c.booking_id) map.set(c.booking_id, c); });
         setContractsByBookingId(map);
-      }
-    } catch { /* ignore */ }
-    try {
-      const res = await fetch('/api/transactions');
-      const data = await res.json().catch(() => []);
-      if (res.ok) {
-        const map = new Map();
-        (Array.isArray(data) ? data : []).forEach(t => { if (t.booking_id) map.set(t.booking_id, t.id); });
-        setTxIdByBookingId(map);
       }
     } catch { /* ignore */ }
   }, []);
@@ -567,6 +558,11 @@ function BookingsPageInner() {
     } catch {
       setError('Gagal terhubung ke server.');
     }
+    try {
+      const vRes = await fetch('/api/vehicles');
+      const vData = await vRes.json().catch(() => []);
+      if (vRes.ok) setVehicles(Array.isArray(vData) ? vData : []);
+    } catch { /* ignore */ }
     setLoading(false);
   }, []);
 
@@ -751,7 +747,6 @@ function BookingsPageInner() {
                   <th>Status Pembayaran</th>
                   <th>Driver</th>
                   <th>Estimasi</th>
-                  <th>ID Referensi</th>
                   <th>Status Kontrak</th>
                   <th>Status Delivery</th>
                   <th>Status</th>
@@ -788,7 +783,15 @@ function BookingsPageInner() {
                       </td>
                       <td data-label="Motor">
                         <div style={{ fontWeight: 700, fontSize: '13px' }}>{b.vehicle_name}</div>
-                        {b.vehicle_category && <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{b.vehicle_category}</div>}
+                        {(() => {
+                          const veh = vehicles.find(v => v.id === b.vehicle_id);
+                          return veh?.plate_number ? (
+                            <span className="tx-info-pill" style={{ color: 'var(--brand-primary-light)', borderColor: 'rgba(37, 99, 235, 0.35)', background: 'rgba(37, 99, 235, 0.12)', padding: '3px 9px', width: 'fit-content', marginTop: '4px', display: 'inline-block' }}>
+                              <i className="fa-solid fa-motorcycle" style={{ fontSize: '10px', marginRight: '5px' }}></i>{veh.plate_number}
+                            </span>
+                          ) : null;
+                        })()}
+                        {b.vehicle_category && <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '3px' }}>{b.vehicle_category}</div>}
                       </td>
                       <td data-label="Tanggal Sewa" data-label-align="left" style={{ fontSize: '13px' }}>
                         {formatDate(b.start_date)} — {formatDate(b.end_date)}
@@ -865,12 +868,6 @@ function BookingsPageInner() {
                         )}
                       </td>
                       <td data-label="Estimasi" style={{ fontWeight: 800, fontSize: '13px' }}>{formatRupiah(b.estimated_price)}</td>
-                      <td data-label="ID Referensi" style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <div>Booking: {b.id.slice(0, 8)}</div>
-                          {txIdByBookingId.has(b.id) && <div>Transaksi: {txIdByBookingId.get(b.id).slice(0, 8)}</div>}
-                        </div>
-                      </td>
                       <td data-label="Status Kontrak" data-label-align="left">
                         {b.fulfillment_method === 'delivery' && b.assigned_driver_id ? (
                           contractsByBookingId.has(b.id) ? (
