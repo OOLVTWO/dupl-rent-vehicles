@@ -105,9 +105,10 @@ export default function AttributeSelector({ attributes = [], quantities = {}, no
                     padding: '12px 14px', borderRadius: hasStepper && isChecked ? '12px 12px 0 0' : '12px',
                     cursor: blocked ? 'not-allowed' : 'pointer',
                     border: isChecked ? '2px solid var(--brand-primary, var(--sharp-accent, #2563EB))' : '1px solid var(--bg-border, var(--sharp-line, #E2E8F0))',
-                    borderBottom: hasStepper && isChecked ? 'none' : undefined,
+                    borderBottom: hasStepper && isChecked ? 'none' : (isChecked ? '2px solid var(--brand-primary, var(--sharp-accent, #2563EB))' : '1px solid var(--bg-border, var(--sharp-line, #E2E8F0))'),
                     background: isChecked ? 'rgba(37,99,235,0.08)' : 'transparent',
                     opacity: blocked ? 0.5 : 1,
+                    outline: 'none', WebkitAppearance: 'none', appearance: 'none', margin: 0, WebkitTapHighlightColor: 'transparent', boxShadow: 'none',
                   }}
                 >
                   {/* Checkbox bulat */}
@@ -158,6 +159,7 @@ export default function AttributeSelector({ attributes = [], quantities = {}, no
                           width: '28px', height: '28px', borderRadius: '50%', border: '1px solid var(--bg-border, var(--sharp-line, #E2E8F0))',
                           background: 'var(--bg-elevated, var(--sharp-surface-2, #F8FAFC))', color: 'var(--text-primary, var(--sharp-ink, #0F172A))',
                           cursor: qty <= 1 ? 'not-allowed' : 'pointer', opacity: qty <= 1 ? 0.4 : 1, fontWeight: 800,
+                          outline: 'none', WebkitAppearance: 'none', appearance: 'none', margin: 0, WebkitTapHighlightColor: 'transparent', boxShadow: 'none', padding: 0,
                         }}
                       >−</button>
                       <strong style={{ fontSize: '14px', color: 'var(--text-primary, var(--sharp-ink, #0F172A))', minWidth: '14px', textAlign: 'center' }}>{qty}</strong>
@@ -169,6 +171,7 @@ export default function AttributeSelector({ attributes = [], quantities = {}, no
                           width: '28px', height: '28px', borderRadius: '50%', border: '1px solid var(--brand-primary, var(--sharp-accent, #2563EB))',
                           background: 'var(--brand-primary, var(--sharp-accent, #2563EB))', color: '#fff',
                           cursor: qty >= Number(attr.max_per_booking) ? 'not-allowed' : 'pointer', opacity: qty >= Number(attr.max_per_booking) ? 0.4 : 1, fontWeight: 800,
+                          outline: 'none', WebkitAppearance: 'none', appearance: 'none', margin: 0, WebkitTapHighlightColor: 'transparent', boxShadow: 'none', padding: 0,
                         }}
                       >+</button>
                     </div>
@@ -189,6 +192,7 @@ export default function AttributeSelector({ attributes = [], quantities = {}, no
           padding: '12px 14px', borderRadius: '12px', cursor: 'pointer',
           border: noneChosen ? '2px solid var(--text-muted, var(--sharp-muted, #94A3B8))' : '1px dashed var(--bg-border, var(--sharp-line, #E2E8F0))',
           background: noneChosen ? 'var(--bg-elevated, var(--sharp-surface-2, #F8FAFC))' : 'transparent',
+          outline: 'none', WebkitAppearance: 'none', appearance: 'none', margin: 0, WebkitTapHighlightColor: 'transparent', boxShadow: 'none',
         }}
       >
         <span style={{
