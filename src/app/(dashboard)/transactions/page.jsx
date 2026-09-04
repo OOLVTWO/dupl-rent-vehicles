@@ -299,7 +299,7 @@ function SmartPriceRecommendationPanel({ vehicle, startDate, endDate, selectedOp
 
 function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles, editData }) {
   const [recordType, setRecordType] = useState(''); // '' | 'transaction' | 'booking'
-  const [fulfillment, setFulfillment] = useState('pickup'); // 'pickup' | 'delivery'
+  const [fulfillment, setFulfillment] = useState(''); // '' | 'pickup' | 'delivery'
   const [deliveryZones, setDeliveryZones] = useState([]);
   const [selectedZoneId, setSelectedZoneId] = useState('');
   const [drivers, setDrivers] = useState([]);
@@ -342,7 +342,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
     setPrevOpenKey(openKey);
     if (openKey === 'new') {
       setRecordType('');
-      setFulfillment('pickup');
+      setFulfillment('');
       setSelectedZoneId('');
       setAssignedDriverId('');
     }
@@ -512,6 +512,10 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
     e.preventDefault();
     if (!editData && !recordType) {
       alert('Silakan pilih dulu: Transaksi Langsung atau Booking (Reservasi).');
+      return;
+    }
+    if (!editData && !fulfillment) {
+      alert('Silakan pilih dulu: Ambil di Toko atau Diantar.');
       return;
     }
     const cleanVehicleId = (form.vehicle_id || '').trim();
@@ -747,7 +751,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
           {/* ── Ambil di Toko / Diantar — selalu tampil, nggak nunggu Jenis Pencatatan dipilih dulu ── */}
           {!editData && (
             <div className="form-group">
-              <label className="form-label">Ambil di Toko atau Diantar?</label>
+              <label className="form-label">Ambil di Toko atau Diantar? <span className="required">*</span></label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: fulfillment === 'delivery' ? '12px' : 0 }}>
                 <button
                   type="button"
