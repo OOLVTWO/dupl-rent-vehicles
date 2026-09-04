@@ -348,27 +348,27 @@ function NewContractInner() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => router.push('/contracts/new')}
-            >
-              <i className="fa-solid fa-list" style={{ marginRight: '6px' }}></i> Kembali ke Kontrak
-            </button>
-
             {isFromBooking ? (
-              <button className="btn btn-secondary" onClick={() => router.push('/dashboard')}>
-                <i className="fa-solid fa-house" style={{ marginRight: '6px' }}></i> Kembali ke Halaman Utama
+              <button className="btn btn-primary" onClick={() => router.push('/bookings')}>
+                <i className="fa-solid fa-truck-fast" style={{ marginRight: '6px' }}></i> Go to Booking — Confirm Delivery
               </button>
             ) : isFromTransaction ? (
-              <button className="btn btn-secondary" onClick={() => router.push('/transactions')}>
+              <button className="btn btn-primary" onClick={() => router.push('/transactions')}>
                 <i className="fa-solid fa-arrow-left" style={{ marginRight: '6px' }}></i> Kembali ke Transaksi
               </button>
             ) : (
-              <button className="btn btn-secondary" onClick={() => router.push('/contracts')}>
+              <button className="btn btn-primary" onClick={() => router.push('/contracts')}>
                 <i className="fa-solid fa-list" style={{ marginRight: '6px' }}></i> Lihat Laporan Kontrak
               </button>
             )}
+
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => router.push('/contracts/new')}
+            >
+              <i className="fa-solid fa-file-circle-plus" style={{ marginRight: '6px' }}></i> Buat Kontrak Lainnya
+            </button>
           </div>
         </div>
       </div>

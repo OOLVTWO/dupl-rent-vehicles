@@ -127,6 +127,21 @@ export async function PATCH(request, { params }) {
     updateData.customer_phone = phone;
   }
   if ('customer_address' in body) updateData.customer_address = body.customer_address || null;
+  if ('customer_id_number' in body) updateData.customer_id_number = body.customer_id_number || null;
+  if ('vehicle_id' in body) updateData.vehicle_id = body.vehicle_id || null;
+  if ('vehicle_name' in body) updateData.vehicle_name = body.vehicle_name || null;
+  if ('vehicle_category' in body) updateData.vehicle_category = body.vehicle_category || null;
+  if ('payment_status' in body) updateData.payment_status = body.payment_status || 'unpaid';
+  if ('dp_amount' in body) {
+    const dp = Number(body.dp_amount);
+    updateData.dp_amount = Number.isFinite(dp) && dp >= 0 ? dp : 0;
+  }
+  if ('delivery_zone_id' in body) updateData.delivery_zone_id = body.delivery_zone_id || null;
+  if ('delivery_zone_name' in body) updateData.delivery_zone_name = body.delivery_zone_name || null;
+  if ('delivery_fee' in body) {
+    const fee = Number(body.delivery_fee);
+    updateData.delivery_fee = Number.isFinite(fee) && fee >= 0 ? fee : 0;
+  }
   if ('notes' in body) updateData.notes = body.notes;
   if ('wa_notified_at' in body) updateData.wa_notified_at = body.wa_notified_at;
   if ('estimated_price' in body) {

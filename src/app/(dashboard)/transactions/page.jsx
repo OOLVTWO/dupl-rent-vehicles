@@ -440,7 +440,13 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
           notes: editData.notes || '',
         });
         setTotalPrice(editData.total_price || 0);
-        setShowOptional(false);
+        // Edit selalu berlaku untuk record transaksi aktif — sinkronkan
+        // recordType & field terkait supaya section Ambil di Toko/Diantar
+        // dan Pilih Motor tampil sama seperti pas nambah transaksi baru.
+        setRecordType('transaction');
+        setFulfillment(editData.fulfillment_method || 'pickup');
+        setSelectedZoneId(editData.delivery_zone_id || '');
+        setAssignedDriverId(editData.assigned_driver_id || '');
 
         if (editData.renter_phone) {
           const parts = editData.renter_phone.trim().split(' ');
@@ -478,7 +484,6 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
         setCountryCode('+62');
         setPhoneNumber('');
         setTotalPrice(0);
-        setShowOptional(false);
       }
     });
   }, [editData, isOpen]);
@@ -653,8 +658,15 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
       return;
     }
 
-    const extraFields = (!editData && recordType === 'transaction') ? {
+    const zoneForSubmit = deliveryZones.find(z => z.id === selectedZoneId);
+    const driverForSubmit = drivers.find(d => d.id === assignedDriverId);
+    const extraFields = (recordType === 'transaction') ? {
       fulfillment_method: fulfillment,
+      delivery_zone_id: fulfillment === 'delivery' ? (zoneForSubmit?.id || null) : null,
+      delivery_zone_name: fulfillment === 'delivery' ? (zoneForSubmit?.zone_label || null) : null,
+      delivery_fee: fulfillment === 'delivery' ? Number(zoneForSubmit?.fee) || 0 : 0,
+      assigned_driver_id: fulfillment === 'delivery' ? (driverForSubmit?.id || null) : null,
+      assigned_driver_name: fulfillment === 'delivery' ? (driverForSubmit?.full_name || null) : null,
     } : {};
 
     await onSubmit({ ...form, ...extraFields, vehicle_id: cleanVehicleId, total_price: totalPrice });
@@ -756,8 +768,8 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
             </div>
           )}
 
-          {/* ── Ambil di Toko / Diantar — selalu tampil, nggak nunggu Jenis Pencatatan dipilih dulu ── */}
-          {!editData && (
+          {/* ── Ambil di Toko / Diantar — selalu tampil, baik nambah maupun edit ── */}
+          {(
             <div className="form-group">
               <label className="form-label">Ambil di Toko atau Diantar? <span className="required">*</span></label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: fulfillment === 'delivery' ? '12px' : 0 }}>

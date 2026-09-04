@@ -7,6 +7,7 @@ import { formatRupiah, getLocalDateStr } from '@/lib/finance';
 import { splitVehicleName } from '@/lib/bookingCode';
 import PaymentSummaryCell from '@/components/shared/PaymentSummaryCell';
 import { getWhatsAppShareUrl } from '@/lib/countryCodes';
+import VehicleCombobox from '@/components/shared/VehicleCombobox';
 import { useRole } from '@/lib/RoleContext';
 import { createClient } from '@/lib/supabase/client';
 
@@ -78,17 +79,23 @@ function ActionBtn({ active, color, icon, title, onClick, disabled }) {
   );
 }
 
-function EditBookingModal({ booking, onClose, onSaved }) {
+function EditBookingModal({ booking, onClose, onSaved, vehicles, deliveryZones, drivers }) {
   const [form, setForm] = useState({
     customer_name: booking.customer_name || '',
     customer_phone: booking.customer_phone || '',
+    customer_id_number: booking.customer_id_number || '',
     customer_address: booking.customer_address || '',
-    fulfillment_method: booking.fulfillment_method || 'pickup',
+    vehicle_id: booking.vehicle_id || '',
     payment_method: booking.payment_method || 'cash',
+    payment_status: booking.payment_status || 'unpaid',
+    dp_amount: booking.dp_amount || '',
     start_date: booking.start_date || '',
     end_date: booking.end_date || '',
     estimated_price: booking.estimated_price || 0,
   });
+  const [fulfillment, setFulfillment] = useState(booking.fulfillment_method || 'pickup');
+  const [selectedZoneId, setSelectedZoneId] = useState(booking.delivery_zone_id || '');
+  const [assignedDriverId, setAssignedDriverId] = useState(booking.assigned_driver_id || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -104,13 +111,39 @@ function EditBookingModal({ booking, onClose, onSaved }) {
       setError('Tanggal mulai dan selesai wajib diisi.');
       return;
     }
+    if (!form.vehicle_id) {
+      setError('Motor wajib dipilih.');
+      return;
+    }
+    if (fulfillment === 'delivery' && !selectedZoneId) {
+      setError('Zona delivery wajib dipilih.');
+      return;
+    }
+    if (form.payment_status === 'down_payment' && !String(form.dp_amount).trim()) {
+      setError('Jumlah DP yang sudah dibayar wajib diisi.');
+      return;
+    }
     setSaving(true);
     setError('');
+    const zoneObj = deliveryZones.find(z => z.id === selectedZoneId);
+    const driverObj = drivers.find(d => d.id === assignedDriverId);
+    const vehicleObj = vehicles.find(v => v.id === form.vehicle_id);
     try {
       const res = await fetch(`/api/bookings/${booking.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          vehicle_name: vehicleObj?.name || booking.vehicle_name,
+          vehicle_category: vehicleObj?.category || booking.vehicle_category || null,
+          fulfillment_method: fulfillment,
+          delivery_zone_id: fulfillment === 'delivery' ? (zoneObj?.id || null) : null,
+          delivery_zone_name: fulfillment === 'delivery' ? (zoneObj?.zone_label || null) : null,
+          delivery_fee: fulfillment === 'delivery' ? Number(zoneObj?.fee) || 0 : 0,
+          assigned_driver_id: fulfillment === 'delivery' ? (driverObj?.id || null) : null,
+          assigned_driver_name: fulfillment === 'delivery' ? (driverObj?.full_name || null) : null,
+          dp_amount: form.payment_status === 'down_payment' ? Number(form.dp_amount) || 0 : 0,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -127,16 +160,18 @@ function EditBookingModal({ booking, onClose, onSaved }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <div className="modal-title">Edit Booking</div>
-          <div className="modal-subtitle">{booking.vehicle_name}</div>
+          <div>
+            <div className="modal-title">Edit Booking</div>
+            <div className="modal-subtitle">{booking.booking_code ? `Kode: ${booking.booking_code}` : booking.vehicle_name}</div>
+          </div>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
 
         <form onSubmit={handleSave}>
           <div className="form-group">
-            <label className="form-label">Nama Customer</label>
+            <label className="form-label">Nama Customer <span className="required">*</span></label>
             <input
               type="text"
               className="form-control"
@@ -147,7 +182,18 @@ function EditBookingModal({ booking, onClose, onSaved }) {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Nomor Telepon</label>
+            <label className="form-label">No. KTP / Paspor / SIM</label>
+            <input
+              type="text"
+              className="form-control"
+              value={form.customer_id_number}
+              onChange={(e) => handleChange('customer_id_number', e.target.value)}
+              placeholder="Nomor identitas"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Nomor WhatsApp <span className="required">*</span></label>
             <input
               type="tel"
               className="form-control"
@@ -157,46 +203,9 @@ function EditBookingModal({ booking, onClose, onSaved }) {
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Alamat</label>
-            <textarea
-              className="form-control"
-              rows={2}
-              value={form.customer_address}
-              onChange={(e) => handleChange('customer_address', e.target.value)}
-              style={{ resize: 'vertical' }}
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Metode</label>
-            <select
-              className="form-control"
-              value={form.fulfillment_method}
-              onChange={(e) => handleChange('fulfillment_method', e.target.value)}
-            >
-              <option value="pickup">Ambil di Toko</option>
-              <option value="delivery">Delivery</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Metode Pembayaran</label>
-            <select
-              className="form-control"
-              value={form.payment_method}
-              onChange={(e) => handleChange('payment_method', e.target.value)}
-            >
-              <option value="cash">Cash</option>
-              <option value="transfer">Bank Transfer</option>
-              <option value="qris">QRIS</option>
-              <option value="card">Card (bawa EDC)</option>
-            </select>
-          </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
             <div className="form-group">
-              <label className="form-label">Tanggal Mulai</label>
+              <label className="form-label">Tanggal Mulai <span className="required">*</span></label>
               <input
                 type="date"
                 className="form-control"
@@ -206,7 +215,7 @@ function EditBookingModal({ booking, onClose, onSaved }) {
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Tanggal Selesai</label>
+              <label className="form-label">Tanggal Selesai <span className="required">*</span></label>
               <input
                 type="date"
                 className="form-control"
@@ -216,6 +225,155 @@ function EditBookingModal({ booking, onClose, onSaved }) {
                 required
               />
             </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Alamat / Villa / Hotel</label>
+            <textarea
+              className="form-control"
+              rows={2}
+              value={form.customer_address}
+              onChange={(e) => handleChange('customer_address', e.target.value)}
+              style={{ resize: 'vertical' }}
+            />
+          </div>
+
+          {/* ── Ambil di Toko / Diantar — sama seperti form Tambah Transaksi ── */}
+          <div className="form-group">
+            <label className="form-label">Ambil di Toko atau Diantar? <span className="required">*</span></label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: fulfillment === 'delivery' ? '12px' : 0 }}>
+              <button
+                type="button"
+                onClick={() => setFulfillment('pickup')}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+                  padding: '11px', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px',
+                  border: fulfillment === 'pickup' ? '2px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+                  background: fulfillment === 'pickup' ? 'rgba(37,99,235,0.1)' : 'transparent',
+                  color: fulfillment === 'pickup' ? 'var(--brand-primary-light)' : 'var(--text-secondary)',
+                }}
+              >
+                <i className="fa-solid fa-shop"></i> Ambil di Toko
+              </button>
+              <button
+                type="button"
+                onClick={() => setFulfillment('delivery')}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+                  padding: '11px', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px',
+                  border: fulfillment === 'delivery' ? '2px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+                  background: fulfillment === 'delivery' ? 'rgba(37,99,235,0.1)' : 'transparent',
+                  color: fulfillment === 'delivery' ? 'var(--brand-primary-light)' : 'var(--text-secondary)',
+                }}
+              >
+                <i className="fa-solid fa-truck-fast"></i> Diantar
+              </button>
+            </div>
+
+            {fulfillment === 'delivery' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {deliveryZones.map(z => (
+                  <button
+                    key={z.id}
+                    type="button"
+                    onClick={() => setSelectedZoneId(z.id)}
+                    style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px',
+                      padding: '12px 14px', borderRadius: '10px', cursor: 'pointer', textAlign: 'left',
+                      border: selectedZoneId === z.id ? `2px solid ${z.color}` : '1px solid var(--bg-border)',
+                      background: selectedZoneId === z.id ? `${z.color}15` : 'transparent',
+                    }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: z.color, flexShrink: 0 }}></span>
+                      {z.zone_label}
+                    </span>
+                    <span style={{ fontSize: '12.5px', fontWeight: 700, color: Number(z.fee) > 0 ? '#F59E0B' : '#22C55E', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      {Number(z.fee) > 0 ? formatRupiah(z.fee) : 'Gratis'}
+                    </span>
+                  </button>
+                ))}
+                {deliveryZones.length === 0 && (
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Belum ada zona delivery diatur. Cek di Pengaturan.</p>
+                )}
+
+                <div style={{ marginTop: '4px' }}>
+                  <label className="form-label" htmlFor="edit-booking-driver">Tugaskan Driver</label>
+                  <select
+                    id="edit-booking-driver"
+                    className="form-control"
+                    value={assignedDriverId}
+                    onChange={(e) => setAssignedDriverId(e.target.value)}
+                  >
+                    <option value="">Belum ditugaskan</option>
+                    {drivers.map(d => (
+                      <option key={d.id} value={d.id}>{d.full_name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Pilih Motor ── */}
+          <VehicleCombobox
+            vehicles={vehicles.filter(v => v.status === 'available' || v.id === booking.vehicle_id)}
+            value={form.vehicle_id}
+            onChange={(id) => handleChange('vehicle_id', id)}
+          />
+
+          <div className="form-group">
+            <label className="form-label">Metode Bayar</label>
+            <select
+              className="form-control"
+              value={form.payment_method}
+              onChange={(e) => handleChange('payment_method', e.target.value)}
+            >
+              <option value="cash">Cash</option>
+              <option value="transfer">Bank Transfer</option>
+              <option value="qris">QRIS</option>
+              <option value="card">Kartu (EDC)</option>
+            </select>
+          </div>
+
+          {/* ── Status Pembayaran ── */}
+          <div className="form-group">
+            <label className="form-label">Status Pembayaran <span className="required">*</span></label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+              <button type="button" onClick={() => handleChange('payment_status', 'paid')}
+                style={{ padding: '11px 6px', borderRadius: '10px', border: `2px solid ${form.payment_status === 'paid' ? '#22C55E' : 'var(--bg-border)'}`, background: form.payment_status === 'paid' ? 'rgba(34,197,94,0.15)' : 'var(--bg-elevated)', color: form.payment_status === 'paid' ? '#22C55E' : 'var(--text-secondary)', fontWeight: 700, fontSize: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                <i className="fa-solid fa-circle-check"></i> Lunas
+              </button>
+              <button type="button" onClick={() => handleChange('payment_status', 'down_payment')}
+                style={{ padding: '11px 6px', borderRadius: '10px', border: `2px solid ${form.payment_status === 'down_payment' ? '#3B82F6' : 'var(--bg-border)'}`, background: form.payment_status === 'down_payment' ? 'rgba(59,130,246,0.15)' : 'var(--bg-elevated)', color: form.payment_status === 'down_payment' ? '#3B82F6' : 'var(--text-secondary)', fontWeight: 700, fontSize: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                <i className="fa-solid fa-coins"></i> Down Payment
+              </button>
+              <button type="button" onClick={() => handleChange('payment_status', 'unpaid')}
+                style={{ padding: '11px 6px', borderRadius: '10px', border: `2px solid ${form.payment_status === 'unpaid' ? '#F59E0B' : 'var(--bg-border)'}`, background: form.payment_status === 'unpaid' ? 'rgba(245,158,11,0.15)' : 'var(--bg-elevated)', color: form.payment_status === 'unpaid' ? '#F59E0B' : 'var(--text-secondary)', fontWeight: 700, fontSize: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                <i className="fa-solid fa-clock"></i> Belum Bayar
+              </button>
+            </div>
+            {form.payment_status === 'down_payment' && (
+              <div style={{ marginTop: '10px' }}>
+                <label className="form-label" htmlFor="edit-booking-dp">Jumlah DP yang sudah dibayar (Rp) <span className="required">*</span></label>
+                <input
+                  id="edit-booking-dp"
+                  type="number"
+                  min="0"
+                  className="form-control"
+                  placeholder="e.g. 300000"
+                  value={form.dp_amount}
+                  onChange={(e) => handleChange('dp_amount', e.target.value)}
+                  required
+                />
+                {Number(form.estimated_price) > 0 && form.dp_amount && (
+                  <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(59,130,246,0.08)', borderRadius: '8px', border: '1px solid rgba(59,130,246,0.3)', fontSize: '12px', color: '#3B82F6', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
+                    <span>Sisa yang harus dilunasi:</span>
+                    <strong style={{ whiteSpace: 'nowrap' }}>{formatRupiah(Math.max(0, Number(form.estimated_price) - Number(form.dp_amount || 0)))}</strong>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="form-group">
@@ -256,8 +414,8 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
   const [deposit, setDeposit] = useState('');
   const [kmStart, setKmStart] = useState('');
   const [paymentMethod, setPaymentMethod] = useState(booking.payment_method || 'cash');
-  const [paymentStatus, setPaymentStatus] = useState('paid');
-  const [dpAmount, setDpAmount] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState(booking.payment_status || 'unpaid');
+  const [dpAmount, setDpAmount] = useState(booking.payment_status === 'down_payment' ? String(booking.dp_amount || '') : '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -280,12 +438,19 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
         body: JSON.stringify({
           booking_id: booking.id,
           vehicle_id: booking.vehicle_id,
+          vehicle_category: booking.vehicle_category || null,
           renter_name: booking.customer_name,
           renter_phone: booking.customer_phone,
           renter_address: booking.customer_address,
-          renter_id_number: contract?.customer_id_number || null,
+          renter_id_number: contract?.customer_id_number || booking.customer_id_number || null,
           customer_image_url: contract?.passport_photo_url || null,
           handover_image_url: contract?.customer_vehicle_photo_url || null,
+          fulfillment_method: booking.fulfillment_method || null,
+          delivery_zone_id: booking.delivery_zone_id || null,
+          delivery_zone_name: booking.delivery_zone_name || null,
+          delivery_fee: booking.delivery_fee || 0,
+          assigned_driver_id: booking.assigned_driver_id || null,
+          assigned_driver_name: booking.assigned_driver_name || null,
           start_date: booking.start_date,
           end_date: booking.end_date,
           deposit: Number(deposit) || 0,
@@ -477,6 +642,7 @@ function BookingsPageInner() {
   const [editingBooking, setEditingBooking] = useState(null);
   const [confirmTxBooking, setConfirmTxBooking] = useState(null);
   const [drivers, setDrivers] = useState([]);
+  const [deliveryZones, setDeliveryZones] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [directTxDeliveries, setDirectTxDeliveries] = useState([]);
   const [myUserId, setMyUserId] = useState(null);
@@ -519,6 +685,11 @@ function BookingsPageInner() {
       if (res.ok) {
         setDirectTxDeliveries((Array.isArray(data) ? data : []).filter(t => t.assigned_driver_id && t.fulfillment_method === 'delivery'));
       }
+    } catch { /* ignore */ }
+    try {
+      const res = await fetch('/api/delivery-zones');
+      const data = await res.json().catch(() => []);
+      if (res.ok) setDeliveryZones(Array.isArray(data) ? data : []);
     } catch { /* ignore */ }
   }, []);
 
@@ -926,12 +1097,24 @@ function BookingsPageInner() {
                                 disabled={busyId === b.id}
                                 onClick={() => confirmDelivery(b.id)}
                                 style={{
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                                  fontSize: '12.5px', fontWeight: 800, padding: '9px 14px', width: '100%', maxWidth: '200px',
-                                  background: '#22C55E', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                  fontSize: '13px', fontWeight: 800, padding: '11px 18px', width: '100%', maxWidth: '220px',
+                                  background: 'linear-gradient(135deg, #22C55E, #16A34A)', color: '#fff', border: 'none',
+                                  borderRadius: 'var(--radius-full, 999px)', cursor: busyId === b.id ? 'wait' : 'pointer',
+                                  boxShadow: '0 4px 14px rgba(34,197,94,0.35)', letterSpacing: '0.2px',
+                                  opacity: busyId === b.id ? 0.7 : 1, transition: 'transform 0.15s ease, box-shadow 0.15s ease',
                                 }}
                               >
-                                <i className="fa-solid fa-circle-check" style={{ fontSize: '15px' }}></i>CONFIRM DELIVERED
+                                {busyId === b.id ? (
+                                  <><i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '14px' }}></i> Processing...</>
+                                ) : (
+                                  <>
+                                    <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                      <i className="fa-solid fa-check" style={{ fontSize: '11px' }}></i>
+                                    </span>
+                                    Confirm Delivered
+                                  </>
+                                )}
                               </button>
                             ) : (
                               <span
@@ -1052,6 +1235,9 @@ function BookingsPageInner() {
           booking={editingBooking}
           onClose={() => setEditingBooking(null)}
           onSaved={handleEditSaved}
+          vehicles={vehicles}
+          deliveryZones={deliveryZones}
+          drivers={drivers}
         />
       )}
 
