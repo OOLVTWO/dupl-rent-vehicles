@@ -156,7 +156,7 @@ export default function VehicleCombobox({ vehicles, value, onChange, required = 
             {' '}({brandVehicles.length} unit tersedia)
           </div>
 
-          {brandVehicles.length > 3 && (
+          {brandVehicles.length > 0 && (
             <div style={{ position: 'relative', marginBottom: '8px' }}>
               <input
                 type="text"
