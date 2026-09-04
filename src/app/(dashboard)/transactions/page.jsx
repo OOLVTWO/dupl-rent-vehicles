@@ -2074,11 +2074,13 @@ const handleSubmit = async (formData) => {
                   <th>Denda / Deposit</th>
                   <th>Status Motor</th>
                   <th>Status Pembayaran</th>
+                  <th>Metode Pembayaran</th>
                   <th>ID Referensi</th>
                   <th>Kontrak</th>
                   <th>Driver</th>
                   <th>Zona Delivery</th>
                   <th>Ringkasan Pembayaran</th>
+                  <th>Catatan</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -2114,7 +2116,29 @@ const handleSubmit = async (formData) => {
                         Booking ({b.status === 'confirmed' ? 'Confirmed' : 'Pending'})
                       </span>
                     </td>
-                    <td data-label="Status Pembayaran" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
+                    <td data-label="Status Pembayaran">
+                      {b.payment_status === 'paid' && (
+                        <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#22C55E', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                          <i className="fa-solid fa-circle-check" style={{ fontSize: '10px' }}></i>Lunas
+                        </span>
+                      )}
+                      {b.payment_status === 'down_payment' && (
+                        <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#3B82F6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                          <i className="fa-solid fa-coins" style={{ fontSize: '10px' }}></i>DP {formatRupiah(b.dp_amount)}
+                        </span>
+                      )}
+                      {(!b.payment_status || b.payment_status === 'unpaid') && (
+                        <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#F59E0B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                          <i className="fa-solid fa-clock" style={{ fontSize: '10px' }}></i>Belum Bayar
+                        </span>
+                      )}
+                    </td>
+                    <td data-label="Metode Pembayaran">
+                      <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <i className={getPaymentMethodMeta(b.payment_method).icon} style={{ fontSize: '10px' }}></i>
+                        {getPaymentMethodMeta(b.payment_method).label}
+                      </span>
+                    </td>
                     <td data-label="ID Referensi" style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
                       <div>Booking: {b.id.slice(0, 8)}</div>
                     </td>
@@ -2142,6 +2166,7 @@ const handleSubmit = async (formData) => {
                       )}
                     </td>
                     <td data-label="Ringkasan Pembayaran" data-label-align="left" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
+                    <td data-label="Catatan" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Aksi" data-label-align="left">
                       <Link href="/bookings" className="btn btn-sm" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid #8B5CF6', color: '#8B5CF6', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                         <i className="fa-solid fa-arrow-right"></i> Kelola di Booking
@@ -2183,6 +2208,12 @@ const handleSubmit = async (formData) => {
                             <div style={{ fontSize: '11px', color: 'var(--brand-primary-light)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }} title={tx.renter_address}>
                               <i className="fa-solid fa-location-dot" style={{ marginRight: '4px' }}></i>
                               {tx.renter_address}
+                            </div>
+                          )}
+                          {tx.renter_id_number && (
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                              <i className="fa-solid fa-id-card" style={{ marginRight: '4px' }}></i>
+                              {tx.renter_id_number}
                             </div>
                           )}
                         </div>
@@ -2274,6 +2305,12 @@ const handleSubmit = async (formData) => {
                         </span>
                       )}
                     </td>
+                    <td data-label="Metode Pembayaran" style={{ verticalAlign: 'middle' }}>
+                      <span style={{ fontSize: '11.5px', color: getPaymentMethodMeta(tx.payment_method).color, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <i className={getPaymentMethodMeta(tx.payment_method).icon} style={{ fontSize: '10px' }}></i>
+                        {getPaymentMethodMeta(tx.payment_method).label}
+                      </span>
+                    </td>
                     <td data-label="ID Referensi" style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontFamily: 'monospace', verticalAlign: 'middle' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                         <div>Transaksi: {tx.id.slice(0, 8)}</div>
@@ -2337,6 +2374,13 @@ const handleSubmit = async (formData) => {
                             Total yang harus dibayar: {formatRupiah(Math.max(0, Number(tx.total_price || 0) - Number(tx.dp_amount || 0)))}
                           </div>
                         </div>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                      )}
+                    </td>
+                    <td data-label="Catatan" data-label-align="left" style={{ verticalAlign: 'middle' }}>
+                      {tx.notes ? (
+                        <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)', overflowWrap: 'anywhere' }}>{tx.notes}</span>
                       ) : (
                         <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
                       )}

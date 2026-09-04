@@ -777,6 +777,11 @@ function BookingsPageInner() {
                               <i className="fa-solid fa-location-dot" style={{ marginRight: '4px' }}></i>{b.customer_address}
                             </div>
                           )}
+                          {b.customer_id_number && (
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                              <i className="fa-solid fa-id-card" style={{ marginRight: '4px' }}></i>{b.customer_id_number}
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td data-label="Motor">
