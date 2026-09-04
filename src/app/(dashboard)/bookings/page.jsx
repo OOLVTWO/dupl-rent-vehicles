@@ -726,7 +726,7 @@ function BookingsPageInner() {
                   const meta = STATUS_META[b.status] || STATUS_META.pending;
                   const waUrl = getWhatsAppShareUrl(
                     b.customer_phone,
-                    `Halo ${b.customer_name}, terkait booking ${b.vehicle_name} (${formatDate(b.start_date)} - ${formatDate(b.end_date)}) —`
+                    `Hi ${b.customer_name}, regarding your booking for ${b.vehicle_name} (${formatDate(b.start_date)} - ${formatDate(b.end_date)}) —`
                   );
                   return (
                     <tr key={b.id}>

@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useRole } from '@/lib/RoleContext';
 import VehicleCombobox from '@/components/shared/VehicleCombobox';
 import CustomerPickerCombobox from '@/components/shared/CustomerPickerCombobox';
-import { compressImage } from '@/lib/imageCompressor';
 import { getPaymentMethodMeta } from '@/lib/paymentMethods';
 import { COUNTRY_CODES, getWhatsAppShareUrl, generateInvoiceText, getFlagImageUrl } from '@/lib/countryCodes';
 import { createClient } from '@/lib/supabase/client';
@@ -332,8 +331,6 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
   const [phoneNumber, setPhoneNumber] = useState('');
   const [totalPrice, setTotalPrice] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [showOptional, setShowOptional] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
   // Reset Jenis Pencatatan tiap kali modal dibuka fresh buat entry baru —
@@ -509,20 +506,6 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleImageFile = async (e, fieldName = 'customer_image_url') => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const compressedDataUrl = await compressImage(file, { maxWidth: 1000, maxHeight: 1000, quality: 0.82 });
-      setForm(prev => ({ ...prev, [fieldName]: compressedDataUrl }));
-    } catch (err) {
-      alert(err.message || 'Gagal memproses gambar.');
-    } finally {
-      setUploading(false);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -1035,6 +1018,14 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
           </div>
           
      
+          {/* ── No. KTP / Paspor / SIM (selalu tampil, wajib) ── */}
+          <div className="form-group">
+            <label className="form-label" htmlFor="tx-id-num">
+              <i className="fa-solid fa-id-card" style={{ marginRight: '6px' }}></i> No. KTP / Paspor / SIM <span className="required">*</span>
+            </label>
+            <input id="tx-id-num" name="renter_id_number" type="text" className="form-control" placeholder="Nomor identitas" value={form.renter_id_number} onChange={handleChange} required />
+          </div>
+
           {/* ── Catatan ── */}
           <div className="form-group">
             <label className="form-label" htmlFor="tx-notes">
@@ -1042,92 +1033,6 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
             </label>
             <textarea id="tx-notes" name="notes" className="form-control" rows={2} placeholder="Catatan khusus, permintaan khusus, dll..." value={form.notes} onChange={handleChange} style={{ resize: 'vertical' }} />
           </div>
-
-          {/* ── Toggle Data Opsional ── */}
-          <button
-            type="button"
-            onClick={() => setShowOptional(prev => !prev)}
-            style={{ width: '100%', padding: '10px', background: 'var(--bg-elevated)', border: '1px dashed var(--bg-border)', borderRadius: '10px', color: 'var(--text-muted)', fontSize: '12.5px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}
-          >
-            <i className={`fa-solid fa-chevron-${showOptional ? 'up' : 'down'}`} style={{ fontSize: '11px' }}></i>
-            {showOptional ? 'Sembunyikan Data Opsional' : 'Data Opsional: No. KTP & Foto Dokumentasi'}
-          </button>
-
-          {/* ── Data Opsional (collapsed) ── */}
-          {showOptional && (
-            <div style={{ padding: '16px', background: 'var(--bg-elevated)', borderRadius: '10px', border: '1px solid var(--bg-border)', marginBottom: '12px' }}>
-
-              {/* No. KTP */}
-              <div className="form-group">
-                <label className="form-label" htmlFor="tx-id-num">
-                  <i className="fa-solid fa-id-card" style={{ marginRight: '6px' }}></i> No. KTP / Paspor / SIM <span className="required">*</span>
-                </label>
-                <input id="tx-id-num" name="renter_id_number" type="text" className="form-control" placeholder="Nomor identitas" value={form.renter_id_number} onChange={handleChange} required />
-              </div>
-
-              {/* Dual Photo Upload */}
-              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--brand-primary-light)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <i className="fa-solid fa-camera-retro"></i> Upload Dokumentasi Foto (Opsional)
-              </div>
-              <div className="form-row cols-2" style={{ gap: '14px' }}>
-                {/* Foto KTP */}
-                <div className="form-group mb-0">
-                  <label className="form-label" style={{ fontSize: '12px' }}>
-                    <i className="fa-solid fa-id-card" style={{ marginRight: '6px', color: 'var(--brand-primary)' }}></i> Foto KTP / Paspor / SIM
-                  </label>
-                  {form.customer_image_url ? (
-                    <div style={{ position: 'relative', width: '100%', height: '120px', borderRadius: '10px', overflow: 'hidden', border: '2px solid #22C55E' }}>
-                      <img src={form.customer_image_url} alt="KTP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <button type="button" onClick={() => setForm(p => ({ ...p, customer_image_url: '' }))}
-                        style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(239,68,68,0.9)', color: '#FFF', border: 'none', borderRadius: '50%', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800, fontSize: '12px' }}>✕</button>
-                      <span style={{ position: 'absolute', bottom: '6px', left: '6px', background: 'rgba(15,23,42,0.9)', color: '#22C55E', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 800 }}>✓ Foto Dimuat</span>
-                    </div>
-                  ) : (
-                    <div>
-                      <input type="file" accept="image/*" id="tx-id-photo-input" onChange={(e) => handleImageFile(e, 'customer_image_url')} style={{ display: 'none' }} />
-                      <label htmlFor="tx-id-photo-input" className="custom-file-btn"
-                        style={{ height: '100px', flexDirection: 'column', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--brand-primary)', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', cursor: 'pointer', padding: '12px', textAlign: 'center' }}>
-                        <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: '22px', color: 'var(--brand-primary)' }}></i>
-                        <span style={{ fontSize: '11px', fontWeight: 700, marginTop: '6px' }}>Upload Foto KTP / Paspor</span>
-                        <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Klik / Ambil dari Kamera</span>
-                      </label>
-                    </div>
-                  )}
-                </div>
-
-                {/* Foto Handover */}
-                <div className="form-group mb-0">
-                  <label className="form-label" style={{ fontSize: '12px' }}>
-                    <i className="fa-solid fa-motorcycle" style={{ marginRight: '6px', color: '#3B82F6' }}></i> Foto Orang + Motor (Handover)
-                  </label>
-                  {form.handover_image_url ? (
-                    <div style={{ position: 'relative', width: '100%', height: '120px', borderRadius: '10px', overflow: 'hidden', border: '2px solid #3B82F6' }}>
-                      <img src={form.handover_image_url} alt="Handover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <button type="button" onClick={() => setForm(p => ({ ...p, handover_image_url: '' }))}
-                        style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(239,68,68,0.9)', color: '#FFF', border: 'none', borderRadius: '50%', width: '26px', height: '26px', cursor: 'pointer', fontWeight: 800, fontSize: '12px' }}>✕</button>
-                      <span style={{ position: 'absolute', bottom: '6px', left: '6px', background: 'rgba(15,23,42,0.9)', color: '#3B82F6', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 800 }}>✓ Foto Dimuat</span>
-                    </div>
-                  ) : (
-                    <div>
-                      <input type="file" accept="image/*" id="tx-handover-photo-input" onChange={(e) => handleImageFile(e, 'handover_image_url')} style={{ display: 'none' }} />
-                      <label htmlFor="tx-handover-photo-input" className="custom-file-btn"
-                        style={{ height: '100px', flexDirection: 'column', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed #3B82F6', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', cursor: 'pointer', padding: '12px', textAlign: 'center' }}>
-                        <i className="fa-solid fa-camera" style={{ fontSize: '22px', color: '#3B82F6' }}></i>
-                        <span style={{ fontSize: '11px', fontWeight: 700, marginTop: '6px' }}>Foto Serah Terima</span>
-                        <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Dokumentasi Orang + Motor</span>
-                      </label>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {uploading && (
-                <div style={{ fontSize: '11px', color: 'var(--brand-primary-light)', marginTop: '8px', textAlign: 'center' }}>
-                  <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '4px' }}></i> Mengompresi gambar...
-                </div>
-              )}
-            </div>
-          )}
 
           {!editData && recordType === 'transaction' && form.start_date && form.start_date > getLocalDateStr() && (
             <div className="alert alert-warning" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px' }}>
@@ -1146,7 +1051,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={loading || uploading || bookingSaving || (!editData && recordType === 'transaction' && form.start_date && form.start_date > getLocalDateStr())}
+              disabled={loading || bookingSaving || (!editData && recordType === 'transaction' && form.start_date && form.start_date > getLocalDateStr())}
             >
               {(loading || bookingSaving) ? (
                 <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '4px' }}></i> Menyimpan...</>
@@ -1319,9 +1224,9 @@ function WhatsAppInvoiceModal({ isOpen, onClose, tx, vehicle }) {
       `/api/contracts/${contract.id}/pdf`,
       `invoice-${tx.renter_name}.pdf`,
       tx.renter_phone,
-      `Halo ${tx.renter_name}, berikut invoice sewa Anda — mohon tunggu sebentar, file PDF-nya akan menyusul terkirim 🙏`,
-      'Invoice Sewa',
-      `Invoice sewa untuk ${tx.renter_name} — Demo Rental Preview`
+      `Hi ${tx.renter_name}, here's your rental invoice — please hold on a moment, the PDF file will follow shortly 🙏`,
+      'Rental Invoice',
+      `Rental invoice for ${tx.renter_name} — Demo Rental Preview`
     );
     setSharingPdf(false);
   };
@@ -2151,6 +2056,7 @@ const handleSubmit = async (formData) => {
                   <th>Status Pembayaran</th>
                   <th>Kontrak</th>
                   <th>Driver</th>
+                  <th>Zona Delivery</th>
                   <th>Ringkasan Pembayaran</th>
                   <th>Aksi</th>
                 </tr>
@@ -2195,6 +2101,19 @@ const handleSubmit = async (formData) => {
                           <i className="fa-solid fa-motorcycle"></i> {b.assigned_driver_name}
                         </span>
                       ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                      )}
+                    </td>
+                    <td data-label="Zona Delivery" data-label-align="left">
+                      {b.delivery_zone_name ? (() => {
+                        const zoneColor = b.delivery_zone_name.includes('Hijau') ? '#22C55E' : b.delivery_zone_name.includes('Biru') ? '#3B82F6' : b.delivery_zone_name.includes('Kuning') ? '#F59E0B' : '#94A3B8';
+                        return (
+                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: zoneColor, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: zoneColor, flexShrink: 0 }}></span>
+                            {b.delivery_zone_name}
+                          </span>
+                        );
+                      })() : (
                         <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
                       )}
                     </td>
@@ -2359,6 +2278,19 @@ const handleSubmit = async (formData) => {
                           )}
                         </div>
                       ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                      )}
+                    </td>
+                    <td data-label="Zona Delivery" data-label-align="left" style={{ verticalAlign: 'middle' }}>
+                      {tx.delivery_zone_name ? (() => {
+                        const zoneColor = tx.delivery_zone_name.includes('Hijau') ? '#22C55E' : tx.delivery_zone_name.includes('Biru') ? '#3B82F6' : tx.delivery_zone_name.includes('Kuning') ? '#F59E0B' : '#94A3B8';
+                        return (
+                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: zoneColor, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: zoneColor, flexShrink: 0 }}></span>
+                            {tx.delivery_zone_name}
+                          </span>
+                        );
+                      })() : (
                         <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
                       )}
                     </td>
