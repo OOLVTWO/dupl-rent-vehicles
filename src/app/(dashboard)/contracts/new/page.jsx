@@ -28,7 +28,7 @@ function PhotoField({ label, hint, value, onChange }) {
       const dataUrl = await compressImage(file, 1000, 0.82);
       onChange(dataUrl);
     } catch (err) {
-      alert(err.message || 'Gagal memproses foto.');
+      alert(err.message || 'Failed to process photo.');
     } finally {
       setUploading(false);
     }
@@ -63,11 +63,11 @@ function PhotoField({ label, hint, value, onChange }) {
           }}
         >
           {uploading ? (
-            <><i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '18px' }}></i> Memproses...</>
+            <><i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '18px' }}></i> Processing...</>
           ) : (
             <>
               <i className="fa-solid fa-camera" style={{ fontSize: '18px' }}></i>
-              <span style={{ fontSize: '12px', fontWeight: 600, textAlign: 'center' }}>Ambil / Upload Foto</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, textAlign: 'center' }}>Take / Upload Photo</span>
             </>
           )}
           <input id={inputId} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: 'none' }} />
@@ -224,9 +224,9 @@ function NewContractInner() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.customer_name.trim()) { setError('Nama customer wajib diisi.'); return; }
-    if (!form.start_date || !form.end_date) { setError('Tanggal mulai dan selesai wajib diisi.'); return; }
-    if (!signature) { setError('Tanda tangan customer wajib diisi.'); return; }
+    if (!form.customer_name.trim()) { setError('Customer name is required.'); return; }
+    if (!form.start_date || !form.end_date) { setError('Start and end dates are required.'); return; }
+    if (!signature) { setError('Customer signature is required.'); return; }
 
     setSubmitting(true);
     setError('');
@@ -388,52 +388,52 @@ function NewContractInner() {
 
       {loadingContext ? (
         <div className="card" style={{ padding: '40px', textAlign: 'center' }}>
-          <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Memuat data...
+          <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Loading...
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
           <div className="card" style={{ marginBottom: '16px' }}>
             <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0, marginBottom: '4px' }}>
               <i className="fa-solid fa-clipboard-check" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
-              Ringkasan {isFromBooking ? 'Booking' : 'Transaksi'}
+              {isFromBooking ? 'Booking' : 'Transaction'} Summary
             </h3>
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 0, marginBottom: '10px' }}>Otomatis dari data {isFromBooking ? 'booking' : 'transaksi'}, tidak perlu diisi ulang.</p>
-            <RecapRow icon="fa-solid fa-user" label="Nama Customer" value={form.customer_name} />
-            <RecapRow icon="fa-solid fa-phone" label="Telepon / WhatsApp" value={form.customer_phone} />
-            <RecapRow icon="fa-solid fa-location-dot" label="Alamat" value={form.customer_address} />
-            <RecapRow icon="fa-solid fa-motorcycle" label="Motor" value={form.vehicle_label} />
-            <RecapRow icon="fa-solid fa-calendar-days" label="Tanggal Sewa" value={`${formatDate(form.start_date)} — ${formatDate(form.end_date)}`} />
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 0, marginBottom: '10px' }}>Automatically filled from your {isFromBooking ? 'booking' : 'transaction'} data — no need to re-enter.</p>
+            <RecapRow icon="fa-solid fa-user" label="Customer Name" value={form.customer_name} />
+            <RecapRow icon="fa-solid fa-phone" label="Phone / WhatsApp" value={form.customer_phone} />
+            <RecapRow icon="fa-solid fa-location-dot" label="Address" value={form.customer_address} />
+            <RecapRow icon="fa-solid fa-motorcycle" label="Vehicle" value={form.vehicle_label} />
+            <RecapRow icon="fa-solid fa-calendar-days" label="Rental Period" value={`${formatDate(form.start_date)} — ${formatDate(form.end_date)}`} />
           </div>
 
           <div className="card" style={{ marginBottom: '16px' }}>
             <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0 }}>
               <i className="fa-solid fa-id-card-clip" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
-              Nomor Identitas
+              ID Number
             </h3>
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label">Nomor KTP / Passport</label>
-              <input type="text" className="form-control" value={form.customer_id_number} onChange={(e) => handleChange('customer_id_number', e.target.value)} placeholder="Ketik sesuai KTP / Passport customer" />
+              <label className="form-label">ID Card / Passport Number</label>
+              <input type="text" className="form-control" value={form.customer_id_number} onChange={(e) => handleChange('customer_id_number', e.target.value)} placeholder="Type exactly as shown on ID / Passport" />
             </div>
           </div>
 
           <div className="card" style={{ marginBottom: '16px' }}>
             <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0 }}>
               <i className="fa-solid fa-camera-retro" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
-              Dokumentasi Foto
+              Photo Documentation
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
-              <PhotoField label="Foto Passport / KTP" hint="Pastikan nama & nomor terbaca jelas." value={passportPhoto} onChange={setPassportPhoto} />
-              <PhotoField label="Foto Customer + Motor" hint="Customer berdiri di samping motor yang disewa." value={vehiclePhoto} onChange={setVehiclePhoto} />
+              <PhotoField label="Passport / ID Photo" hint="Make sure the name & number are clearly readable." value={passportPhoto} onChange={setPassportPhoto} />
+              <PhotoField label="Customer + Vehicle Photo" hint="Customer standing next to the rented vehicle." value={vehiclePhoto} onChange={setVehiclePhoto} />
             </div>
           </div>
 
           <div className="card" style={{ marginBottom: '16px' }}>
             <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0 }}>
               <i className="fa-solid fa-file-signature" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
-              Tanda Tangan Customer *
+              Customer Signature *
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: 0 }}>
-              Serahkan layar ini ke customer untuk tanda tangan sebagai bukti persetujuan kontrak sewa.
+              Hand this screen to the customer to sign as confirmation they agree to the rental contract.
             </p>
             <SignaturePad onChange={setSignature} />
           </div>
@@ -441,7 +441,7 @@ function NewContractInner() {
           {!isPrefilled && (
             <div className="card" style={{ marginBottom: '16px' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Catatan (opsional)</label>
+                <label className="form-label">Notes (optional)</label>
                 <textarea className="form-control" rows={2} value={form.notes} onChange={(e) => handleChange('notes', e.target.value)} style={{ resize: 'vertical' }} />
               </div>
             </div>
@@ -455,9 +455,9 @@ function NewContractInner() {
 
           <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={submitting}>
             {submitting ? (
-              <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>Menyimpan Kontrak...</>
+              <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>Saving Contract...</>
             ) : (
-              <><i className="fa-solid fa-check" style={{ marginRight: '8px' }}></i>Simpan Kontrak</>
+              <><i className="fa-solid fa-check" style={{ marginRight: '8px' }}></i>Save Contract</>
             )}
           </button>
         </form>
