@@ -15,11 +15,16 @@ Aplikasi ini dikembangkan menggunakan stack teknologi terbaik: **Next.js 16 (App
 
 ### 🟡 Demo / Preview (repo & deployment duplikat ini)
 - 🌐 **Katalog Publik**: [https://dupl-rent-vehicles.vercel.app](https://dupl-rent-vehicles.vercel.app)
-- 🔑 **Login Panel**: [https://dupl-rent-vehicles.vercel.app/login](https://dupl-rent-vehicles.vercel.app/login) — sekarang ada pilihan masuk sebagai **Admin** atau **Driver** (lihat fitur Role Staff di bawah).
-- 👤 **Akun Demo** (khusus environment preview ini, database Supabase terpisah `boss-rent-demo-preview` — tidak menyentuh data production):
-  - **Admin** — Email: `admin@preview.com` / Password: `Preview!`
-  - **Driver** — Email: `driver@preview.com` / Password: `Preview!`
-- ⚠️ Kredensial di atas sengaja ditulis terbuka karena environment ini murni untuk demo/testing. Repo ini bersifat publik, jadi jangan pakai kombinasi email/password yang sama di akun production atau akun penting lainnya.
+- 🔑 **Login Panel**: [https://dupl-rent-vehicles.vercel.app/login](https://dupl-rent-vehicles.vercel.app/login)
+
+> ⚠️ **Kredensial di bawah sengaja ditulis terbuka** karena environment ini murni untuk demo/testing (database Supabase terpisah `zniummuqsiobmxffhpzl`, sama sekali tidak menyentuh data production). Repo ini bersifat publik — jangan pakai kombinasi email/password yang sama untuk akun production atau akun penting lainnya.
+
+| Role | Email | Password | Bisa Coba |
+|---|---|---|---|
+| **Admin** | `admin@preview.com` | `Preview!` | Semua fitur — kelola motor, transaksi, booking, kontrak, keuangan, laporan, employee, pengaturan |
+| **Driver** | `driver@preview.com` | `Preview!` | Dashboard, Booking (yang ditugaskan), buat Kontrak, Tracking Sewa, History Pendapatan sendiri |
+
+
 
 ---
 
