@@ -478,6 +478,7 @@ function BookingsPageInner() {
   const [directTxDeliveries, setDirectTxDeliveries] = useState([]);
   const [myUserId, setMyUserId] = useState(null);
   const [contractsByBookingId, setContractsByBookingId] = useState(new Map());
+  const [txIdByBookingId, setTxIdByBookingId] = useState(new Map());
 
   useEffect(() => {
     Promise.resolve().then(async () => {
@@ -497,6 +498,15 @@ function BookingsPageInner() {
         const map = new Map();
         (Array.isArray(data) ? data : []).forEach(c => { if (c.booking_id) map.set(c.booking_id, c); });
         setContractsByBookingId(map);
+      }
+    } catch { /* ignore */ }
+    try {
+      const res = await fetch('/api/transactions');
+      const data = await res.json().catch(() => []);
+      if (res.ok) {
+        const map = new Map();
+        (Array.isArray(data) ? data : []).forEach(t => { if (t.booking_id) map.set(t.booking_id, t.id); });
+        setTxIdByBookingId(map);
       }
     } catch { /* ignore */ }
   }, []);
@@ -737,8 +747,10 @@ function BookingsPageInner() {
                   <th>Tanggal Sewa</th>
                   <th>Metode Pengambilan</th>
                   <th>Metode Pembayaran</th>
+                  <th>Status Pembayaran</th>
                   <th>Driver</th>
                   <th>Estimasi</th>
+                  <th>ID Referensi</th>
                   <th>Status Kontrak</th>
                   <th>Status Delivery</th>
                   <th>Status</th>
@@ -787,6 +799,23 @@ function BookingsPageInner() {
                           {PAYMENT_META[b.payment_method]?.label || 'Cash'}
                         </span>
                       </td>
+                      <td data-label="Status Pembayaran" data-label-align="left">
+                        {b.payment_status === 'paid' && (
+                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#22C55E', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                            <i className="fa-solid fa-circle-check" style={{ fontSize: '10px' }}></i>Lunas
+                          </span>
+                        )}
+                        {b.payment_status === 'down_payment' && (
+                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#3B82F6', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                            <i className="fa-solid fa-coins" style={{ fontSize: '10px' }}></i>DP {formatRupiah(b.dp_amount)}
+                          </span>
+                        )}
+                        {(!b.payment_status || b.payment_status === 'unpaid') && (
+                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#F59E0B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                            <i className="fa-solid fa-clock" style={{ fontSize: '10px' }}></i>Belum Bayar
+                          </span>
+                        )}
+                      </td>
                       <td data-label="Driver" data-label-align="left">
                         {b.fulfillment_method !== 'delivery' ? (
                           <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>— (pickup)</span>
@@ -829,6 +858,12 @@ function BookingsPageInner() {
                         )}
                       </td>
                       <td data-label="Estimasi" style={{ fontWeight: 800, fontSize: '13px' }}>{formatRupiah(b.estimated_price)}</td>
+                      <td data-label="ID Referensi" style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <div>Booking: {b.id.slice(0, 8)}</div>
+                          {txIdByBookingId.has(b.id) && <div>Transaksi: {txIdByBookingId.get(b.id).slice(0, 8)}</div>}
+                        </div>
+                      </td>
                       <td data-label="Status Kontrak" data-label-align="left">
                         {b.fulfillment_method === 'delivery' && b.assigned_driver_id ? (
                           contractsByBookingId.has(b.id) ? (
