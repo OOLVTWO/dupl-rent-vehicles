@@ -744,27 +744,8 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
             </div>
           )}
 
-          {/* ── Pilih Motor ── */}
-          {noVehiclesAvailable && !editData ? (
-            <div style={{ padding: '16px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '12px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#EF4444' }}>
-              <i className="fa-solid fa-triangle-exclamation" style={{ fontSize: '18px', flexShrink: 0 }}></i>
-              <div>
-                <strong>Semua motor sedang disewa atau dalam perawatan.</strong>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Selesaikan transaksi aktif terlebih dahulu, atau ubah status motor di halaman Kendaraan.
-                </div>
-              </div>
-            </div>
-          ) : (
-            <VehicleCombobox
-              vehicles={availableVehicles}
-              value={form.vehicle_id}
-              onChange={(id) => setForm(prev => ({ ...prev, vehicle_id: (id || '').trim() }))}
-            />
-          )}
-
-          {/* ── Ambil di Toko / Diantar (kedua mode) ── */}
-          {!editData && (recordType === 'booking' || recordType === 'transaction') && (
+          {/* ── Ambil di Toko / Diantar — selalu tampil, nggak nunggu Jenis Pencatatan dipilih dulu ── */}
+          {!editData && (
             <div className="form-group">
               <label className="form-label">Ambil di Toko atau Diantar?</label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: fulfillment === 'delivery' ? '12px' : 0 }}>
@@ -845,6 +826,25 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
                 </div>
               )}
             </div>
+          )}
+
+          {/* ── Pilih Motor ── */}
+          {noVehiclesAvailable && !editData ? (
+            <div style={{ padding: '16px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '12px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#EF4444' }}>
+              <i className="fa-solid fa-triangle-exclamation" style={{ fontSize: '18px', flexShrink: 0 }}></i>
+              <div>
+                <strong>Semua motor sedang disewa atau dalam perawatan.</strong>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Selesaikan transaksi aktif terlebih dahulu, atau ubah status motor di halaman Kendaraan.
+                </div>
+              </div>
+            </div>
+          ) : (
+            <VehicleCombobox
+              vehicles={availableVehicles}
+              value={form.vehicle_id}
+              onChange={(id) => setForm(prev => ({ ...prev, vehicle_id: (id || '').trim() }))}
+            />
           )}
 
           {/* ── Nama Penyewa ── */}
@@ -974,9 +974,9 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
               </div>
             )}
             {form.payment_status === 'unpaid' && (
-              <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(245,158,11,0.08)', borderRadius: '8px', border: '1px solid rgba(245,158,11,0.3)', fontSize: '12px', color: '#F59E0B', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <i className="fa-solid fa-triangle-exclamation"></i>
-                Motor tetap tidak tersedia. Pembayaran <strong>belum masuk</strong> ke laporan pendapatan.
+              <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(245,158,11,0.08)', borderRadius: '8px', border: '1px solid rgba(245,158,11,0.3)', fontSize: '12px', color: '#F59E0B', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                <i className="fa-solid fa-triangle-exclamation" style={{ flexShrink: 0, marginTop: '2px' }}></i>
+                <span>Motor tetap tidak tersedia. Pembayaran <strong>belum masuk</strong> ke laporan pendapatan.</span>
               </div>
             )}
           </div>
@@ -1974,9 +1974,10 @@ const handleSubmit = async (formData) => {
       tx.vehicles?.plate_number?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchStatus =
       statusFilter === 'all' ||
-      tx.status === statusFilter ||
+      (statusFilter === 'active' && tx.status === 'active' && tx.payment_status === 'paid') ||
       (statusFilter === 'belum_bayar' && tx.status === 'active' && tx.payment_status === 'unpaid') ||
-      (statusFilter === 'down_payment' && tx.status === 'active' && tx.payment_status === 'down_payment');
+      (statusFilter === 'down_payment' && tx.status === 'active' && tx.payment_status === 'down_payment') ||
+      (statusFilter !== 'active' && statusFilter !== 'belum_bayar' && statusFilter !== 'down_payment' && tx.status === statusFilter);
     return matchSearch && matchStatus;
   });
 
@@ -1995,7 +1996,15 @@ const handleSubmit = async (formData) => {
     <div className="fade-in">
       <div className="page-header">
         <div>
-          <h2><i className="fa-solid fa-file-invoice-dollar" style={{ marginRight: '8px' }}></i> Kelola Transaksi Sewa</h2>
+          <h2 style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+            <span><i className="fa-solid fa-file-invoice-dollar" style={{ marginRight: '8px' }}></i> Kelola Transaksi Sewa</span>
+            {statusFilter !== 'all' && (
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#F59E0B', background: 'rgba(245,158,11,0.12)', padding: '3px 10px', borderRadius: 'var(--radius-full, 999px)', border: '1px solid rgba(245,158,11,0.4)' }}>
+                <i className="fa-solid fa-filter" style={{ marginRight: '5px' }}></i>
+                Filter aktif: {{ active: 'Sewa Aktif', down_payment: 'Down Payment', belum_bayar: 'Belum Bayar', completed: 'Selesai', cancelled: 'Dibatalkan' }[statusFilter] || statusFilter}
+              </span>
+            )}
+          </h2>
           <p>Catat transaksi penyewaan motor, kirim invoice WhatsApp, dan kelola deposit jaminan</p>
         </div>
       </div>
@@ -2057,6 +2066,7 @@ const handleSubmit = async (formData) => {
                   <th>Denda / Deposit</th>
                   <th>Status Motor</th>
                   <th>Status Pembayaran</th>
+                  <th>ID Referensi</th>
                   <th>Kontrak</th>
                   <th>Driver</th>
                   <th>Zona Delivery</th>
@@ -2097,6 +2107,9 @@ const handleSubmit = async (formData) => {
                       </span>
                     </td>
                     <td data-label="Status Pembayaran" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
+                    <td data-label="ID Referensi" style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                      <div>Booking: {b.id.slice(0, 8)}</div>
+                    </td>
                     <td data-label="Kontrak" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Driver" data-label-align="left">
                       {b.assigned_driver_name ? (
@@ -2252,6 +2265,12 @@ const handleSubmit = async (formData) => {
                           <i className="fa-solid fa-clock" style={{ fontSize: '10px' }}></i>Belum Bayar
                         </span>
                       )}
+                    </td>
+                    <td data-label="ID Referensi" style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontFamily: 'monospace', verticalAlign: 'middle' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <div>Transaksi: {tx.id.slice(0, 8)}</div>
+                        {tx.booking_id && <div>Booking: {tx.booking_id.slice(0, 8)}</div>}
+                      </div>
                     </td>
                     <td data-label="Kontrak" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       {(contractedIds.has(tx.id) || (tx.booking_id && contractedIds.has(tx.booking_id))) ? (

@@ -469,6 +469,7 @@ function BookingsPageInner() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState('');
   const [editingBooking, setEditingBooking] = useState(null);
@@ -655,7 +656,17 @@ function BookingsPageInner() {
     fetchBookings();
   };
 
-  const filtered = tab === 'all' ? bookings : bookings.filter(b => b.status === tab);
+  const filtered = (tab === 'all' ? bookings : bookings.filter(b => b.status === tab))
+    .filter(b => {
+      const q = searchQuery.toLowerCase().trim();
+      if (!q) return true;
+      return (
+        b.customer_name?.toLowerCase().includes(q) ||
+        b.customer_phone?.toLowerCase().includes(q) ||
+        b.vehicle_name?.toLowerCase().includes(q) ||
+        b.id?.toLowerCase().includes(q)
+      );
+    });
 
   return (
     <div className="page-content">
@@ -677,16 +688,29 @@ function BookingsPageInner() {
         </button>
       </div>
 
-      <div style={{ marginBottom: '18px', maxWidth: '260px' }}>
-        <select
-          className="form-control"
-          value={tab}
-          onChange={(e) => setTab(e.target.value)}
-        >
-          {TABS.map(t => (
-            <option key={t.key} value={t.key}>{t.label}</option>
-          ))}
-        </select>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '18px', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: '1 1 240px', minWidth: '220px' }}>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Cari nama, WA, motor, atau ID booking..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ paddingLeft: '36px' }}
+          />
+          <i className="fa-solid fa-magnifying-glass" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none', fontSize: '13px' }}></i>
+        </div>
+        <div style={{ maxWidth: '220px', flex: '1 1 180px' }}>
+          <select
+            className="form-control"
+            value={tab}
+            onChange={(e) => setTab(e.target.value)}
+          >
+            {TABS.map(t => (
+              <option key={t.key} value={t.key}>{t.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {error && (
