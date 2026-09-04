@@ -1021,20 +1021,6 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
             </div>
           </div>
 
-          {/* ── Info harga otomatis (muncul setelah motor + tanggal dipilih) ── */}
-          {totalPrice > 0 && (
-            <div style={{ padding: '14px 16px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '10px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px', marginBottom: '6px' }}>
-                <i className="fa-solid fa-calculator" style={{ color: '#22C55E' }}></i>
-                Harga Terbaik Otomatis
-                {form.discount > 0 && <span style={{ fontSize: '11px', color: '#F59E0B' }}>(sudah potong diskon)</span>}
-              </div>
-              <strong style={{ display: 'block', fontSize: '22px', color: '#22C55E', letterSpacing: '-0.5px', whiteSpace: 'nowrap' }}>
-                {formatRupiah(totalPrice)}
-              </strong>
-            </div>
-          )}
-
           {/* ── KM Awal Odometer ── */}
           <div className="form-group">
             <label className="form-label" htmlFor="tx-km-start">
@@ -1060,6 +1046,56 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
             </label>
             <textarea id="tx-notes" name="notes" className="form-control" rows={2} placeholder="Catatan khusus, permintaan khusus, dll..." value={form.notes} onChange={handleChange} style={{ resize: 'vertical' }} />
           </div>
+
+          {/* ── Ringkasan Totalan — paling bawah, sebelum tombol simpan ── */}
+          {totalPrice > 0 && (
+            <div style={{ padding: '14px 16px', background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', borderRadius: '10px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '2px' }}>
+                <i className="fa-solid fa-receipt" style={{ marginRight: '5px' }}></i> Ringkasan
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Total Sewa</span>
+                <strong style={{ color: 'var(--text-primary)' }}>{formatRupiah(totalPrice)}</strong>
+              </div>
+              {Number(form.discount) > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Diskon</span>
+                  <strong style={{ color: '#F59E0B' }}>- {formatRupiah(form.discount)}</strong>
+                </div>
+              )}
+              {Number(form.deposit) > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Deposit (Jaminan)</span>
+                  <strong style={{ color: 'var(--text-primary)' }}>{formatRupiah(form.deposit)}</strong>
+                </div>
+              )}
+              <div style={{ borderTop: '1px dashed var(--bg-border)', margin: '2px 0' }}></div>
+              {form.payment_status === 'paid' && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px' }}>
+                  <span style={{ color: '#22C55E', fontWeight: 700 }}><i className="fa-solid fa-circle-check" style={{ marginRight: '5px' }}></i>Lunas</span>
+                  <strong style={{ color: '#22C55E' }}>{formatRupiah(0)}</strong>
+                </div>
+              )}
+              {form.payment_status === 'down_payment' && (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Sudah DP</span>
+                    <strong style={{ color: '#3B82F6' }}>{formatRupiah(form.dp_amount)}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px' }}>
+                    <span style={{ color: '#F59E0B', fontWeight: 700 }}>Sisa yang harus dibayar</span>
+                    <strong style={{ color: '#F59E0B' }}>{formatRupiah(Math.max(0, totalPrice - Number(form.dp_amount || 0)))}</strong>
+                  </div>
+                </>
+              )}
+              {form.payment_status === 'unpaid' && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px' }}>
+                  <span style={{ color: '#EF4444', fontWeight: 700 }}>Belum Bayar — Total yang harus dibayar</span>
+                  <strong style={{ color: '#EF4444' }}>{formatRupiah(totalPrice)}</strong>
+                </div>
+              )}
+            </div>
+          )}
 
           {!editData && recordType === 'transaction' && form.start_date && form.start_date > getLocalDateStr() && (
             <div className="alert alert-warning" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px' }}>
