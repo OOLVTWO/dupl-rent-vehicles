@@ -106,7 +106,7 @@ export default function AttributeSelector({ attributes = [], quantities = {}, no
                     cursor: blocked ? 'not-allowed' : 'pointer',
                     border: isChecked ? '2px solid var(--brand-primary, var(--sharp-accent, #2563EB))' : '1px solid var(--bg-border, var(--sharp-line, #E2E8F0))',
                     borderBottom: hasStepper && isChecked ? 'none' : undefined,
-                    background: isChecked ? 'rgba(37,99,235,0.08)' : 'var(--bg-elevated, var(--sharp-surface-2, #F8FAFC))',
+                    background: isChecked ? 'rgba(37,99,235,0.08)' : 'transparent',
                     opacity: blocked ? 0.5 : 1,
                   }}
                 >
