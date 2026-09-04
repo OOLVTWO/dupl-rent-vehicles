@@ -9,7 +9,7 @@ export async function GET(request) {
   if (authError) return authError;
 
   const supabase = await createAdminClient();
-  const { data, error } = await supabase.from('vehicle_attributes').select('*').order('is_auto_included', { ascending: false }).order('name', { ascending: true });
+  const { data, error } = await supabase.from('vehicle_attributes').select('*').order('is_auto_included', { ascending: false }).order('sort_order', { ascending: true });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data || []);
 }
@@ -38,6 +38,7 @@ export async function POST(request) {
       price: Number.isFinite(price) && price >= 0 ? price : 0,
       is_auto_included: !!body.is_auto_included,
       icon: body.icon || 'fa-solid fa-plus',
+      sort_order: Number.isFinite(Number(body.sort_order)) ? Number(body.sort_order) : 0,
     }])
     .select()
     .single();

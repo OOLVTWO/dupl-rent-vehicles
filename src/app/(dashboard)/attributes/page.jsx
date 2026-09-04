@@ -21,6 +21,7 @@ function AttributeModal({ editData, onClose, onSaved }) {
     quantity: editData?.quantity ?? 0,
     price: editData?.price ?? 0,
     is_auto_included: editData?.is_auto_included || false,
+    sort_order: editData?.sort_order ?? 0,
     icon: editData?.icon || 'fa-solid fa-plus',
   });
   const [saving, setSaving] = useState(false);
@@ -101,6 +102,20 @@ function AttributeModal({ editData, onClose, onSaved }) {
               onChange={(e) => handleChange('quantity', e.target.value)}
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Urutan Tampil</label>
+            <input
+              type="number"
+              min="0"
+              className="form-control"
+              value={form.sort_order}
+              onChange={(e) => handleChange('sort_order', e.target.value)}
+            />
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', marginBottom: 0 }}>
+              Angka kecil tampil duluan di form booking (0, 1, 2, dst).
+            </p>
           </div>
 
           <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg-elevated)', padding: '12px 14px', borderRadius: '10px' }}>

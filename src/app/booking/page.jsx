@@ -185,7 +185,7 @@ function BookingPageInner() {
     Promise.resolve().then(async () => {
       try {
         const supabase = createClient();
-        const { data } = await supabase.from('vehicle_attributes').select('*').order('is_auto_included', { ascending: false }).order('name', { ascending: true });
+        const { data } = await supabase.from('vehicle_attributes').select('*').order('is_auto_included', { ascending: false }).order('sort_order', { ascending: true });
         setAttributes(data || []);
       } catch {
         setAttributes([]);

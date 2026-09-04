@@ -14,6 +14,7 @@ export async function PATCH(request, { params }) {
   const updateData = {};
   if ('name' in body) updateData.name = String(body.name || '').trim();
   if ('icon' in body) updateData.icon = body.icon;
+  if ('sort_order' in body) updateData.sort_order = Number.isFinite(Number(body.sort_order)) ? Number(body.sort_order) : 0;
   if ('is_auto_included' in body) updateData.is_auto_included = !!body.is_auto_included;
   if ('quantity' in body) {
     const qty = Number(body.quantity);
