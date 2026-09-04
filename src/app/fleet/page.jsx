@@ -620,7 +620,7 @@ export default function SharpSquareBusinessWebsitePage() {
             <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px', textAlign: 'left', letterSpacing: '0.4px' }}>
               <i className="fa-solid fa-location-dot" style={{ marginRight: '4px', color: 'var(--sharp-accent)' }}></i> Where To Pick Up
             </label>
-            <div className="sharp-input" style={{ color: 'var(--sharp-ink-soft)' }}>Pererenan, Canggu</div>
+            <div className="sharp-input" style={{ color: 'var(--sharp-ink-soft)' }}>{biz.name}</div>
           </div>
           <div>
             <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px', textAlign: 'left', letterSpacing: '0.4px' }}>
@@ -1319,7 +1319,7 @@ export default function SharpSquareBusinessWebsitePage() {
             fontSize: '12px',
           }}>
             <div>© {new Date().getFullYear()} <strong style={{ color: '#F1F5F9' }}>{biz.name}</strong>. All rights reserved.</div>
-            <div>Premium Scooter Rental — Pererenan, Canggu, Bali</div>
+            <div>Premium Scooter Rental — Bali, Indonesia</div>
           </div>
         </div>
       </footer>
