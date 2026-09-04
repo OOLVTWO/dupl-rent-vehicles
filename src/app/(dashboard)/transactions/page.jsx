@@ -7,6 +7,7 @@ import { useRole } from '@/lib/RoleContext';
 import VehicleCombobox from '@/components/shared/VehicleCombobox';
 import CustomerPickerCombobox from '@/components/shared/CustomerPickerCombobox';
 import { getPaymentMethodMeta } from '@/lib/paymentMethods';
+import { splitVehicleName } from '@/lib/bookingCode';
 import { COUNTRY_CODES, getWhatsAppShareUrl, generateInvoiceText, getFlagImageUrl } from '@/lib/countryCodes';
 import { createClient } from '@/lib/supabase/client';
 import { fetchCustomers, upsertCustomer } from '@/lib/customers';
@@ -2066,7 +2067,9 @@ const handleSubmit = async (formData) => {
                 <tr>
                   <th>Kode</th>
                   <th>Customer</th>
-                  <th>Motor</th>
+                  <th>Merk Motor</th>
+                  <th>Nama Motor</th>
+                  <th>Plat Motor</th>
                   <th>Mulai / Selesai</th>
                   <th>KM Odometer</th>
                   <th>Total</th>
@@ -2095,22 +2098,21 @@ const handleSubmit = async (formData) => {
                         </span>
                       </div>
                     </td>
-                    <td data-label="Motor" data-label-align="left">
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                        <div style={{ fontSize: '12px' }}>
-                          <span style={{ color: 'var(--text-muted)' }}>Motor: </span>
-                          <strong style={{ color: 'var(--text-primary)' }}>{b.vehicle_name || '-'}</strong>
-                        </div>
-                        {(() => {
-                          const veh = vehicles.find(v => v.id === b.vehicle_id);
-                          return veh?.plate_number ? (
-                            <div style={{ fontSize: '12px' }}>
-                              <span style={{ color: 'var(--text-muted)' }}>Plat Motor: </span>
-                              <strong style={{ color: 'var(--brand-primary-light)' }}>{veh.plate_number}</strong>
-                            </div>
-                          ) : null;
-                        })()}
-                      </div>
+                    <td data-label="Merk Motor">
+                      <strong style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{splitVehicleName(b.vehicle_name).brand}</strong>
+                    </td>
+                    <td data-label="Nama Motor">
+                      <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{splitVehicleName(b.vehicle_name).model}</span>
+                    </td>
+                    <td data-label="Plat Motor">
+                      {(() => {
+                        const veh = vehicles.find(v => v.id === b.vehicle_id);
+                        return veh?.plate_number ? (
+                          <strong style={{ fontSize: '13px', color: 'var(--brand-primary-light)' }}>{veh.plate_number}</strong>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                        );
+                      })()}
                     </td>
                     <td data-label="Mulai / Selesai" data-label-align="left">
                       <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>
@@ -2229,17 +2231,14 @@ const handleSubmit = async (formData) => {
                         </div>
                       </div>
                     </td>
-                    <td data-label="Motor" data-label-align="left">
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                        <div style={{ fontSize: '12px' }}>
-                          <span style={{ color: 'var(--text-muted)' }}>Motor: </span>
-                          <strong style={{ color: 'var(--text-primary)' }}>{tx.vehicles?.name || '-'}</strong>
-                        </div>
-                        <div style={{ fontSize: '12px' }}>
-                          <span style={{ color: 'var(--text-muted)' }}>Plat Motor: </span>
-                          <strong style={{ color: 'var(--brand-primary-light)' }}>{tx.vehicles?.plate_number || '-'}</strong>
-                        </div>
-                      </div>
+                    <td data-label="Merk Motor">
+                      <strong style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{splitVehicleName(tx.vehicles?.name).brand}</strong>
+                    </td>
+                    <td data-label="Nama Motor">
+                      <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{splitVehicleName(tx.vehicles?.name).model}</span>
+                    </td>
+                    <td data-label="Plat Motor">
+                      <strong style={{ fontSize: '13px', color: 'var(--brand-primary-light)' }}>{tx.vehicles?.plate_number || '-'}</strong>
                     </td>
                     <td data-label="Mulai / Selesai" data-label-align="left">
                       <div className="tx-date-cell">

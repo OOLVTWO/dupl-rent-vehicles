@@ -21,3 +21,16 @@ export function generateBookingCode(vehicleName, vehicleCategory) {
 
   return `${brandLetter}${modelLetter}${digits}`;
 }
+
+/**
+ * Pecah nama motor lengkap ("Honda PCX 160") jadi merek ("Honda") dan nama
+ * modelnya ("PCX 160") — dipakai buat tampilan 3 kolom terpisah (Merk
+ * Motor / Nama Motor / Plat Motor), bukan digabung jadi satu baris.
+ */
+export function splitVehicleName(fullName) {
+  const trimmed = (fullName || '').trim();
+  if (!trimmed) return { brand: '-', model: '-' };
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) return { brand: parts[0], model: '-' };
+  return { brand: parts[0], model: parts.slice(1).join(' ') };
+}

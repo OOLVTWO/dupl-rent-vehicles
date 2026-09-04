@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { formatRupiah, getLocalDateStr } from '@/lib/finance';
+import { splitVehicleName } from '@/lib/bookingCode';
 import { getWhatsAppShareUrl } from '@/lib/countryCodes';
 import { useRole } from '@/lib/RoleContext';
 import { createClient } from '@/lib/supabase/client';
@@ -740,7 +741,9 @@ function BookingsPageInner() {
                 <tr>
                   <th>Kode Booking</th>
                   <th>Customer</th>
-                  <th>Motor</th>
+                  <th>Merk Motor</th>
+                  <th>Nama Motor</th>
+                  <th>Plat Motor</th>
                   <th>Tanggal Sewa</th>
                   <th>Metode Pengambilan</th>
                   <th>Metode Pembayaran</th>
@@ -781,21 +784,21 @@ function BookingsPageInner() {
                           )}
                         </div>
                       </td>
-                      <td data-label="Motor">
-                        <div style={{ fontSize: '12px' }}>
-                          <span style={{ color: 'var(--text-muted)' }}>Motor: </span>
-                          <strong style={{ color: 'var(--text-primary)' }}>{b.vehicle_name}</strong>
-                        </div>
+                      <td data-label="Merk Motor">
+                        <strong style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{splitVehicleName(b.vehicle_name).brand}</strong>
+                      </td>
+                      <td data-label="Nama Motor">
+                        <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{splitVehicleName(b.vehicle_name).model}</span>
+                      </td>
+                      <td data-label="Plat Motor">
                         {(() => {
                           const veh = vehicles.find(v => v.id === b.vehicle_id);
                           return veh?.plate_number ? (
-                            <div style={{ fontSize: '12px', marginTop: '3px' }}>
-                              <span style={{ color: 'var(--text-muted)' }}>Plat Motor: </span>
-                              <strong style={{ color: 'var(--brand-primary-light)' }}>{veh.plate_number}</strong>
-                            </div>
-                          ) : null;
+                            <strong style={{ fontSize: '13px', color: 'var(--brand-primary-light)' }}>{veh.plate_number}</strong>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                          );
                         })()}
-                        {b.vehicle_category && <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '3px' }}>{b.vehicle_category}</div>}
                       </td>
                       <td data-label="Tanggal Sewa" data-label-align="left" style={{ fontSize: '13px' }}>
                         {formatDate(b.start_date)} — {formatDate(b.end_date)}
