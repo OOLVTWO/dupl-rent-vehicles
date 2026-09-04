@@ -751,10 +751,10 @@ function BookingsPageInner() {
                   <th>Status Pembayaran</th>
                   <th>Driver</th>
                   <th>Estimasi</th>
-                  <th>Ringkasan Pembayaran</th>
                   <th>Status Kontrak</th>
                   <th>Status Delivery</th>
                   <th>Status</th>
+                  <th>Ringkasan Pembayaran</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -877,9 +877,6 @@ function BookingsPageInner() {
                         )}
                       </td>
                       <td data-label="Estimasi" style={{ fontWeight: 800, fontSize: '13px' }}>{formatRupiah(b.estimated_price)}</td>
-                      <td data-label="Ringkasan Pembayaran" data-label-align="left">
-                        <PaymentSummaryCell status={b.payment_status || 'unpaid'} total={b.estimated_price} dp={b.dp_amount} />
-                      </td>
                       <td data-label="Status Kontrak" data-label-align="left">
                         {b.fulfillment_method === 'delivery' && b.assigned_driver_id ? (
                           contractsByBookingId.has(b.id) ? (
@@ -959,6 +956,9 @@ function BookingsPageInner() {
                         <span className="badge" style={{ background: meta.bg, color: meta.color, border: `1px solid ${meta.color}` }}>
                           {meta.label}
                         </span>
+                      </td>
+                      <td data-label="Ringkasan Pembayaran" data-label-align="left">
+                        <PaymentSummaryCell status={b.payment_status || 'unpaid'} total={b.estimated_price} dp={b.dp_amount} />
                       </td>
                       <td data-label="Aksi" data-label-align="left">
                         <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>

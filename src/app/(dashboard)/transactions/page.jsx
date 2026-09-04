@@ -2084,8 +2084,8 @@ const handleSubmit = async (formData) => {
                   <th>Kontrak</th>
                   <th>Driver</th>
                   <th>Zona Delivery</th>
-                  <th>Ringkasan Pembayaran</th>
                   <th>Catatan</th>
+                  <th>Ringkasan Pembayaran</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -2180,10 +2180,10 @@ const handleSubmit = async (formData) => {
                         <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
                       )}
                     </td>
+                    <td data-label="Catatan" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Ringkasan Pembayaran" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       <PaymentSummaryCell status={b.payment_status || 'unpaid'} total={b.estimated_price} dp={b.dp_amount} />
                     </td>
-                    <td data-label="Catatan" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Aksi" data-label-align="left">
                       <Link href="/bookings" className="btn btn-sm" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid #8B5CF6', color: '#8B5CF6', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                         <i className="fa-solid fa-arrow-right"></i> Kelola di Booking
@@ -2368,15 +2368,15 @@ const handleSubmit = async (formData) => {
                         <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
                       )}
                     </td>
-                    <td data-label="Ringkasan Pembayaran" data-label-align="left" style={{ verticalAlign: 'middle' }}>
-                      <PaymentSummaryCell status={tx.payment_status || 'unpaid'} total={tx.total_price} dp={tx.dp_amount} />
-                    </td>
                     <td data-label="Catatan" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       {tx.notes ? (
                         <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)', overflowWrap: 'anywhere' }}>{tx.notes}</span>
                       ) : (
                         <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
                       )}
+                    </td>
+                    <td data-label="Ringkasan Pembayaran" data-label-align="left" style={{ verticalAlign: 'middle' }}>
+                      <PaymentSummaryCell status={tx.payment_status || 'unpaid'} total={tx.total_price} dp={tx.dp_amount} />
                     </td>
                     <td data-label="Aksi" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       <div className="tx-actions-cell">
