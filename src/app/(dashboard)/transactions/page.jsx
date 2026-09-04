@@ -1048,54 +1048,71 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
           </div>
 
           {/* ── Ringkasan Totalan — paling bawah, sebelum tombol simpan ── */}
-          {totalPrice > 0 && (
-            <div style={{ padding: '14px 16px', background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', borderRadius: '10px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '2px' }}>
-                <i className="fa-solid fa-receipt" style={{ marginRight: '5px' }}></i> Ringkasan
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Total Sewa</span>
-                <strong style={{ color: 'var(--text-primary)' }}>{formatRupiah(totalPrice)}</strong>
-              </div>
-              {Number(form.discount) > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Diskon</span>
-                  <strong style={{ color: '#F59E0B' }}>- {formatRupiah(form.discount)}</strong>
+          {totalPrice > 0 && (() => {
+            const statusColor = form.payment_status === 'paid' ? '#22C55E' : form.payment_status === 'down_payment' ? '#3B82F6' : '#EF4444';
+            const sisaBayar = form.payment_status === 'paid' ? 0
+              : form.payment_status === 'down_payment' ? Math.max(0, totalPrice - Number(form.dp_amount || 0))
+              : totalPrice;
+            return (
+              <div style={{
+                borderRadius: '14px', marginBottom: '16px', overflow: 'hidden',
+                border: `1px solid ${statusColor}33`, background: 'var(--bg-elevated)',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
+              }}>
+                <div style={{ padding: '12px 16px', background: `${statusColor}14`, borderBottom: `1px solid ${statusColor}33`, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <i className="fa-solid fa-receipt" style={{ color: statusColor, fontSize: '13px' }}></i>
+                  <span style={{ fontSize: '12px', fontWeight: 800, color: statusColor, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                    Ringkasan Pembayaran
+                  </span>
                 </div>
-              )}
-              {Number(form.deposit) > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Deposit (Jaminan)</span>
-                  <strong style={{ color: 'var(--text-primary)' }}>{formatRupiah(form.deposit)}</strong>
-                </div>
-              )}
-              <div style={{ borderTop: '1px dashed var(--bg-border)', margin: '2px 0' }}></div>
-              {form.payment_status === 'paid' && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px' }}>
-                  <span style={{ color: '#22C55E', fontWeight: 700 }}><i className="fa-solid fa-circle-check" style={{ marginRight: '5px' }}></i>Lunas</span>
-                  <strong style={{ color: '#22C55E' }}>{formatRupiah(0)}</strong>
-                </div>
-              )}
-              {form.payment_status === 'down_payment' && (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Sudah DP</span>
-                    <strong style={{ color: '#3B82F6' }}>{formatRupiah(form.dp_amount)}</strong>
+
+                <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                    <span style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <i className="fa-solid fa-motorcycle" style={{ fontSize: '11px', color: 'var(--text-muted)', width: '14px' }}></i>Total Sewa
+                    </span>
+                    <strong style={{ color: 'var(--text-primary)' }}>{formatRupiah(totalPrice)}</strong>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px' }}>
-                    <span style={{ color: '#F59E0B', fontWeight: 700 }}>Sisa yang harus dibayar</span>
-                    <strong style={{ color: '#F59E0B' }}>{formatRupiah(Math.max(0, totalPrice - Number(form.dp_amount || 0)))}</strong>
+                  {Number(form.discount) > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <i className="fa-solid fa-tags" style={{ fontSize: '11px', color: 'var(--text-muted)', width: '14px' }}></i>Diskon
+                      </span>
+                      <strong style={{ color: '#F59E0B' }}>- {formatRupiah(form.discount)}</strong>
+                    </div>
+                  )}
+                  {Number(form.deposit) > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <i className="fa-solid fa-vault" style={{ fontSize: '11px', color: 'var(--text-muted)', width: '14px' }}></i>Deposit (Jaminan)
+                      </span>
+                      <strong style={{ color: 'var(--text-primary)' }}>{formatRupiah(form.deposit)}</strong>
+                    </div>
+                  )}
+                  {form.payment_status === 'down_payment' && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <i className="fa-solid fa-coins" style={{ fontSize: '11px', color: 'var(--text-muted)', width: '14px' }}></i>Sudah DP
+                      </span>
+                      <strong style={{ color: '#3B82F6' }}>{formatRupiah(form.dp_amount)}</strong>
+                    </div>
+                  )}
+
+                  <div style={{
+                    marginTop: '2px', padding: '10px 14px', borderRadius: '10px',
+                    background: `${statusColor}14`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px',
+                  }}>
+                    <span style={{ color: statusColor, fontWeight: 800, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {form.payment_status === 'paid' && <><i className="fa-solid fa-circle-check"></i>Lunas</>}
+                      {form.payment_status === 'down_payment' && 'Sisa yang harus dibayar'}
+                      {form.payment_status === 'unpaid' && 'Belum Bayar — Total Tagihan'}
+                    </span>
+                    <strong style={{ color: statusColor, fontSize: '17px', letterSpacing: '-0.3px', whiteSpace: 'nowrap' }}>{formatRupiah(sisaBayar)}</strong>
                   </div>
-                </>
-              )}
-              {form.payment_status === 'unpaid' && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px' }}>
-                  <span style={{ color: '#EF4444', fontWeight: 700 }}>Belum Bayar — Total yang harus dibayar</span>
-                  <strong style={{ color: '#EF4444' }}>{formatRupiah(totalPrice)}</strong>
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            );
+          })()}
 
           {!editData && recordType === 'transaction' && form.start_date && form.start_date > getLocalDateStr() && (
             <div className="alert alert-warning" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px' }}>
@@ -2424,7 +2441,7 @@ const handleSubmit = async (formData) => {
                       )}
                     </td>
                     <td data-label="Ringkasan Pembayaran" data-label-align="left" style={{ verticalAlign: 'middle' }}>
-                      <PaymentSummaryCell status={tx.payment_status || 'unpaid'} total={tx.total_price} dp={tx.dp_amount} />
+                      <PaymentSummaryCell status={tx.payment_status || 'unpaid'} total={tx.total_price} dp={tx.dp_amount} discount={tx.discount} deposit={tx.deposit} />
                     </td>
                     <td data-label="Aksi" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       <div className="tx-actions-cell">
