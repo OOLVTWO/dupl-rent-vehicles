@@ -644,6 +644,7 @@ function BookingsPageInner() {
   const [deliveryZones, setDeliveryZones] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [directTxDeliveries, setDirectTxDeliveries] = useState([]);
+  const [txByBookingId, setTxByBookingId] = useState(new Map());
   const [myUserId, setMyUserId] = useState(null);
   const [contractsByBookingId, setContractsByBookingId] = useState(new Map());
 
@@ -682,7 +683,11 @@ function BookingsPageInner() {
       const res = await fetch('/api/transactions');
       const data = await res.json().catch(() => []);
       if (res.ok) {
-        setDirectTxDeliveries((Array.isArray(data) ? data : []).filter(t => t.assigned_driver_id && t.fulfillment_method === 'delivery'));
+        const list = Array.isArray(data) ? data : [];
+        setDirectTxDeliveries(list.filter(t => t.assigned_driver_id && t.fulfillment_method === 'delivery'));
+        const map = new Map();
+        list.forEach(t => { if (t.booking_id) map.set(t.booking_id, t); });
+        setTxByBookingId(map);
       }
     } catch { /* ignore */ }
     try {
@@ -1153,7 +1158,13 @@ function BookingsPageInner() {
                         </span>
                       </td>
                       <td data-label="Ringkasan Pembayaran" data-label-align="left">
-                        <PaymentSummaryCell status={b.payment_status || 'unpaid'} total={b.estimated_price} dp={b.dp_amount} />
+                        <PaymentSummaryCell
+                          status={(txByBookingId.get(b.id)?.payment_status) || b.payment_status || 'unpaid'}
+                          total={(txByBookingId.get(b.id)?.total_price) || b.estimated_price}
+                          dp={(txByBookingId.get(b.id)?.dp_amount) ?? b.dp_amount}
+                          discount={txByBookingId.get(b.id)?.discount}
+                          deposit={txByBookingId.get(b.id)?.deposit}
+                        />
                       </td>
                       <td data-label="Aksi" data-label-align="left">
                         <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>

@@ -4,10 +4,29 @@ function formatRupiah(amount) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount || 0);
 }
 
+const TEXT = {
+  id: {
+    heading: 'Atribut / Perlengkapan Tambahan',
+    outOfStock: 'Stok Habis',
+    validNote: 'Berlaku sampai pemakaian motor selesai',
+    free: 'Gratis',
+    includedNote: (names) => <><strong>{names}</strong> sudah otomatis disertakan gratis untuk setiap penyewaan.</>,
+  },
+  en: {
+    heading: 'Additional Equipment',
+    outOfStock: 'Out of Stock',
+    validNote: 'Valid until the end of your rental',
+    free: 'Free',
+    includedNote: (names) => <><strong>{names}</strong> {names.includes('&') || names.includes(',') ? 'are' : 'is'} automatically included free with every rental.</>,
+  },
+};
+
 /**
  * Pemilih atribut/aksesoris motor (Surf Rack, Box Shad, Jas Hujan, dll) —
  * dipakai SAMA PERSIS di form booking publik dan form Transaksi admin biar
- * pengalamannya konsisten.
+ * pengalamannya konsisten. Teks UI-nya bisa di-translate lewat prop `lang`
+ * ('id' default buat admin, 'en' buat halaman publik) — nama atributnya
+ * sendiri (dari database) tidak diterjemahkan otomatis.
  *
  * - Atribut is_auto_included (Helm, Phone Holder) ditampilkan sebagai info
  *   text di bawah, BUKAN checkbox — karena selalu disertakan gratis.
@@ -18,8 +37,10 @@ function formatRupiah(amount) {
  *   attributes: array dari tabel vehicle_attributes
  *   selectedIds: array of attribute id yang lagi dicentang
  *   onChange: (newSelectedIds) => void
+ *   lang: 'id' | 'en' — bahasa untuk teks UI (bukan nama atribut)
  */
-export default function AttributeSelector({ attributes = [], selectedIds = [], onChange }) {
+export default function AttributeSelector({ attributes = [], selectedIds = [], onChange, lang = 'id' }) {
+  const t = TEXT[lang] || TEXT.id;
   const includedAttrs = attributes.filter(a => a.is_auto_included);
   const selectableAttrs = attributes.filter(a => !a.is_auto_included);
 
@@ -37,7 +58,7 @@ export default function AttributeSelector({ attributes = [], selectedIds = [], o
     <div style={{ marginBottom: '18px' }}>
       <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--text-muted, var(--sharp-muted, #94A3B8))', marginBottom: '10px' }}>
         <i className="fa-solid fa-layer-group" style={{ marginRight: '6px' }}></i>
-        Atribut / Perlengkapan Tambahan
+        {t.heading}
       </label>
 
       {selectableAttrs.length > 0 && (
@@ -74,17 +95,17 @@ export default function AttributeSelector({ attributes = [], selectedIds = [], o
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary, var(--sharp-ink, #0F172A))' }}>
                     {attr.name}
-                    {outOfStock && <span style={{ fontSize: '11px', color: '#EF4444', fontWeight: 700, marginLeft: '6px' }}>(Stok Habis)</span>}
+                    {outOfStock && <span style={{ fontSize: '11px', color: '#EF4444', fontWeight: 700, marginLeft: '6px' }}>({t.outOfStock})</span>}
                   </div>
                   {Number(attr.price) > 0 && (
                     <div style={{ fontSize: '10.5px', color: 'var(--text-muted, var(--sharp-muted, #94A3B8))', marginTop: '1px' }}>
-                      Berlaku sampai pemakaian motor selesai
+                      {t.validNote}
                     </div>
                   )}
                 </div>
 
                 <span style={{ fontSize: '12.5px', fontWeight: 800, color: Number(attr.price) > 0 ? '#F59E0B' : '#22C55E', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                  {Number(attr.price) > 0 ? `+${formatRupiah(attr.price)}` : 'Gratis'}
+                  {Number(attr.price) > 0 ? `+${formatRupiah(attr.price)}` : t.free}
                 </span>
               </button>
             );
@@ -100,7 +121,7 @@ export default function AttributeSelector({ attributes = [], selectedIds = [], o
         }}>
           <i className="fa-solid fa-circle-info" style={{ marginTop: '2px', flexShrink: 0 }}></i>
           <span>
-            <strong>{includedAttrs.map(a => a.name).join(' & ')}</strong> sudah otomatis disertakan gratis untuk setiap penyewaan.
+            {t.includedNote(includedAttrs.map(a => a.name).join(' & '))}
           </span>
         </div>
       )}

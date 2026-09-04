@@ -142,7 +142,7 @@ function BookingPageInner() {
   const [vehicle, setVehicle] = useState(null);
   const [loadingVehicle, setLoadingVehicle] = useState(true);
   const [step, setStep] = useState('form');
-  const [form, setForm] = useState({ name: '', phone: '', id_number: '', address: '', fulfillment: 'pickup', payment_method: 'cash', delivery_zone_id: '' });
+  const [form, setForm] = useState({ name: '', phone: '', id_number: '', address: '', fulfillment: '', payment_method: '', delivery_zone_id: '' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [confirmedBooking, setConfirmedBooking] = useState(null);
@@ -218,12 +218,20 @@ function BookingPageInner() {
       setError('Rental dates not found. Please go back to the homepage and select your dates first.');
       return;
     }
+    if (!form.fulfillment) {
+      setError('Please select Pick Up at Store or Delivery.');
+      return;
+    }
     if (form.fulfillment === 'delivery' && !form.address.trim()) {
       setError('Address is required for delivery.');
       return;
     }
     if (form.fulfillment === 'delivery' && !selectedZone) {
       setError('Please select a delivery area.');
+      return;
+    }
+    if (!form.payment_method) {
+      setError('Please select a payment method.');
       return;
     }
 
@@ -397,7 +405,7 @@ function BookingPageInner() {
 
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
-                      Fulfillment
+                      Fulfillment <span style={{ color: '#EF4444' }}>*</span>
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
                       {[
@@ -425,7 +433,7 @@ function BookingPageInner() {
 
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
-                      Payment Method
+                      Payment Method <span style={{ color: '#EF4444' }}>*</span>
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '10px' }}>
                       {[
@@ -511,6 +519,7 @@ function BookingPageInner() {
                     attributes={attributes}
                     selectedIds={selectedAttributeIds}
                     onChange={setSelectedAttributeIds}
+                    lang="en"
                   />
 
                   {showMapModal && createPortal(
