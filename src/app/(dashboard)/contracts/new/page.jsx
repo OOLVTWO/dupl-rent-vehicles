@@ -399,21 +399,11 @@ function NewContractInner() {
             </h3>
             <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 0, marginBottom: '10px' }}>Automatically filled from your {isFromBooking ? 'booking' : 'transaction'} data — no need to re-enter.</p>
             <RecapRow icon="fa-solid fa-user" label="Customer Name" value={form.customer_name} />
+            <RecapRow icon="fa-solid fa-id-card-clip" label="ID Card / Passport Number" value={form.customer_id_number} />
             <RecapRow icon="fa-solid fa-phone" label="Phone / WhatsApp" value={form.customer_phone} />
             <RecapRow icon="fa-solid fa-location-dot" label="Address" value={form.customer_address} />
             <RecapRow icon="fa-solid fa-motorcycle" label="Vehicle" value={form.vehicle_label} />
             <RecapRow icon="fa-solid fa-calendar-days" label="Rental Period" value={`${formatDate(form.start_date)} — ${formatDate(form.end_date)}`} />
-          </div>
-
-          <div className="card" style={{ marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0 }}>
-              <i className="fa-solid fa-id-card-clip" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
-              ID Number
-            </h3>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label">ID Card / Passport Number</label>
-              <input type="text" className="form-control" value={form.customer_id_number} onChange={(e) => handleChange('customer_id_number', e.target.value)} placeholder="Type exactly as shown on ID / Passport" />
-            </div>
           </div>
 
           <div className="card" style={{ marginBottom: '16px' }}>

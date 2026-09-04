@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { formatRupiah, getLocalDateStr } from '@/lib/finance';
 import { splitVehicleName } from '@/lib/bookingCode';
+import PaymentSummaryCell from '@/components/shared/PaymentSummaryCell';
 import { getWhatsAppShareUrl } from '@/lib/countryCodes';
 import { useRole } from '@/lib/RoleContext';
 import { createClient } from '@/lib/supabase/client';
@@ -750,6 +751,7 @@ function BookingsPageInner() {
                   <th>Status Pembayaran</th>
                   <th>Driver</th>
                   <th>Estimasi</th>
+                  <th>Ringkasan Pembayaran</th>
                   <th>Status Kontrak</th>
                   <th>Status Delivery</th>
                   <th>Status</th>
@@ -875,6 +877,9 @@ function BookingsPageInner() {
                         )}
                       </td>
                       <td data-label="Estimasi" style={{ fontWeight: 800, fontSize: '13px' }}>{formatRupiah(b.estimated_price)}</td>
+                      <td data-label="Ringkasan Pembayaran" data-label-align="left">
+                        <PaymentSummaryCell status={b.payment_status || 'unpaid'} total={b.estimated_price} dp={b.dp_amount} />
+                      </td>
                       <td data-label="Status Kontrak" data-label-align="left">
                         {b.fulfillment_method === 'delivery' && b.assigned_driver_id ? (
                           contractsByBookingId.has(b.id) ? (

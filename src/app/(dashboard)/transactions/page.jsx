@@ -8,6 +8,7 @@ import VehicleCombobox from '@/components/shared/VehicleCombobox';
 import CustomerPickerCombobox from '@/components/shared/CustomerPickerCombobox';
 import { getPaymentMethodMeta } from '@/lib/paymentMethods';
 import { splitVehicleName } from '@/lib/bookingCode';
+import PaymentSummaryCell from '@/components/shared/PaymentSummaryCell';
 import { COUNTRY_CODES, getWhatsAppShareUrl, generateInvoiceText, getFlagImageUrl } from '@/lib/countryCodes';
 import { createClient } from '@/lib/supabase/client';
 import { fetchCustomers, upsertCustomer } from '@/lib/customers';
@@ -2179,7 +2180,9 @@ const handleSubmit = async (formData) => {
                         <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
                       )}
                     </td>
-                    <td data-label="Ringkasan Pembayaran" data-label-align="left" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
+                    <td data-label="Ringkasan Pembayaran" data-label-align="left" style={{ verticalAlign: 'middle' }}>
+                      <PaymentSummaryCell status={b.payment_status || 'unpaid'} total={b.estimated_price} dp={b.dp_amount} />
+                    </td>
                     <td data-label="Catatan" style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</td>
                     <td data-label="Aksi" data-label-align="left">
                       <Link href="/bookings" className="btn btn-sm" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid #8B5CF6', color: '#8B5CF6', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
@@ -2366,21 +2369,7 @@ const handleSubmit = async (formData) => {
                       )}
                     </td>
                     <td data-label="Ringkasan Pembayaran" data-label-align="left" style={{ verticalAlign: 'middle' }}>
-                      {tx.payment_status === 'down_payment' ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                            Total Sewa: <strong style={{ color: 'var(--text-primary)' }}>{formatRupiah(tx.total_price)}</strong>
-                          </div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                            Sudah DP: <strong style={{ color: '#3B82F6' }}>{formatRupiah(tx.dp_amount)}</strong>
-                          </div>
-                          <div style={{ fontSize: '13px', color: '#F59E0B', fontWeight: 800, marginTop: '2px' }}>
-                            Total yang harus dibayar: {formatRupiah(Math.max(0, Number(tx.total_price || 0) - Number(tx.dp_amount || 0)))}
-                          </div>
-                        </div>
-                      ) : (
-                        <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
-                      )}
+                      <PaymentSummaryCell status={tx.payment_status || 'unpaid'} total={tx.total_price} dp={tx.dp_amount} />
                     </td>
                     <td data-label="Catatan" data-label-align="left" style={{ verticalAlign: 'middle' }}>
                       {tx.notes ? (
