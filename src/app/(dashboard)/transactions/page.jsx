@@ -847,47 +847,55 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
             </div>
           )}
 
-          {/* ── Nama & No. HP ── */}
-          <div className="form-row cols-2">
-            <div className="form-group">
-              <label className="form-label" htmlFor="tx-name">
-                <i className="fa-solid fa-user" style={{ marginRight: '6px' }}></i> Nama Penyewa <span className="required">*</span>
-              </label>
-              <input id="tx-name" name="renter_name" type="text" className="form-control" placeholder="Nama lengkap penyewa" value={form.renter_name} onChange={handleChange} required />
-            </div>
-            <div className="form-group">
-              <label className="form-label" htmlFor="tx-phone">
-                <i className="fa-solid fa-globe" style={{ marginRight: '6px' }}></i> No. WhatsApp <span className="required">*</span>
-              </label>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap' }}>
-                <CountryCodePicker
-                  value={countryCode}
-                  onChange={(newCode) => {
-                    setCountryCode(newCode);
-                    setForm(prev => ({ ...prev, renter_phone: `${newCode} ${phoneNumber}` }));
-                  }}
-                />
-                <input
-                  id="tx-phone"
-                  name="phone_number"
-                  type="tel"
-                  className="form-control"
-                  style={{ flex: 1, minWidth: 0 }}
-                  placeholder="812345678"
-                  value={phoneNumber}
-                  onChange={e => {
-                    const newNum = e.target.value;
-                    setPhoneNumber(newNum);
-                    setForm(prev => ({ ...prev, renter_phone: `${countryCode} ${newNum}` }));
-                  }}
-                  required
-                />
-              </div>
+          {/* ── Nama Penyewa ── */}
+          <div className="form-group">
+            <label className="form-label" htmlFor="tx-name">
+              <i className="fa-solid fa-user" style={{ marginRight: '6px' }}></i> Nama Penyewa <span className="required">*</span>
+            </label>
+            <input id="tx-name" name="renter_name" type="text" className="form-control" placeholder="Nama lengkap penyewa" value={form.renter_name} onChange={handleChange} required />
+          </div>
+
+          {/* ── Nomor Passport / KTP / SIM ── */}
+          <div className="form-group">
+            <label className="form-label" htmlFor="tx-id-num">
+              <i className="fa-solid fa-id-card" style={{ marginRight: '6px' }}></i> No. KTP / Paspor / SIM <span className="required">*</span>
+            </label>
+            <input id="tx-id-num" name="renter_id_number" type="text" className="form-control" placeholder="Nomor identitas" value={form.renter_id_number} onChange={handleChange} required />
+          </div>
+
+          {/* ── No. WhatsApp ── */}
+          <div className="form-group">
+            <label className="form-label" htmlFor="tx-phone">
+              <i className="fa-solid fa-globe" style={{ marginRight: '6px' }}></i> No. WhatsApp <span className="required">*</span>
+            </label>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap' }}>
+              <CountryCodePicker
+                value={countryCode}
+                onChange={(newCode) => {
+                  setCountryCode(newCode);
+                  setForm(prev => ({ ...prev, renter_phone: `${newCode} ${phoneNumber}` }));
+                }}
+              />
+              <input
+                id="tx-phone"
+                name="phone_number"
+                type="tel"
+                className="form-control"
+                style={{ flex: 1, minWidth: 0 }}
+                placeholder="812345678"
+                value={phoneNumber}
+                onChange={e => {
+                  const newNum = e.target.value;
+                  setPhoneNumber(newNum);
+                  setForm(prev => ({ ...prev, renter_phone: `${countryCode} ${newNum}` }));
+                }}
+                required
+              />
             </div>
           </div>
 
-          {/* ── Tanggal Mulai, Selesai & KM Awal ── */}
-          <div className="form-row cols-3">
+          {/* ── Tanggal Mulai & Selesai ── */}
+          <div className="form-row cols-2">
             <div className="form-group">
               <label className="form-label" htmlFor="tx-start">
                 <i className="fa-solid fa-calendar-plus" style={{ marginRight: '6px' }}></i> Tanggal Mulai <span className="required">*</span>
@@ -900,30 +908,27 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
               </label>
               <input id="tx-end" name="end_date" type="date" className="form-control" value={form.end_date} onChange={handleChange} min={form.start_date} required />
             </div>
-            <div className="form-group">
-              <label className="form-label" htmlFor="tx-km-start">
-                <i className="fa-solid fa-gauge-high" style={{ marginRight: '6px' }}></i> KM Awal Odometer
-              </label>
-              <input
-                id="tx-km-start"
-                name="km_start"
-                type="number"
-                className="form-control"
-                placeholder="e.g. 18500"
-                value={form.km_start}
-                onChange={handleChange}
-                min="0"
-                style={{ MozAppearance: 'textfield' }}
-              />
-            </div>
           </div>
 
-          {/* ── Alamat ── */}
+          {/* ── Alamat / Villa / Hotel ── */}
           <div className="form-group">
             <label className="form-label" htmlFor="tx-address">
               <i className="fa-solid fa-location-dot" style={{ marginRight: '6px', color: 'var(--brand-primary)' }}></i> Alamat / Villa / Hotel <span className="required">*</span>
             </label>
             <input id="tx-address" name="renter_address" type="text" className="form-control" placeholder="e.g. Villa Bamboo, Jl. Pererenan" value={form.renter_address || ''} onChange={handleChange} required />
+          </div>
+
+          {/* ── Metode Pembayaran ── */}
+          <div className="form-group">
+            <label className="form-label" htmlFor="tx-payment">
+              <i className="fa-solid fa-credit-card" style={{ marginRight: '6px' }}></i> Metode Bayar
+            </label>
+            <select id="tx-payment" name="payment_method" className="form-control" value={form.payment_method} onChange={handleChange}>
+              <option value="cash">Cash</option>
+              <option value="transfer">Bank Transfer</option>
+              <option value="qris">QRIS</option>
+              <option value="card">Kartu (EDC)</option>
+            </select>
           </div>
 
                {/* ── Status Pembayaran ── */}
@@ -976,6 +981,22 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
             )}
           </div>
 
+          {/* ── Deposit & Diskon ── */}
+          <div className="form-row cols-2">
+            <div className="form-group">
+              <label className="form-label" htmlFor="tx-deposit">
+                <i className="fa-solid fa-vault" style={{ marginRight: '6px' }}></i> Deposit (Rp)
+              </label>
+              <input id="tx-deposit" name="deposit" type="number" className="form-control" placeholder="0" value={form.deposit} onChange={handleChange} min="0" style={{ MozAppearance: 'textfield' }} />
+            </div>
+            <div className="form-group">
+              <label className="form-label" htmlFor="tx-discount">
+                <i className="fa-solid fa-tags" style={{ marginRight: '6px' }}></i> Diskon (Rp)
+              </label>
+              <input id="tx-discount" name="discount" type="number" className="form-control" placeholder="0" value={form.discount} onChange={handleChange} min="0" style={{ MozAppearance: 'textfield' }} />
+            </div>
+          </div>
+
           {/* ── Info harga otomatis (muncul setelah motor + tanggal dipilih) ── */}
           {totalPrice > 0 && (
             <div style={{ padding: '14px 16px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '10px', marginBottom: '16px' }}>
@@ -990,40 +1011,22 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
             </div>
           )}
 
-          {/* ── Diskon | Deposit | Metode Bayar ── */}
-          <div className="form-row cols-3">
-            <div className="form-group">
-              <label className="form-label" htmlFor="tx-discount">
-                <i className="fa-solid fa-tags" style={{ marginRight: '6px' }}></i> Diskon (Rp)
-              </label>
-              <input id="tx-discount" name="discount" type="number" className="form-control" placeholder="0" value={form.discount} onChange={handleChange} min="0" style={{ MozAppearance: 'textfield' }} />
-            </div>
-            <div className="form-group">
-              <label className="form-label" htmlFor="tx-deposit">
-                <i className="fa-solid fa-vault" style={{ marginRight: '6px' }}></i> Deposit (Rp)
-              </label>
-              <input id="tx-deposit" name="deposit" type="number" className="form-control" placeholder="0" value={form.deposit} onChange={handleChange} min="0" style={{ MozAppearance: 'textfield' }} />
-            </div>
-            <div className="form-group">
-              <label className="form-label" htmlFor="tx-payment">
-                <i className="fa-solid fa-credit-card" style={{ marginRight: '6px' }}></i> Metode Bayar
-              </label>
-              <select id="tx-payment" name="payment_method" className="form-control" value={form.payment_method} onChange={handleChange}>
-                <option value="cash">Cash</option>
-                <option value="transfer">Bank Transfer</option>
-                <option value="qris">QRIS</option>
-                <option value="card">Kartu (EDC)</option>
-              </select>
-            </div>
-          </div>
-          
-     
-          {/* ── No. KTP / Paspor / SIM (selalu tampil, wajib) ── */}
+          {/* ── KM Awal Odometer ── */}
           <div className="form-group">
-            <label className="form-label" htmlFor="tx-id-num">
-              <i className="fa-solid fa-id-card" style={{ marginRight: '6px' }}></i> No. KTP / Paspor / SIM <span className="required">*</span>
+            <label className="form-label" htmlFor="tx-km-start">
+              <i className="fa-solid fa-gauge-high" style={{ marginRight: '6px' }}></i> KM Awal Odometer
             </label>
-            <input id="tx-id-num" name="renter_id_number" type="text" className="form-control" placeholder="Nomor identitas" value={form.renter_id_number} onChange={handleChange} required />
+            <input
+              id="tx-km-start"
+              name="km_start"
+              type="number"
+              className="form-control"
+              placeholder="e.g. 18500"
+              value={form.km_start}
+              onChange={handleChange}
+              min="0"
+              style={{ MozAppearance: 'textfield' }}
+            />
           </div>
 
           {/* ── Catatan ── */}

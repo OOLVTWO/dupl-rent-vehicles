@@ -1,23 +1,17 @@
-# 🏍️ BOSS RENT PERERENAN — Platform Persewaan Motor & Enterprise Management System
+# 🏍️ DEMO RENTAL PREVIEW — Platform Persewaan Motor & Enterprise Management System
 
-Selamat datang di repository resmi **Boss Rent Pererenan**, platform web persewaan motor modern yang memadukan **Katalog Publik Pelanggan (Sharp Aesthetics)** dengan **Sistem Manajemen Operasional & Keuangan Internal (Admin Dashboard)**.
+Selamat datang di repository **Demo Rental Preview**, platform web persewaan motor modern yang memadukan **Katalog Publik Pelanggan (Sharp Aesthetics)** dengan **Sistem Manajemen Operasional & Keuangan Internal (Admin Dashboard)**. Repo ini adalah environment demo/preview yang berdiri sendiri, terisolasi penuh dari data production manapun.
 
 Aplikasi ini dikembangkan menggunakan stack teknologi terbaik: **Next.js 16 (App Router)**, **Supabase Cloud Database & Auth**, **XLSX Multi-Sheet Engine**, **Font Awesome v6 Vector Icons**, dan di-host secara live pada infrastruktur **Vercel Cloud (`.vercel.app`)**.
 
 ---
 
-## 🚀 AKSES WEB LIVE & AKUN LOGIN ADMIN
+## 🚀 AKSES WEB LIVE & AKUN LOGIN
 
-### 🔵 Production (situs asli)
-- 🌐 **Katalog Utama Publik Customer**: [https://bossrentpererenan.vercel.app](https://bossrentpererenan.vercel.app)
-- 🔑 **Portal Login Admin Dashboard**: [https://bossrentpererenan.vercel.app/login](https://bossrentpererenan.vercel.app/login) (atau tambahkan `/dashboard`)
-- 🔒 **Akses admin dikelola via Supabase Auth** — kredensial TIDAK disimpan di repo. Hubungi pemilik untuk akun.
-
-### 🟡 Demo / Preview (repo & deployment duplikat ini)
 - 🌐 **Katalog Publik**: [https://dupl-rent-vehicles.vercel.app](https://dupl-rent-vehicles.vercel.app)
 - 🔑 **Login Panel**: [https://dupl-rent-vehicles.vercel.app/login](https://dupl-rent-vehicles.vercel.app/login)
 
-> ⚠️ **Kredensial di bawah sengaja ditulis terbuka** karena environment ini murni untuk demo/testing (database Supabase terpisah `zniummuqsiobmxffhpzl`, sama sekali tidak menyentuh data production). Repo ini bersifat publik — jangan pakai kombinasi email/password yang sama untuk akun production atau akun penting lainnya.
+> ⚠️ **Kredensial di bawah sengaja ditulis terbuka** karena environment ini murni untuk demo/testing (database Supabase terpisah `zniummuqsiobmxffhpzl`). Repo ini bersifat publik — jangan pakai kombinasi email/password yang sama untuk akun penting lainnya.
 
 | Role | Email | Password | Bisa Coba |
 |---|---|---|---|
@@ -56,8 +50,8 @@ Panel kendali khusus pengelola rental yang dilindungi oleh autentikasi **Supabas
 - **Manajemen Armada Lengkap**: Tambah, edit, dan hapus unit motor beserta nomor plat, warna, tahun, tarif 3-tier (Harian/Mingguan/Bulanan), kilometer Odometer, serta upload foto motor.
 - **Merek Custom**: Pilihan dropdown merek dilengkapi opsi `+ Tambah Merek Baru / Custom...` dengan kolom input berbantu ikon Font Awesome.
 - **🔒 Privasi Kepemilikan & Investor Bagi Hasil**:
-  - Opsi status unit: *Milik Internal Boss Rent* vs *Titipan Investor (Bagi Hasil)*.
-  - Pendataan nama investor, nomor WA, dan persentase bagi hasil (misal: 70% Investor / 30% Boss Rent).
+  - Opsi status unit: *Milik Internal Rental* vs *Titipan Investor (Bagi Hasil)*.
+  - Pendataan nama investor, nomor WA, dan persentase bagi hasil (misal: 70% Investor / 30% Rental).
   - **100% Terisolasi Rahasia**: Data investor disimpan khusus di Admin Panel dan **TIDAK PERNAH BOCOR** ke halaman publik pelanggan.
 - **📊 Directory & Rekap Investor**: Tab khusus rekapitulasi jumlah investor aktif, unit titipan per investor, serta tombol kontak WhatsApp langsung.
 
@@ -76,7 +70,7 @@ Panel kendali khusus pengelola rental yang dilindungi oleh autentikasi **Supabas
 - **Registrasi Otomatis Denda Damage**: Klaim denda kerusakan dari transaksi sewa selesai otomatis tercatat sebagai Pemasukan Keuangan.
 
 #### 📈 Laporan Bagi Hasil Investor & Export Excel (`/reports`)
-- **Engine Kalkulasi Investor**: Otomatis mengkalkulasi Omset Kotor Motor Investor, Potongan Biaya Servis Motor, Laba Operasional Bersih, **Transfer Net Payout ke Investor (70%)**, dan Komisi Boss Rent (30%).
+- **Engine Kalkulasi Investor**: Otomatis mengkalkulasi Omset Kotor Motor Investor, Potongan Biaya Servis Motor, Laba Operasional Bersih, **Transfer Net Payout ke Investor (70%)**, dan Komisi Rental (30%).
 - **Cari & Pilih Nama Investor**: Kolom pencarian cepat `🔍 Ketik nama investor...` untuk menyaring daftar investor secara real-time.
 - **📥 Export File Excel Resmi Investor (`.xlsx`)**: Menghasilkan file Excel profesional 3 Sheet:
   - *Sheet 1: Ringkasan Bagi Hasil & Kop Laporan Resmi* (Kolom lapang 45ch tanpa teks terpotong).
@@ -206,4 +200,4 @@ Seluruh skema database tersimpan pada file **`supabase/schema.sql`** (Master Sch
 
 ---
 
-*Dikembangkan secara khusus & eksklusif untuk Boss Rent Pererenan.*
+*Environment demo/preview — Demo Rental Preview.*
