@@ -46,6 +46,7 @@ const NAV_SECTIONS = [
         children: [
           { href: '/customers',            iconClass: 'fa-solid fa-users',       label: 'Data Customer' },
           { href: '/vehicles',             iconClass: 'fa-solid fa-motorcycle',  label: 'Data Motor' },
+          { href: '/attributes',           iconClass: 'fa-solid fa-layer-group', label: 'Atribut Motor' },
           { href: '/settings?tab=storage', iconClass: 'fa-solid fa-database',    label: 'Database & Storage' },
         ],
       },

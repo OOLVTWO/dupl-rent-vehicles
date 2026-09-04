@@ -916,6 +916,7 @@ function BookingsPageInner() {
                   <th>Merk Motor</th>
                   <th>Nama Motor</th>
                   <th>Plat Motor</th>
+                  <th>Atribut Tambahan</th>
                   <th>Tanggal Sewa</th>
                   <th>Metode Pengambilan</th>
                   <th>Metode Pembayaran</th>
@@ -972,6 +973,20 @@ function BookingsPageInner() {
                             <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
                           );
                         })()}
+                      </td>
+                      <td data-label="Atribut Tambahan" data-label-align="left">
+                        {(b.selected_attributes || []).length > 0 ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                            {b.selected_attributes.map((a, i) => (
+                              <span key={i} style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+                                <i className="fa-solid fa-check" style={{ color: '#22C55E', fontSize: '9px', marginRight: '5px' }}></i>
+                                {a.name}{Number(a.price) > 0 ? ` (+${formatRupiah(a.price)})` : ''}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                        )}
                       </td>
                       <td data-label="Tanggal Sewa" data-label-align="left" style={{ fontSize: '13px' }}>
                         {formatDate(b.start_date)} — {formatDate(b.end_date)}

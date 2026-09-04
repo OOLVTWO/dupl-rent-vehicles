@@ -9,6 +9,7 @@ import CustomerPickerCombobox from '@/components/shared/CustomerPickerCombobox';
 import { getPaymentMethodMeta } from '@/lib/paymentMethods';
 import { splitVehicleName } from '@/lib/bookingCode';
 import PaymentSummaryCell from '@/components/shared/PaymentSummaryCell';
+import AttributeSelector from '@/components/shared/AttributeSelector';
 import { COUNTRY_CODES, getWhatsAppShareUrl, generateInvoiceText, getFlagImageUrl } from '@/lib/countryCodes';
 import { createClient } from '@/lib/supabase/client';
 import { fetchCustomers, upsertCustomer } from '@/lib/customers';
@@ -303,6 +304,8 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
   const [recordType, setRecordType] = useState(''); // '' | 'transaction' | 'booking'
   const [fulfillment, setFulfillment] = useState(''); // '' | 'pickup' | 'delivery'
   const [deliveryZones, setDeliveryZones] = useState([]);
+  const [attributes, setAttributes] = useState([]);
+  const [selectedAttributeIds, setSelectedAttributeIds] = useState([]);
   const [selectedZoneId, setSelectedZoneId] = useState('');
   const [drivers, setDrivers] = useState([]);
   const [assignedDriverId, setAssignedDriverId] = useState('');
@@ -347,6 +350,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
       setFulfillment('');
       setSelectedZoneId('');
       setAssignedDriverId('');
+      setSelectedAttributeIds([]);
     }
   }
 
@@ -356,6 +360,10 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
       .then(r => r.ok ? r.json() : [])
       .then(data => setDeliveryZones(Array.isArray(data) ? data : []))
       .catch(() => setDeliveryZones([]));
+    fetch('/api/attributes')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setAttributes(Array.isArray(data) ? data : []))
+      .catch(() => setAttributes([]));
     fetch('/api/staff')
       .then(r => r.ok ? r.json() : [])
       .then(data => setDrivers((Array.isArray(data) ? data : []).filter(s => s.role === 'driver')))
@@ -447,6 +455,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
         setFulfillment(editData.fulfillment_method || 'pickup');
         setSelectedZoneId(editData.delivery_zone_id || '');
         setAssignedDriverId(editData.assigned_driver_id || '');
+        setSelectedAttributeIds((editData.selected_attributes || []).map(a => a.id));
 
         if (editData.renter_phone) {
           const parts = editData.renter_phone.trim().split(' ');
@@ -568,6 +577,9 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
   const handleConfirmSave = async () => {
     const cleanVehicleId = (form.vehicle_id || '').trim();
     setShowConfirm(false);
+    const selectedAttrsForSubmit = attributes.filter(a => selectedAttributeIds.includes(a.id));
+    const attributesFeeForSubmit = selectedAttrsForSubmit.reduce((s, a) => s + Number(a.price || 0), 0);
+    const attributesPayload = selectedAttrsForSubmit.map(a => ({ id: a.id, name: a.name, price: Number(a.price) || 0 }));
 
     if (!editData && recordType === 'booking') {
       setBookingSaving(true);
@@ -591,10 +603,11 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
           delivery_zone_id: fulfillment === 'delivery' ? (zoneObj?.id || null) : null,
           delivery_zone_name: fulfillment === 'delivery' ? (zoneObj?.zone_label || null) : null,
           delivery_fee: fulfillment === 'delivery' ? Number(zoneObj?.fee) || 0 : 0,
+          selected_attributes: attributesPayload,
           start_date: form.start_date,
           end_date: form.end_date,
           duration_days: Math.max(1, Math.ceil((new Date(form.end_date) - new Date(form.start_date)) / 86400000)),
-          estimated_price: totalPrice,
+          estimated_price: totalPrice + attributesFeeForSubmit,
           status: 'pending',
         }]);
         if (error) throw error;
@@ -639,10 +652,11 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
           delivery_zone_id: selectedZoneObj?.id || null,
           delivery_zone_name: selectedZoneObj?.zone_label || null,
           delivery_fee: Number(selectedZoneObj?.fee) || 0,
+          selected_attributes: attributesPayload,
           start_date: form.start_date,
           end_date: form.end_date,
           duration_days: Math.max(1, Math.ceil((new Date(form.end_date) - new Date(form.start_date)) / 86400000)),
-          estimated_price: totalPrice,
+          estimated_price: totalPrice + attributesFeeForSubmit,
           status: 'pending',
           assigned_driver_id: selectedDriver.id,
           assigned_driver_name: selectedDriver.full_name,
@@ -669,7 +683,13 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
       assigned_driver_name: fulfillment === 'delivery' ? (driverForSubmit?.full_name || null) : null,
     } : {};
 
-    await onSubmit({ ...form, ...extraFields, vehicle_id: cleanVehicleId, total_price: totalPrice });
+    await onSubmit({
+      ...form,
+      ...extraFields,
+      vehicle_id: cleanVehicleId,
+      total_price: totalPrice + attributesFeeForSubmit,
+      selected_attributes: attributesPayload,
+    });
     setLoading(false);
   };
 
@@ -871,6 +891,12 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
             />
           )}
 
+          <AttributeSelector
+            attributes={attributes}
+            selectedIds={selectedAttributeIds}
+            onChange={setSelectedAttributeIds}
+          />
+
           {/* ── Nama Penyewa ── */}
           <div className="form-group">
             <label className="form-label" htmlFor="tx-name">
@@ -1049,10 +1075,13 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
 
           {/* ── Ringkasan Totalan — paling bawah, sebelum tombol simpan ── */}
           {totalPrice > 0 && (() => {
+            const selectedAttrs = attributes.filter(a => selectedAttributeIds.includes(a.id));
+            const attributesFee = selectedAttrs.reduce((s, a) => s + Number(a.price || 0), 0);
+            const grandTotal = totalPrice + attributesFee;
             const statusColor = form.payment_status === 'paid' ? '#22C55E' : form.payment_status === 'down_payment' ? '#3B82F6' : '#EF4444';
             const sisaBayar = form.payment_status === 'paid' ? 0
-              : form.payment_status === 'down_payment' ? Math.max(0, totalPrice - Number(form.dp_amount || 0))
-              : totalPrice;
+              : form.payment_status === 'down_payment' ? Math.max(0, grandTotal - Number(form.dp_amount || 0))
+              : grandTotal;
             return (
               <div style={{
                 borderRadius: '14px', marginBottom: '16px', overflow: 'hidden',
@@ -1073,6 +1102,15 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
                     </span>
                     <strong style={{ color: 'var(--text-primary)' }}>{formatRupiah(totalPrice)}</strong>
                   </div>
+                  {selectedAttrs.length > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <i className="fa-solid fa-layer-group" style={{ fontSize: '11px', color: 'var(--text-muted)', width: '14px' }}></i>
+                        Perlengkapan ({selectedAttrs.map(a => a.name).join(', ')})
+                      </span>
+                      <strong style={{ color: 'var(--text-primary)' }}>{attributesFee > 0 ? `+ ${formatRupiah(attributesFee)}` : 'Gratis'}</strong>
+                    </div>
+                  )}
                   {Number(form.discount) > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
                       <span style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -2138,6 +2176,7 @@ const handleSubmit = async (formData) => {
                   <th>Merk Motor</th>
                   <th>Nama Motor</th>
                   <th>Plat Motor</th>
+                  <th>Atribut Tambahan</th>
                   <th>Mulai / Selesai</th>
                   <th>KM Odometer</th>
                   <th>Total</th>
@@ -2181,6 +2220,20 @@ const handleSubmit = async (formData) => {
                           <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
                         );
                       })()}
+                    </td>
+                    <td data-label="Atribut Tambahan" data-label-align="left">
+                      {(b.selected_attributes || []).length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          {b.selected_attributes.map((a, i) => (
+                            <span key={i} style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+                              <i className="fa-solid fa-check" style={{ color: '#22C55E', fontSize: '9px', marginRight: '5px' }}></i>
+                              {a.name}{Number(a.price) > 0 ? ` (+${formatRupiah(a.price)})` : ''}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                      )}
                     </td>
                     <td data-label="Mulai / Selesai" data-label-align="left">
                       <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>
@@ -2309,6 +2362,20 @@ const handleSubmit = async (formData) => {
                     </td>
                     <td data-label="Plat Motor">
                       <strong style={{ fontSize: '13px', color: 'var(--brand-primary-light)' }}>{tx.vehicles?.plate_number || '-'}</strong>
+                    </td>
+                    <td data-label="Atribut Tambahan" data-label-align="left">
+                      {(tx.selected_attributes || []).length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          {tx.selected_attributes.map((a, i) => (
+                            <span key={i} style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+                              <i className="fa-solid fa-check" style={{ color: '#22C55E', fontSize: '9px', marginRight: '5px' }}></i>
+                              {a.name}{Number(a.price) > 0 ? ` (+${formatRupiah(a.price)})` : ''}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                      )}
                     </td>
                     <td data-label="Mulai / Selesai" data-label-align="left">
                       <div className="tx-date-cell">

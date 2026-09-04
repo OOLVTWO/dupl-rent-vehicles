@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { generateBookingCode } from '@/lib/bookingCode';
+import AttributeSelector from '@/components/shared/AttributeSelector';
 import { getWhatsAppShareUrl, getWaGatewayConfig, sendWhatsAppGateway } from '@/lib/countryCodes';
 import '@/styles/sharp-system.css';
 import SharpButton from '@/components/fleet/SharpButton';
@@ -146,6 +147,8 @@ function BookingPageInner() {
   const [error, setError] = useState('');
   const [confirmedBooking, setConfirmedBooking] = useState(null);
   const [deliveryZones, setDeliveryZones] = useState([]);
+  const [attributes, setAttributes] = useState([]);
+  const [selectedAttributeIds, setSelectedAttributeIds] = useState([]);
   const [showMapModal, setShowMapModal] = useState(false);
 
   useEffect(() => {
@@ -174,6 +177,18 @@ function BookingPageInner() {
     });
   }, []);
 
+  useEffect(() => {
+    Promise.resolve().then(async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase.from('vehicle_attributes').select('*').order('is_auto_included', { ascending: false }).order('name', { ascending: true });
+        setAttributes(data || []);
+      } catch {
+        setAttributes([]);
+      }
+    });
+  }, []);
+
   const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
   const est = vehicle ? calculateEstimate(vehicle, startDate, endDate) : null;
@@ -181,7 +196,9 @@ function BookingPageInner() {
   const price = est ? est.total : Number(vehicle?.rate_per_day || 0);
   const selectedZone = deliveryZones.find(z => z.id === form.delivery_zone_id) || null;
   const deliveryFee = form.fulfillment === 'delivery' && selectedZone ? Number(selectedZone.fee) : 0;
-  const grandTotal = price + deliveryFee;
+  const selectedAttributes = attributes.filter(a => selectedAttributeIds.includes(a.id));
+  const attributesFee = selectedAttributes.reduce((sum, a) => sum + Number(a.price || 0), 0);
+  const grandTotal = price + deliveryFee + attributesFee;
 
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [reviewPayload, setReviewPayload] = useState(null);
@@ -225,6 +242,7 @@ function BookingPageInner() {
       delivery_zone_id: selectedZone?.id || null,
       delivery_zone_name: selectedZone ? zoneLabelEn(selectedZone.zone_label) : null,
       delivery_fee: deliveryFee,
+      selected_attributes: selectedAttributes.map(a => ({ id: a.id, name: a.name, price: Number(a.price) || 0 })),
       start_date: startDate,
       end_date: endDate,
       duration_days: days,
@@ -321,12 +339,12 @@ function BookingPageInner() {
                 <p style={{ fontSize: '15px', fontWeight: 800, color: 'var(--sharp-accent)', margin: '0 0 4px 0' }}>
                   Estimated total: {formatRupiah(grandTotal)}
                 </p>
-                {deliveryFee > 0 && (
+                {(deliveryFee > 0 || attributesFee > 0) && (
                   <p style={{ fontSize: '11.5px', color: 'var(--sharp-muted)', margin: '0 0 16px 0' }}>
-                    ({formatRupiah(price)} rental + {formatRupiah(deliveryFee)} delivery fee)
+                    ({formatRupiah(price)} rental{deliveryFee > 0 ? ` + ${formatRupiah(deliveryFee)} delivery fee` : ''}{attributesFee > 0 ? ` + ${formatRupiah(attributesFee)} extras` : ''})
                   </p>
                 )}
-                {deliveryFee === 0 && <div style={{ marginBottom: '16px' }} />}
+                {deliveryFee === 0 && attributesFee === 0 && <div style={{ marginBottom: '16px' }} />}
 
                 <form onSubmit={proceedToReview}>
                   <div style={{ marginBottom: '14px' }}>
@@ -489,6 +507,12 @@ function BookingPageInner() {
                     </div>
                   )}
 
+                  <AttributeSelector
+                    attributes={attributes}
+                    selectedIds={selectedAttributeIds}
+                    onChange={setSelectedAttributeIds}
+                  />
+
                   {showMapModal && createPortal(
                     <div
                       onClick={() => setShowMapModal(false)}
@@ -579,12 +603,22 @@ function BookingPageInner() {
                   ))}
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '8px 0', borderBottom: '1px dashed var(--sharp-line)', fontSize: '13px' }}>
                     <span style={{ color: 'var(--sharp-muted)' }}>Vehicle Rental Cost</span>
-                    <span style={{ color: 'var(--sharp-ink)', fontWeight: 700 }}>{formatRupiah(Math.max(0, Number(reviewPayload.estimated_price) - Number(reviewPayload.delivery_fee || 0)))}</span>
+                    <span style={{ color: 'var(--sharp-ink)', fontWeight: 700 }}>{formatRupiah(Math.max(0, Number(reviewPayload.estimated_price) - Number(reviewPayload.delivery_fee || 0) - (reviewPayload.selected_attributes || []).reduce((s, a) => s + Number(a.price || 0), 0)))}</span>
                   </div>
                   {reviewPayload.fulfillment_method === 'delivery' && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '8px 0', borderBottom: '1px dashed var(--sharp-line)', fontSize: '13px' }}>
                       <span style={{ color: 'var(--sharp-muted)' }}>Delivery Fee</span>
                       <span style={{ color: 'var(--sharp-ink)', fontWeight: 700 }}>{Number(reviewPayload.delivery_fee) > 0 ? formatRupiah(reviewPayload.delivery_fee) : 'FREE'}</span>
+                    </div>
+                  )}
+                  {(reviewPayload.selected_attributes || []).length > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '8px 0', borderBottom: '1px dashed var(--sharp-line)', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--sharp-muted)' }}>Extras ({reviewPayload.selected_attributes.map(a => a.name).join(', ')})</span>
+                      <span style={{ color: 'var(--sharp-ink)', fontWeight: 700 }}>
+                        {reviewPayload.selected_attributes.reduce((s, a) => s + Number(a.price || 0), 0) > 0
+                          ? formatRupiah(reviewPayload.selected_attributes.reduce((s, a) => s + Number(a.price || 0), 0))
+                          : 'FREE'}
+                      </span>
                     </div>
                   )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', paddingTop: '12px', fontSize: '15px' }}>

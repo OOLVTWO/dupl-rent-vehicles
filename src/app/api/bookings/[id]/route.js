@@ -142,6 +142,7 @@ export async function PATCH(request, { params }) {
     const fee = Number(body.delivery_fee);
     updateData.delivery_fee = Number.isFinite(fee) && fee >= 0 ? fee : 0;
   }
+  if ('selected_attributes' in body) updateData.selected_attributes = Array.isArray(body.selected_attributes) ? body.selected_attributes : [];
   if ('notes' in body) updateData.notes = body.notes;
   if ('wa_notified_at' in body) updateData.wa_notified_at = body.wa_notified_at;
   if ('estimated_price' in body) {
