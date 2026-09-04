@@ -57,9 +57,13 @@ Panel kendali khusus pengelola rental yang dilindungi oleh autentikasi **Supabas
 - **📊 Directory & Rekap Investor**: Tab khusus rekapitulasi jumlah investor aktif, unit titipan per investor, serta tombol kontak WhatsApp langsung.
 
 #### 📋 Manajemen Transaksi Rental (`/transactions`)
-- **Pencatatan Sewa Cepat**: Input nama penyewa, nomor HP, foto KTP/Paspor, tanggal sewa, deposit, diskon, dan metode bayar (Cash/Transfer/QRIS).
-- **Foto Serah Terima Motor**: Upload foto bukti kondisi motor saat diambil dan dikembalikan.
-- **Cetak Struk Nota Pembayaran**: Generator nota transaksi yang siap dicetak atau disimpan sebagai bukti sewa.
+- **Dua Jenis Pencatatan**: Setiap transaksi baru wajib memilih salah satu — **Transaksi Langsung** (sewa mulai sekarang, walk-in) atau **Booking (Reservasi)** (untuk tanggal lain, motor tetap tersedia sampai dikonfirmasi). Tidak ada default; admin harus memilih secara sadar.
+- **Ambil di Toko / Diantar**: Kedua mode di atas mendukung pilihan fulfillment. Kalau Diantar, admin memilih zona delivery (Hijau/Biru/Kuning, sesuai peta zona) dan menugaskan driver langsung dari form ini.
+- **Transaksi Sekarang + Diantar + Driver** secara otomatis membuat record Booking (status Confirmed) yang saling terhubung — supaya driver bisa melihatnya di halaman Booking, tanda tangan kontrak, dan konfirmasi delivery dari sana. Transaksi aktifnya sendiri (dan hitungan mundur Tracking Sewa) baru benar-benar dibuat setelah driver konfirmasi delivery, bukan sejak form disimpan — jadi jam sewa tidak mulai lebih dulu dari serah terima fisik.
+- **Status Pembayaran 3 Tingkat**: Lunas / **Down Payment** (wajib isi nominal DP, sisa tagihan dihitung otomatis) / Belum Bayar.
+- **No. KTP/Paspor/SIM wajib diisi** di semua transaksi — data ini otomatis mengisi form Kontrak nanti, jadi customer tidak perlu mengisi ulang saat tanda tangan.
+- **Tampilan Detail Terstruktur**: Status Motor, Status Pembayaran, Kontrak, Driver, Zona Delivery, dan Ringkasan Pembayaran (Total/DP/Sisa) masing-masing punya bagian sendiri yang jelas — tidak lagi ditumpuk jadi satu kolom.
+- **List Gabungan dengan Booking**: Reservasi yang dibuat lewat mode Booking langsung tampil juga di daftar Transaksi (ditandai ungu, status "Booking (Pending/Confirmed)"), jadi admin punya satu tempat untuk melihat semuanya.
 
 #### 💰 Keuangan & Arus Kas (`/expenses`)
 - **Pencatatan Pemasukan & Pengeluaran**: Pengelompokan kategori (Gaji, Bensin, Servis, Sparepart, Layanan Tambahan).
@@ -73,6 +77,10 @@ Panel kendali khusus pengelola rental yang dilindungi oleh autentikasi **Supabas
   - *Sheet 1: Ringkasan Bagi Hasil & Kop Laporan Resmi* (Kolom lapang 45ch tanpa teks terpotong).
   - *Sheet 2: Rincian Transaksi Sewa Motor Investor*.
   - *Sheet 3: Rincian Biaya Perawatan & Servis Motor*.
+
+#### 🙋 Data Customer (`/customers`)
+- Daftar master customer dengan agregasi otomatis dari histori transaksi (nama, telepon, jumlah sewa, total belanja).
+- Tombol **Edit** dan **Hapus** per baris. Penghapusan hanya berlaku untuk data yang sudah tersimpan permanen di tabel Customer — data hasil agregasi otomatis dari transaksi lama yang belum disinkronkan tidak bisa dihapus dari sini (perlu klik "Sinkronkan" dulu).
 
 #### 🛠️ Jadwal Servis & Perawatan (`/maintenance`)
 - Monitoring odometer KM motor untuk peringatan servis rutin dan ganti oli berkala.
@@ -108,12 +116,41 @@ Panel kendali khusus pengelola rental yang dilindungi oleh autentikasi **Supabas
   | Data Motor, Customer, Laporan, Pengaturan, Maintenance, Galeri | Tidak dapat diakses (otomatis dialihkan) |
 - Proteksi berlapis: selain disembunyikan di UI, setiap endpoint API terkait juga divalidasi ulang di server (`requireAdmin()` di `src/lib/apiAuth.js`) dan proxy Next.js (`src/proxy.js`) memblokir akses langsung lewat URL.
 
-### ✍️ 3. Kontrak Sewa Digital — Tanda Tangan & Foto (`/contracts`, `/contracts/new`)
-- Form kontrak berisi data diri customer (nama, no. KTP/Paspor, telepon, alamat), unit motor, dan tanggal sewa.
-- **Ambil foto langsung dari HP**: foto passport/KTP dan foto customer bersama motor yang disewa.
+### ✍️ 3. Kontrak Sewa Digital — Picker-First & Tanda Tangan (`/contracts`, `/contracts/new`)
+- **Tidak ada lagi form kosong**: membuka Kontrak tanpa memilih transaksi/booking dulu akan menampilkan **daftar customer yang sudah transaksi/booking tapi belum tanda tangan** — bukan form isi manual dari nol. Ini berlaku sama di tampilan Admin maupun Driver (Driver hanya melihat yang ditugaskan ke dirinya).
+- Memilih salah satu dari daftar akan membuka form yang **sudah terisi otomatis** (nama, telepon, alamat, motor, tanggal sewa, dan No. KTP/Paspor — karena field ini sekarang wajib diisi sejak tahap Transaksi/Booking).
+- **Ambil foto langsung dari HP**: foto passport/KTP dan foto customer bersama motor yang disewa (khusus di form Kontrak — form Transaksi tidak lagi punya upload foto ganda).
 - **Tanda tangan digital di layar** (kanvas HTML5, bisa pakai jari di HP atau mouse di desktop) — tidak pakai library eksternal.
-- Bisa dibuka langsung dari baris Transaksi (tombol ungu ✍️) untuk otomatis mengisi data customer & motor dari transaksi terkait.
-- **Laporan Kontrak** menampilkan semua kontrak yang sudah ditandatangani lengkap dengan foto & tanda tangan, bisa diakses Admin maupun Driver.
+- **Buat Kontrak Dulu terkunci** sampai tanggal mulai sewa benar-benar tiba — mencegah driver membuat kontrak untuk booking yang masih di masa depan.
+- **Laporan Kontrak** otomatis sinkron karena berbasis data Transaksi — tidak mungkin ada entri kontrak "yatim" tanpa transaksi/booking valid.
+- **PDF Invoice Otomatis**: setiap kontrak yang sudah ditandatangani bisa digenerate jadi PDF (via `pdfkit`, server-side) berisi detail sewa, 2 foto, dan tanda tangan customer. Dari halaman Transaksi, admin bisa langsung mengirim PDF ini ke customer lewat WhatsApp menggunakan Web Share API (membuka share sheet HP, memilih WhatsApp, file terlampir langsung).
+
+### 🗺️ 4. Zona Delivery & Peta Interaktif
+- Halaman booking publik (`/booking`) menampilkan pilihan **Ambil di Toko** atau **Diantar**. Kalau Diantar, customer memilih zona (Hijau/Biru/Kuning) dengan harga masing-masing yang tampil ringkas — tanpa daftar lokasi panjang yang memenuhi layar.
+- Tombol **View Zone Map** membuka peta zona sebagai overlay yang benar-benar center di layar (dirender lewat React Portal, lepas dari elemen halaman manapun, supaya tidak ketarik oleh header atau elemen `position: sticky` lain).
+- Sebelum konfirmasi, ada tahap **Review Your Booking** berisi ringkasan lengkap (termasuk rincian harga sewa motor terpisah dari ongkos delivery), **Terms & Conditions**, dan kotak centang persetujuan wajib — tombol konfirmasi terkunci (abu-abu) sampai kotak dicentang.
+- Admin bisa mengatur harga & label tiap zona dari **Pengaturan → Zona Delivery**.
+
+### 🚗 5. Ekosistem Driver — Booking, Kontrak, Delivery, Pendapatan
+- **Booking Confirmation** (`/bookings`) menampilkan kolom terpisah untuk Driver, Status Kontrak, dan Status Delivery — masing-masing punya aksi & indikator sendiri, tidak ditumpuk jadi satu.
+- Tombol **Confirm Delivered** terkunci dengan pesan jelas selama kontrak belum dibuat, dan selama tanggal mulai sewa belum tiba.
+- Ongkos delivery otomatis tercatat sebagai **pendapatan driver** (status "belum dibayar") begitu delivery dikonfirmasi.
+- **History Pendapatan** (`/driver-income`) — driver bisa melihat riwayat pendapatannya sendiri (ongkos delivery otomatis + gaji/bonus manual dari admin).
+- Pesan konfirmasi booking ke customer menyertakan nama **dan nomor WhatsApp driver** yang bertugas.
+
+### 👔 6. Manajemen Employee — Input Pendapatan & Konfirmasi Pembayaran (`/settings` → Employee)
+- **Akun Staff**: kelola akun Admin/Driver seperti biasa.
+- **Input Pendapatan**: admin bisa mencatat gaji/bonus untuk tiap driver dari satu tempat, tanpa perlu klik masuk ke akun driver satu per satu.
+- **Konfirmasi Pembayaran**: daftar semua pembayaran driver yang belum lunas dalam satu layar, dengan aksi ✓ (tandai lunas) atau ✗ (tolak & hapus entri) per baris.
+- Admin juga bisa membuka **riwayat pendapatan lengkap** tiap driver langsung dari baris Akun Staff, termasuk menghapus entri yang keliru.
+- Kalau transaksi/booking sumber dari suatu catatan pendapatan dihapus, catatan pendapatannya ikut terhapus otomatis — tidak ada riwayat "nyangkut" dari data yang sudah tidak ada.
+
+### 🔔 7. Notifikasi Badge di Sidebar
+Sidebar menampilkan badge angka real-time (polling tiap 60 detik) pada beberapa menu:
+- **Booking** — jumlah booking berstatus Pending.
+- **Tracking Sewa** — jumlah sewa aktif yang sudah lewat tanggal kembali.
+- **Kontrak** — jumlah transaksi/booking yang belum ada kontraknya (Admin melihat semua; Driver hanya melihat yang ditugaskan ke dirinya sendiri dan sudah bisa dikerjakan).
+- **Konfirmasi Pembayaran** — jumlah pendapatan driver yang belum dikonfirmasi lunas.
 
 ---
 
