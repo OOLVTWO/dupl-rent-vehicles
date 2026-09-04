@@ -258,6 +258,26 @@ export async function upsertCustomer(supabase, customerData) {
 }
 
 /**
+ * Hapus customer dari tabel `customers`. Cuma bisa buat customer yang
+ * beneran ada row-nya di DB (id asli), bukan yang "tx-cust-*" (hasil
+ * agregasi otomatis dari histori transaksi lama yang belum tersimpan ke
+ * Master Customer) — yang itu nggak ada row aslinya buat dihapus.
+ */
+export async function deleteCustomer(supabase, customerId) {
+  if (!supabase || !customerId) return { success: false, error: 'ID customer tidak valid.' };
+  if (customerId.startsWith('tx-cust-')) {
+    return { success: false, error: 'Customer ini belum tersimpan permanen di Master Customer (masih agregasi otomatis dari histori transaksi lama), jadi belum bisa dihapus dari sini.' };
+  }
+  try {
+    const { error } = await supabase.from('customers').delete().eq('id', customerId);
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err?.message || 'Gagal terhubung ke server.' };
+  }
+}
+
+/**
  * Sinkronkan seluruh data customer dari transaksi lama ke tabel `customers` DB
  */
 export async function syncTransactionsToCustomers(supabase) {

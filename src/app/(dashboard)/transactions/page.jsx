@@ -540,6 +540,10 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
       alert('Alamat / Villa wajib diisi.');
       return;
     }
+    if (!form.renter_id_number.trim()) {
+      alert('No. KTP / Paspor / SIM wajib diisi — biar nanti ngisi form kontraknya lebih sedikit.');
+      return;
+    }
     if (form.payment_status === 'down_payment' && !String(form.dp_amount).trim()) {
       alert('Jumlah DP yang sudah dibayar wajib diisi.');
       return;
@@ -1056,9 +1060,9 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
               {/* No. KTP */}
               <div className="form-group">
                 <label className="form-label" htmlFor="tx-id-num">
-                  <i className="fa-solid fa-id-card" style={{ marginRight: '6px' }}></i> No. KTP / Paspor / SIM
+                  <i className="fa-solid fa-id-card" style={{ marginRight: '6px' }}></i> No. KTP / Paspor / SIM <span className="required">*</span>
                 </label>
-                <input id="tx-id-num" name="renter_id_number" type="text" className="form-control" placeholder="Nomor identitas" value={form.renter_id_number} onChange={handleChange} />
+                <input id="tx-id-num" name="renter_id_number" type="text" className="form-control" placeholder="Nomor identitas" value={form.renter_id_number} onChange={handleChange} required />
               </div>
 
               {/* Dual Photo Upload */}
@@ -2063,7 +2067,8 @@ const handleSubmit = async (formData) => {
     const matchStatus =
       statusFilter === 'all' ||
       tx.status === statusFilter ||
-      (statusFilter === 'belum_bayar' && tx.status === 'active' && tx.payment_status === 'unpaid');
+      (statusFilter === 'belum_bayar' && tx.status === 'active' && tx.payment_status === 'unpaid') ||
+      (statusFilter === 'down_payment' && tx.status === 'active' && tx.payment_status === 'down_payment');
     return matchSearch && matchStatus;
   });
 
@@ -2106,6 +2111,7 @@ const handleSubmit = async (formData) => {
           >
             <option value="all">Semua Status</option>
             <option value="active">Sewa Aktif</option>
+            <option value="down_payment">Down Payment</option>
             <option value="belum_bayar">Belum Bayar</option>
             <option value="completed">Selesai</option>
             <option value="cancelled">Dibatalkan</option>

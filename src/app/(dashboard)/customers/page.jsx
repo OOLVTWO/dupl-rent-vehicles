@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { fetchCustomers, upsertCustomer, syncTransactionsToCustomers } from '@/lib/customers';
+import { fetchCustomers, upsertCustomer, syncTransactionsToCustomers, deleteCustomer } from '@/lib/customers';
 import { exportCustomersToExcel, formatRupiah } from '@/lib/excel';
 import { COUNTRY_CODES, getFlagImageUrl } from '@/lib/countryCodes';
 import { compressImage } from '@/lib/imageCompressor';
@@ -215,6 +215,17 @@ export default function CustomersPage() {
     setCountryCode('+62');
     setPhoneNumberOnly('');
     setModalOpen(true);
+  };
+
+  const handleDeleteCustomer = async (customer) => {
+    if (!confirm(`Hapus data customer "${customer.name}"? Aksi ini nggak bisa dibatalkan.`)) return;
+    const result = await deleteCustomer(supabase, customer.id);
+    if (result.success) {
+      showNotification(`Data customer "${customer.name}" berhasil dihapus.`);
+      await loadCustomerData();
+    } else {
+      showNotification(result.error || 'Gagal menghapus customer.', 'error');
+    }
   };
 
   const handleOpenEditModal = (customer) => {
@@ -730,14 +741,24 @@ export default function CustomersPage() {
 
                       {/* Actions */}
                       <td style={{ padding: '14px 16px', textAlign: 'right' }}>
-                        <button
-                          type="button"
-                          className="btn btn-secondary"
-                          onClick={() => handleOpenEditModal(customer)}
-                          style={{ fontSize: '12px', padding: '6px 12px' }}
-                        >
-                          <i className="fa-solid fa-pen-to-square"></i> Edit
-                        </button>
+                        <div style={{ display: 'inline-flex', gap: '6px' }}>
+                          <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={() => handleOpenEditModal(customer)}
+                            style={{ fontSize: '12px', padding: '6px 12px' }}
+                          >
+                            <i className="fa-solid fa-pen-to-square"></i> Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={() => handleDeleteCustomer(customer)}
+                            style={{ fontSize: '12px', padding: '6px 12px' }}
+                          >
+                            <i className="fa-solid fa-trash-can"></i>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

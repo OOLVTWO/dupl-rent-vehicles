@@ -66,9 +66,9 @@ const NAV_SECTIONS = [
         isGroup: true,
         children: [
           { href: '/settings?tab=staff',        iconClass: 'fa-solid fa-user-tie',           label: 'Akun Staff' },
-          { href: '/contracts/new',             iconClass: 'fa-solid fa-file-pen',            label: 'Kontrak' },
+          { href: '/contracts/new',             iconClass: 'fa-solid fa-file-pen',            label: 'Kontrak', badge: 'kontrak' },
           { href: '/settings?tab=staff-income', iconClass: 'fa-solid fa-sack-dollar',         label: 'Input Pendapatan' },
-          { href: '/settings?tab=staff-payout', iconClass: 'fa-solid fa-hand-holding-dollar', label: 'Konfirmasi Pembayaran' },
+          { href: '/settings?tab=staff-payout', iconClass: 'fa-solid fa-hand-holding-dollar', label: 'Konfirmasi Pembayaran', badge: 'employee' },
         ],
       },
     ],
@@ -100,7 +100,7 @@ const DRIVER_NAV_SECTIONS = [
         isDropdown: true,
         children: [
           { href: '/bookings',      iconClass: 'fa-solid fa-inbox',           label: 'Booking' },
-          { href: '/contracts/new', iconClass: 'fa-solid fa-file-signature',  label: 'Kontrak' },
+          { href: '/contracts/new', iconClass: 'fa-solid fa-file-signature',  label: 'Kontrak', badge: 'kontrak' },
           { href: '/driver-income', iconClass: 'fa-solid fa-sack-dollar',     label: 'History Pendapatan' },
           { href: '/tracking',      iconClass: 'fa-solid fa-clock-rotate-left', label: 'Tracking Sewa' },
         ],
@@ -126,7 +126,7 @@ function getDaysLeft(endDate) {
 export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [alertCounts, setAlertCounts] = useState({ tracking: 0, availability: 0, bookings: 0 });
+  const [alertCounts, setAlertCounts] = useState({ tracking: 0, availability: 0, bookings: 0, kontrak: 0, employee: 0 });
   const [openDropdowns, setOpenDropdowns] = useState({});
   const [logoUrl, setLogoUrl] = useState('/images/logoCompany.png');
   const [searchString, setSearchString] = useState('');
@@ -185,13 +185,57 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
           .select('id', { count: 'exact', head: true })
           .eq('status', 'pending');
 
-        setAlertCounts({ tracking: alertCount, availability: alertCount, bookings: pendingBookings || 0 });
+        let kontrakCount = 0;
+        let employeeCount = 0;
+
+        if (role === 'admin') {
+          // Transaksi aktif & booking confirmed yang BELUM ada kontraknya —
+          // ini yang perlu ditindaklanjuti (customer belum TTD).
+          const [{ data: activeTxIds }, { data: confirmedBookingIds }, { data: contractedTxIds }, { data: contractedBookingIds }] = await Promise.all([
+            supabase.from('transactions').select('id').eq('status', 'active'),
+            supabase.from('bookings').select('id').eq('status', 'confirmed'),
+            supabase.from('contracts').select('transaction_id').not('transaction_id', 'is', null),
+            supabase.from('contracts').select('booking_id').not('booking_id', 'is', null),
+          ]);
+          const doneTx = new Set((contractedTxIds || []).map(c => c.transaction_id));
+          const doneBooking = new Set((contractedBookingIds || []).map(c => c.booking_id));
+          const needTx = (activeTxIds || []).filter(t => !doneTx.has(t.id)).length;
+          const needBooking = (confirmedBookingIds || []).filter(b => !doneBooking.has(b.id)).length;
+          kontrakCount = needTx + needBooking;
+
+          const { data: unpaidIncome } = await supabase
+            .from('expenses')
+            .select('id')
+            .eq('type', 'income')
+            .not('staff_id', 'is', null)
+            .neq('payment_status', 'paid');
+          employeeCount = unpaidIncome?.length || 0;
+        } else if (role === 'driver' && user?.id) {
+          // Buat driver: booking yang ditugaskan ke dia, udah bisa dikerjakan
+          // (tanggal mulai udah nyampe), tapi belum ada kontraknya.
+          const { data: myBookings } = await supabase
+            .from('bookings')
+            .select('id, start_date')
+            .eq('assigned_driver_id', user.id)
+            .eq('status', 'confirmed');
+          if (myBookings?.length) {
+            const { data: myContracts } = await supabase
+              .from('contracts')
+              .select('booking_id')
+              .in('booking_id', myBookings.map(b => b.id));
+            const doneIds = new Set((myContracts || []).map(c => c.booking_id));
+            const todayStr = new Date().toISOString().split('T')[0];
+            kontrakCount = myBookings.filter(b => !doneIds.has(b.id) && b.start_date <= todayStr).length;
+          }
+        }
+
+        setAlertCounts({ tracking: alertCount, availability: alertCount, bookings: pendingBookings || 0, kontrak: kontrakCount, employee: employeeCount });
       } catch { /* ignore */ }
     };
     fetchAlerts();
     const interval = setInterval(fetchAlerts, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [role, user?.id]);
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -212,6 +256,8 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
       item.badge === 'tracking' ? alertCounts.tracking
       : item.badge === 'availability' ? alertCounts.availability
       : item.badge === 'bookings' ? alertCounts.bookings
+      : item.badge === 'kontrak' ? alertCounts.kontrak
+      : item.badge === 'employee' ? alertCounts.employee
       : 0;
 
     // Group (mis. "Booking & Sewa", "Data Master") — kumpulan beberapa

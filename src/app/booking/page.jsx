@@ -140,7 +140,7 @@ function BookingPageInner() {
   const [vehicle, setVehicle] = useState(null);
   const [loadingVehicle, setLoadingVehicle] = useState(true);
   const [step, setStep] = useState('form');
-  const [form, setForm] = useState({ name: '', phone: '', address: '', fulfillment: 'pickup', payment_method: 'cash', delivery_zone_id: '' });
+  const [form, setForm] = useState({ name: '', phone: '', id_number: '', address: '', fulfillment: 'pickup', payment_method: 'cash', delivery_zone_id: '' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [confirmedBooking, setConfirmedBooking] = useState(null);
@@ -192,6 +192,10 @@ function BookingPageInner() {
       setError('Name and phone number are required.');
       return;
     }
+    if (!form.id_number.trim()) {
+      setError('ID / Passport number is required.');
+      return;
+    }
     if (!startDate || !endDate) {
       setError('Rental dates not found. Please go back to the homepage and select your dates first.');
       return;
@@ -212,6 +216,7 @@ function BookingPageInner() {
       vehicle_category: vehicle.category || null,
       customer_name: form.name.trim(),
       customer_phone: form.phone.trim(),
+      customer_id_number: form.id_number.trim(),
       customer_address: form.address.trim() || null,
       fulfillment_method: form.fulfillment,
       payment_method: form.payment_method,
@@ -350,6 +355,24 @@ function BookingPageInner() {
                       placeholder="08xx-xxxx-xxxx"
                       required
                     />
+                  </div>
+
+                  <div style={{ marginBottom: '14px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
+                      ID / Passport Number *
+                    </label>
+                    <input
+                      type="text"
+                      className="sharp-input"
+                      style={{ width: '100%' }}
+                      value={form.id_number}
+                      onChange={(e) => handleChange('id_number', e.target.value)}
+                      placeholder="ID card, passport, or driving license number"
+                      required
+                    />
+                    <p style={{ fontSize: '10.5px', color: 'var(--sharp-muted)', marginTop: '5px', marginBottom: 0 }}>
+                      This pre-fills your rental contract, so you&apos;ll have less to fill in at handover.
+                    </p>
                   </div>
 
                   <div style={{ marginBottom: '14px' }}>
@@ -537,6 +560,7 @@ function BookingPageInner() {
                     ['Vehicle', reviewPayload.vehicle_name],
                     ['Renter', reviewPayload.customer_name],
                     ['WhatsApp', reviewPayload.customer_phone],
+                    ['ID / Passport', reviewPayload.customer_id_number],
                     ['Rental Period', `${new Date(reviewPayload.start_date).toLocaleDateString('en-GB')} — ${new Date(reviewPayload.end_date).toLocaleDateString('en-GB')} (${reviewPayload.duration_days} day${reviewPayload.duration_days > 1 ? 's' : ''})`],
                     ['Fulfillment', reviewPayload.fulfillment_method === 'delivery' ? `Delivery (${reviewPayload.delivery_zone_name || '-'})` : 'Self Pickup at Shop'],
                     ...(reviewPayload.fulfillment_method === 'delivery' ? [['Delivery Address', reviewPayload.customer_address]] : []),

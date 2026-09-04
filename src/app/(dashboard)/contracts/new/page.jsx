@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { compressImage } from '@/lib/imageCompressor';
 import SignaturePad from '@/components/contracts/SignaturePad';
-import VehicleCombobox from '@/components/shared/VehicleCombobox';
+import { useRole } from '@/lib/RoleContext';
 
 function formatDate(d) {
   if (!d) return '-';
@@ -92,6 +92,15 @@ function RecapRow({ icon, label, value }) {
 function NewContractInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const role = useRole();
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    Promise.resolve().then(async () => {
+      const supabase = createClient();
+      const { data: { user: u } } = await supabase.auth.getUser();
+      setUser(u);
+    });
+  }, []);
   const transactionId = searchParams.get('transactionId') || '';
   const vehicleIdParam = searchParams.get('vehicleId') || '';
   const bookingId = searchParams.get('bookingId') || '';
@@ -123,6 +132,8 @@ function NewContractInner() {
   const [passportPhoto, setPassportPhoto] = useState('');
   const [vehiclePhoto, setVehiclePhoto] = useState('');
   const [signature, setSignature] = useState('');
+  const [needsContractItems, setNeedsContractItems] = useState([]);
+  const [pickerLoading, setPickerLoading] = useState(true);
 
   // Prefill dari Transaksi atau Booking — kalau dari booking, data diri &
   // detail sewa sudah pasti lengkap, jadi driver tinggal isi yang belum
@@ -143,6 +154,7 @@ function NewContractInner() {
             customer_name: tx.renter_name || '',
             customer_phone: tx.renter_phone || '',
             customer_address: tx.renter_address || '',
+            customer_id_number: tx.renter_id_number || '',
             start_date: tx.start_date || '',
             end_date: tx.end_date || '',
           }));
@@ -157,6 +169,7 @@ function NewContractInner() {
             customer_name: booking.customer_name || '',
             customer_phone: booking.customer_phone || '',
             customer_address: booking.customer_address || '',
+            customer_id_number: booking.customer_id_number || '',
             start_date: booking.start_date || '',
             end_date: booking.end_date || '',
           }));
@@ -165,6 +178,47 @@ function NewContractInner() {
       setLoadingContext(false);
     });
   }, [transactionId, bookingId]);
+
+  // Mode "picker": nggak ada transactionId/bookingId di URL — berarti
+  // orang baru masuk ke Kontrak dari menu, belum milih siapa. Tampilkan
+  // daftar transaksi aktif & booking confirmed yang BELUM ada kontraknya,
+  // biar milih dari situ dulu — bukan form kosong isi manual dari nol.
+  useEffect(() => {
+    if (transactionId || bookingId) return;
+    Promise.resolve().then(async () => {
+      const supabase = createClient();
+      const [{ data: activeTx }, { data: confirmedBookings }, { data: contractedTx }, { data: contractedBookings }] = await Promise.all([
+        supabase.from('transactions').select('id, renter_name, renter_phone, start_date, end_date, vehicles(name, plate_number)').eq('status', 'active').order('created_at', { ascending: false }),
+        supabase.from('bookings').select('id, customer_name, customer_phone, start_date, end_date, vehicle_name, fulfillment_method, assigned_driver_id').eq('status', 'confirmed').order('created_at', { ascending: false }),
+        supabase.from('contracts').select('transaction_id').not('transaction_id', 'is', null),
+        supabase.from('contracts').select('booking_id').not('booking_id', 'is', null),
+      ]);
+      const doneTx = new Set((contractedTx || []).map(c => c.transaction_id));
+      const doneBooking = new Set((contractedBookings || []).map(c => c.booking_id));
+
+      const txItems = (activeTx || [])
+        .filter(t => !doneTx.has(t.id))
+        .map(t => ({
+          kind: 'transaction', id: t.id,
+          customer_name: t.renter_name, customer_phone: t.renter_phone,
+          vehicle_label: t.vehicles ? `${t.vehicles.name}${t.vehicles.plate_number ? ' — ' + t.vehicles.plate_number : ''}` : '-',
+          start_date: t.start_date, end_date: t.end_date,
+        }));
+      const bookingItems = (confirmedBookings || [])
+        .filter(b => !doneBooking.has(b.id))
+        .filter(b => role !== 'driver' || b.assigned_driver_id === user?.id) // driver cuma lihat yg ditugaskan ke dia
+        .map(b => ({
+          kind: 'booking', id: b.id,
+          customer_name: b.customer_name, customer_phone: b.customer_phone,
+          vehicle_label: b.vehicle_name || '-',
+          start_date: b.start_date, end_date: b.end_date,
+          fulfillment_method: b.fulfillment_method,
+        }));
+
+      setNeedsContractItems([...bookingItems, ...txItems]);
+      setPickerLoading(false);
+    });
+  }, [transactionId, bookingId, role, user?.id]);
 
   const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
@@ -215,6 +269,68 @@ function NewContractInner() {
     setSubmitting(false);
   };
 
+  // Mode picker: belum milih transaksi/booking mana yang mau dibikinin
+  // kontrak. Tampilin daftar yang butuh kontrak, bukan form kosong.
+  if (!transactionId && !bookingId && !success) {
+    return (
+      <div className="page-content">
+        <div className="page-header">
+          <h1><i className="fa-solid fa-file-signature" style={{ marginRight: '10px', color: 'var(--brand-primary)' }}></i>Kontrak</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>
+            Pilih customer yang sudah transaksi/booking tapi belum tanda tangan kontrak.
+          </p>
+        </div>
+
+        {pickerLoading ? (
+          <div className="table-empty"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>Memuat...</div>
+        ) : needsContractItems.length === 0 ? (
+          <div className="card" style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <i className="fa-solid fa-circle-check" style={{ fontSize: '32px', color: '#22C55E', marginBottom: '12px' }}></i>
+            <p style={{ color: 'var(--text-muted)', margin: 0 }}>Semua transaksi & booking aktif sudah ada kontraknya. 🎉</p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {needsContractItems.map(item => (
+              <button
+                key={`${item.kind}-${item.id}`}
+                type="button"
+                onClick={() => router.push(item.kind === 'booking' ? `/contracts/new?bookingId=${item.id}` : `/contracts/new?transactionId=${item.id}`)}
+                className="card"
+                style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px',
+                  textAlign: 'left', cursor: 'pointer', width: '100%', border: '1px solid var(--bg-border)',
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {item.customer_name || 'Tanpa nama'}
+                    <span style={{
+                      fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px',
+                      background: item.kind === 'booking' ? 'rgba(139,92,246,0.15)' : 'rgba(37,99,235,0.15)',
+                      color: item.kind === 'booking' ? '#8B5CF6' : 'var(--brand-primary-light)',
+                    }}>
+                      {item.kind === 'booking' ? 'Booking' : 'Transaksi'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '3px' }}>
+                    <i className="fa-solid fa-motorcycle" style={{ marginRight: '5px' }}></i>{item.vehicle_label}
+                    {' · '}{formatDate(item.start_date)} — {formatDate(item.end_date)}
+                  </div>
+                  {item.customer_phone && (
+                    <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      <i className="fa-solid fa-phone" style={{ marginRight: '5px' }}></i>{item.customer_phone}
+                    </div>
+                  )}
+                </div>
+                <i className="fa-solid fa-chevron-right" style={{ color: 'var(--text-muted)', flexShrink: 0 }}></i>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   if (success) {
     return (
       <div className="page-content">
@@ -232,40 +348,13 @@ function NewContractInner() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
-            {isFromBooking ? (
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => {
-                  setForm({ vehicle_id: '', vehicle_label: '', customer_name: '', customer_id_number: '', customer_phone: '', customer_address: '', start_date: '', end_date: '', notes: '' });
-                  setPassportPhoto(''); setVehiclePhoto(''); setSignature(''); setSuccess(false); setCreatedContract(null);
-                }}
-              >
-                <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Buat Kontrak Lain
-              </button>
-            ) : isFromTransaction ? (
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => {
-                  setForm({ vehicle_id: '', vehicle_label: '', customer_name: '', customer_id_number: '', customer_phone: '', customer_address: '', start_date: '', end_date: '', notes: '' });
-                  setPassportPhoto(''); setVehiclePhoto(''); setSignature(''); setSuccess(false); setCreatedContract(null);
-                }}
-              >
-                <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Buat Kontrak Lain
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => {
-                  setForm({ vehicle_id: '', vehicle_label: '', customer_name: '', customer_id_number: '', customer_phone: '', customer_address: '', start_date: '', end_date: '', notes: '' });
-                  setPassportPhoto(''); setVehiclePhoto(''); setSignature(''); setSuccess(false); setCreatedContract(null);
-                }}
-              >
-                <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Buat Kontrak Lain
-              </button>
-            )}
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => router.push('/contracts/new')}
+            >
+              <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Buat Kontrak Lain
+            </button>
 
             {isFromBooking ? (
               <button className="btn btn-secondary" onClick={() => router.push('/dashboard')}>
@@ -303,64 +392,18 @@ function NewContractInner() {
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
-          {isPrefilled ? (
-            <div className="card" style={{ marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0, marginBottom: '4px' }}>
-                <i className="fa-solid fa-clipboard-check" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
-                Ringkasan {isFromBooking ? 'Booking' : 'Transaksi'}
-              </h3>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 0, marginBottom: '10px' }}>Otomatis dari data {isFromBooking ? 'booking' : 'transaksi'}, tidak perlu diisi ulang.</p>
-              <RecapRow icon="fa-solid fa-user" label="Nama Customer" value={form.customer_name} />
-              <RecapRow icon="fa-solid fa-phone" label="Telepon / WhatsApp" value={form.customer_phone} />
-              <RecapRow icon="fa-solid fa-location-dot" label="Alamat" value={form.customer_address} />
-              <RecapRow icon="fa-solid fa-motorcycle" label="Motor" value={form.vehicle_label} />
-              <RecapRow icon="fa-solid fa-calendar-days" label="Tanggal Sewa" value={`${formatDate(form.start_date)} — ${formatDate(form.end_date)}`} />
-            </div>
-          ) : (
-            <>
-              <div className="card" style={{ marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0, marginBottom: '18px' }}>
-                  <i className="fa-solid fa-id-card" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
-                  Data Diri Customer
-                </h3>
-                <div className="form-group">
-                  <label className="form-label">Nama Lengkap *</label>
-                  <input type="text" className="form-control" value={form.customer_name} onChange={(e) => handleChange('customer_name', e.target.value)} required />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Nomor Telepon / WhatsApp</label>
-                  <input type="tel" className="form-control" value={form.customer_phone} onChange={(e) => handleChange('customer_phone', e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Alamat (di Bali / domisili)</label>
-                  <textarea className="form-control" rows={2} value={form.customer_address} onChange={(e) => handleChange('customer_address', e.target.value)} style={{ resize: 'vertical' }} />
-                </div>
-              </div>
-
-              <div className="card" style={{ marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0 }}>
-                  <i className="fa-solid fa-motorcycle" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
-                  Detail Sewa
-                </h3>
-                <VehicleCombobox
-                  vehicles={vehicles.filter(v => v.status === 'available' || v.id === form.vehicle_id)}
-                  value={form.vehicle_id}
-                  onChange={(id) => handleChange('vehicle_id', id)}
-                  required={false}
-                />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
-                  <div className="form-group">
-                    <label className="form-label">Tanggal Mulai *</label>
-                    <input type="date" className="form-control" value={form.start_date} onChange={(e) => handleChange('start_date', e.target.value)} required />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Tanggal Selesai *</label>
-                    <input type="date" className="form-control" min={form.start_date} value={form.end_date} onChange={(e) => handleChange('end_date', e.target.value)} required />
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
+          <div className="card" style={{ marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0, marginBottom: '4px' }}>
+              <i className="fa-solid fa-clipboard-check" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
+              Ringkasan {isFromBooking ? 'Booking' : 'Transaksi'}
+            </h3>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 0, marginBottom: '10px' }}>Otomatis dari data {isFromBooking ? 'booking' : 'transaksi'}, tidak perlu diisi ulang.</p>
+            <RecapRow icon="fa-solid fa-user" label="Nama Customer" value={form.customer_name} />
+            <RecapRow icon="fa-solid fa-phone" label="Telepon / WhatsApp" value={form.customer_phone} />
+            <RecapRow icon="fa-solid fa-location-dot" label="Alamat" value={form.customer_address} />
+            <RecapRow icon="fa-solid fa-motorcycle" label="Motor" value={form.vehicle_label} />
+            <RecapRow icon="fa-solid fa-calendar-days" label="Tanggal Sewa" value={`${formatDate(form.start_date)} — ${formatDate(form.end_date)}`} />
+          </div>
 
           <div className="card" style={{ marginBottom: '16px' }}>
             <h3 style={{ fontSize: '14px', fontWeight: 800, marginTop: 0 }}>
