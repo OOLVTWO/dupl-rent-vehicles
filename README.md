@@ -22,7 +22,28 @@ Aplikasi ini dikembangkan menggunakan stack teknologi terbaik: **Next.js 16 (App
 
 ---
 
-## 🌟 FITUR UTAMA APLIKASI
+## 🧰 TECH STACK & TOOLS
+
+| Kategori | Teknologi | Versi | Keterangan |
+|---|---|---|---|
+| **Framework** | [Next.js](https://nextjs.org) | `16.2.10` | App Router, Turbopack, React Server Components |
+| **UI Library** | [React](https://react.dev) | `19.2.4` | Termasuk `react-dom` |
+| **Database & Auth** | [Supabase](https://supabase.com) | `@supabase/supabase-js ^2.110.7`, `@supabase/ssr ^0.12.3` | Postgres + Auth + Row Level Security, dua project terpisah (demo & production) |
+| **Hosting / Deployment** | [Vercel](https://vercel.com) | — | Auto-deploy dari branch `main`, serverless functions untuk semua route `/api/*` |
+| **Ikon** | [Font Awesome](https://fontawesome.com) | `^7.3.1` (Free) | Dipakai konsisten di admin panel & halaman publik |
+| **Grafik / Chart** | [Recharts](https://recharts.org) | `^3.10.0` | Grafik tren pendapatan di Dashboard |
+| **Generate PDF** | [pdfkit](https://pdfkit.org) | `^0.19.1` | Invoice/kontrak sewa server-side, dengan `outputFileTracingIncludes` khusus buat bundling font di Vercel serverless |
+| **Export Excel** | [xlsx (SheetJS)](https://sheetjs.com) | `^0.18.5` | Laporan bagi hasil investor multi-sheet |
+| **Linting** | [ESLint](https://eslint.org) | `^9` + `eslint-config-next ^16.2.10` | Flat config, termasuk aturan React Hooks (`react-hooks/set-state-in-effect`, dll) |
+| **Testing** | [Vitest](https://vitest.dev) | `^4.1.10` | Unit test untuk finance engine & date helpers (`tests/finance.test.js`) |
+| **Koneksi DB Langsung** | [node-postgres (`pg`)](https://node-postgres.com) | `^8.22.0` | Dev-only, dipakai tooling migrasi |
+| **Bahasa** | JavaScript (JSX) | — | Tanpa TypeScript — validasi tipe minimal, mengandalkan konvensi & PropTypes implisit |
+| **Styling** | CSS murni (custom design system) | — | Dua sistem terpisah: CSS variables `--bg-*`/`--text-*`/`--brand-*` untuk admin panel (dark theme), dan `sharp-system.css` (`--sharp-*`) untuk halaman publik (light theme) — komponen shared pakai fallback CSS var berantai supaya kompatibel di kedua tema |
+
+**Arsitektur singkat**: Next.js App Router dengan dua "zona" route group — `(auth)` untuk login, dan `(dashboard)` untuk seluruh panel admin/driver (dilindungi middleware `src/proxy.js` + guard `requireAuth()`/`requireAdmin()` di `src/lib/apiAuth.js`). Halaman publik (`/`, `/fleet`, `/booking`) berdiri sendiri di luar route group dashboard, memakai Supabase client-side (anon key + RLS) tanpa autentikasi.
+
+---
+
 
 ### 🌐 1. Halaman Utama Katalog Publik Customer (`/fleet`)
 Halaman depan yang dirancang khusus untuk menarik wisatawan lokal maupun mancanegara yang ingin menyewa motor di area Pererenan & Canggu, Bali:
