@@ -782,13 +782,17 @@ function BookingsPageInner() {
                         </div>
                       </td>
                       <td data-label="Motor">
-                        <div style={{ fontWeight: 700, fontSize: '13px' }}>{b.vehicle_name}</div>
+                        <div style={{ fontSize: '12px' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Motor: </span>
+                          <strong style={{ color: 'var(--text-primary)' }}>{b.vehicle_name}</strong>
+                        </div>
                         {(() => {
                           const veh = vehicles.find(v => v.id === b.vehicle_id);
                           return veh?.plate_number ? (
-                            <span className="tx-info-pill" style={{ color: 'var(--brand-primary-light)', borderColor: 'rgba(37, 99, 235, 0.35)', background: 'rgba(37, 99, 235, 0.12)', padding: '3px 9px', width: 'fit-content', marginTop: '4px', display: 'inline-block' }}>
-                              <i className="fa-solid fa-motorcycle" style={{ fontSize: '10px', marginRight: '5px' }}></i>{veh.plate_number}
-                            </span>
+                            <div style={{ fontSize: '12px', marginTop: '3px' }}>
+                              <span style={{ color: 'var(--text-muted)' }}>Plat Motor: </span>
+                              <strong style={{ color: 'var(--brand-primary-light)' }}>{veh.plate_number}</strong>
+                            </div>
                           ) : null;
                         })()}
                         {b.vehicle_category && <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '3px' }}>{b.vehicle_category}</div>}

@@ -2055,7 +2055,7 @@ const handleSubmit = async (formData) => {
         <div className="table-wrapper">
           {loading ? (
             <div className="table-empty"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Memuat data...</div>
-          ) : filtered.length === 0 ? (
+          ) : filtered.length === 0 && filteredBookingRows.length === 0 ? (
             <div className="table-empty">
               <div className="table-empty-icon"><i className="fa-solid fa-file-invoice"></i></div>
               <p>Tidak ada transaksi ditemukan</p>
@@ -2096,14 +2096,18 @@ const handleSubmit = async (formData) => {
                       </div>
                     </td>
                     <td data-label="Motor" data-label-align="left">
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <strong style={{ fontSize: '13.5px', color: 'var(--text-primary)' }}>{b.vehicle_name || '-'}</strong>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        <div style={{ fontSize: '12px' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Motor: </span>
+                          <strong style={{ color: 'var(--text-primary)' }}>{b.vehicle_name || '-'}</strong>
+                        </div>
                         {(() => {
                           const veh = vehicles.find(v => v.id === b.vehicle_id);
                           return veh?.plate_number ? (
-                            <span className="tx-info-pill" style={{ color: 'var(--brand-primary-light)', borderColor: 'rgba(37, 99, 235, 0.35)', background: 'rgba(37, 99, 235, 0.12)', padding: '3px 9px', width: 'fit-content' }}>
-                              <i className="fa-solid fa-motorcycle" style={{ fontSize: '10px', marginRight: '5px' }}></i>{veh.plate_number}
-                            </span>
+                            <div style={{ fontSize: '12px' }}>
+                              <span style={{ color: 'var(--text-muted)' }}>Plat Motor: </span>
+                              <strong style={{ color: 'var(--brand-primary-light)' }}>{veh.plate_number}</strong>
+                            </div>
                           ) : null;
                         })()}
                       </div>
@@ -2226,15 +2230,14 @@ const handleSubmit = async (formData) => {
                       </div>
                     </td>
                     <td data-label="Motor" data-label-align="left">
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <strong style={{ fontSize: '13.5px', color: 'var(--text-primary)', lineHeight: 1.35 }}>
-                          {tx.vehicles?.name || '-'}
-                        </strong>
-                        <div>
-                          <span className="tx-info-pill" style={{ color: 'var(--brand-primary-light)', borderColor: 'rgba(37, 99, 235, 0.35)', background: 'rgba(37, 99, 235, 0.12)', padding: '4px 10px' }}>
-                            <i className="fa-solid fa-motorcycle" style={{ fontSize: '11px', marginRight: '6px' }}></i>
-                            {tx.vehicles?.plate_number || '-'}
-                          </span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        <div style={{ fontSize: '12px' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Motor: </span>
+                          <strong style={{ color: 'var(--text-primary)' }}>{tx.vehicles?.name || '-'}</strong>
+                        </div>
+                        <div style={{ fontSize: '12px' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Plat Motor: </span>
+                          <strong style={{ color: 'var(--brand-primary-light)' }}>{tx.vehicles?.plate_number || '-'}</strong>
                         </div>
                       </div>
                     </td>
