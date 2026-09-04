@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { generateBookingCode } from '@/lib/bookingCode';
 import AttributeSelector from '@/components/shared/AttributeSelector';
+import CountryCodePicker from '@/components/shared/CountryCodePicker';
 import { getWhatsAppShareUrl, getWaGatewayConfig, sendWhatsAppGateway } from '@/lib/countryCodes';
 import '@/styles/sharp-system.css';
 import SharpButton from '@/components/fleet/SharpButton';
@@ -143,12 +144,15 @@ function BookingPageInner() {
   const [loadingVehicle, setLoadingVehicle] = useState(true);
   const [step, setStep] = useState('form');
   const [form, setForm] = useState({ name: '', phone: '', id_number: '', address: '', fulfillment: '', payment_method: '', delivery_zone_id: '' });
+  const [countryCode, setCountryCode] = useState('+62');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [confirmedBooking, setConfirmedBooking] = useState(null);
   const [deliveryZones, setDeliveryZones] = useState([]);
   const [attributes, setAttributes] = useState([]);
-  const [selectedAttributeIds, setSelectedAttributeIds] = useState([]);
+  const [attributeQuantities, setAttributeQuantities] = useState({});
+  const [attributeNoneChosen, setAttributeNoneChosen] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
 
   useEffect(() => {
@@ -196,8 +200,10 @@ function BookingPageInner() {
   const price = est ? est.total : Number(vehicle?.rate_per_day || 0);
   const selectedZone = deliveryZones.find(z => z.id === form.delivery_zone_id) || null;
   const deliveryFee = form.fulfillment === 'delivery' && selectedZone ? Number(selectedZone.fee) : 0;
-  const selectedAttributes = attributes.filter(a => selectedAttributeIds.includes(a.id));
-  const attributesFee = selectedAttributes.reduce((sum, a) => sum + Number(a.price || 0), 0);
+  const selectedAttributes = attributes
+    .filter(a => (attributeQuantities[a.id] || 0) > 0)
+    .map(a => ({ ...a, qty: attributeQuantities[a.id] }));
+  const attributesFee = selectedAttributes.reduce((sum, a) => sum + Number(a.price || 0) * a.qty, 0);
   const grandTotal = price + deliveryFee + attributesFee;
 
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -234,6 +240,10 @@ function BookingPageInner() {
       setError('Please select a payment method.');
       return;
     }
+    if (attributes.filter(a => !a.is_auto_included).length > 0 && !attributeNoneChosen && selectedAttributes.length === 0) {
+      setError("Please select any additional equipment you need, or choose \"I Don't Need Any Additional Equipment\".");
+      return;
+    }
 
     setError('');
     setReviewPayload({
@@ -250,7 +260,7 @@ function BookingPageInner() {
       delivery_zone_id: selectedZone?.id || null,
       delivery_zone_name: selectedZone ? zoneLabelEn(selectedZone.zone_label) : null,
       delivery_fee: deliveryFee,
-      selected_attributes: selectedAttributes.map(a => ({ id: a.id, name: a.name, price: Number(a.price) || 0 })),
+      selected_attributes: selectedAttributes.map(a => ({ id: a.id, name: a.name, price: Number(a.price) || 0, qty: a.qty })),
       start_date: startDate,
       end_date: endDate,
       duration_days: days,
@@ -365,7 +375,7 @@ function BookingPageInner() {
                       style={{ width: '100%' }}
                       value={form.name}
                       onChange={(e) => handleChange('name', e.target.value)}
-                      placeholder="Nama lengkap"
+                      placeholder="Full name"
                       required
                     />
                   </div>
@@ -374,15 +384,29 @@ function BookingPageInner() {
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
                       Phone / WhatsApp *
                     </label>
-                    <input
-                      type="tel"
-                      className="sharp-input"
-                      style={{ width: '100%' }}
-                      value={form.phone}
-                      onChange={(e) => handleChange('phone', e.target.value)}
-                      placeholder="08xx-xxxx-xxxx"
-                      required
-                    />
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap' }}>
+                      <CountryCodePicker
+                        value={countryCode}
+                        onChange={(newCode) => {
+                          setCountryCode(newCode);
+                          handleChange('phone', `${newCode} ${phoneNumber}`);
+                        }}
+                        lang="en"
+                      />
+                      <input
+                        type="tel"
+                        className="sharp-input"
+                        style={{ flex: 1, minWidth: 0 }}
+                        value={phoneNumber}
+                        onChange={(e) => {
+                          const newNum = e.target.value;
+                          setPhoneNumber(newNum);
+                          handleChange('phone', `${countryCode} ${newNum}`);
+                        }}
+                        placeholder="812345678"
+                        required
+                      />
+                    </div>
                   </div>
 
                   <div style={{ marginBottom: '14px' }}>
@@ -531,8 +555,12 @@ function BookingPageInner() {
 
                   <AttributeSelector
                     attributes={attributes}
-                    selectedIds={selectedAttributeIds}
-                    onChange={setSelectedAttributeIds}
+                    quantities={attributeQuantities}
+                    noneChosen={attributeNoneChosen}
+                    onChange={({ quantities, noneChosen }) => {
+                      setAttributeQuantities(quantities);
+                      setAttributeNoneChosen(noneChosen);
+                    }}
                     lang="en"
                   />
 
@@ -622,10 +650,10 @@ function BookingPageInner() {
                   )}
                   {(reviewPayload.selected_attributes || []).length > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '8px 0', borderBottom: '1px dashed var(--sharp-line)', fontSize: '13px' }}>
-                      <span style={{ color: 'var(--sharp-muted)' }}>Extras ({reviewPayload.selected_attributes.map(a => a.name).join(', ')})</span>
+                      <span style={{ color: 'var(--sharp-muted)' }}>Extras ({reviewPayload.selected_attributes.map(a => (a.qty > 1 ? `${a.name} x${a.qty}` : a.name)).join(', ')})</span>
                       <span style={{ color: 'var(--sharp-ink)', fontWeight: 700 }}>
-                        {reviewPayload.selected_attributes.reduce((s, a) => s + Number(a.price || 0), 0) > 0
-                          ? formatRupiah(reviewPayload.selected_attributes.reduce((s, a) => s + Number(a.price || 0), 0))
+                        {reviewPayload.selected_attributes.reduce((s, a) => s + Number(a.price || 0) * (a.qty || 1), 0) > 0
+                          ? formatRupiah(reviewPayload.selected_attributes.reduce((s, a) => s + Number(a.price || 0) * (a.qty || 1), 0))
                           : 'FREE'}
                       </span>
                     </div>

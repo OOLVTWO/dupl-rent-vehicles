@@ -186,7 +186,8 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
   const [fulfillment, setFulfillment] = useState(''); // '' | 'pickup' | 'delivery'
   const [deliveryZones, setDeliveryZones] = useState([]);
   const [attributes, setAttributes] = useState([]);
-  const [selectedAttributeIds, setSelectedAttributeIds] = useState([]);
+  const [attributeQuantities, setAttributeQuantities] = useState({});
+  const [attributeNoneChosen, setAttributeNoneChosen] = useState(false);
   const [selectedZoneId, setSelectedZoneId] = useState('');
   const [drivers, setDrivers] = useState([]);
   const [assignedDriverId, setAssignedDriverId] = useState('');
@@ -231,7 +232,8 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
       setFulfillment('');
       setSelectedZoneId('');
       setAssignedDriverId('');
-      setSelectedAttributeIds([]);
+      setAttributeQuantities({});
+      setAttributeNoneChosen(false);
     }
   }
 
@@ -336,7 +338,13 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
         setFulfillment(editData.fulfillment_method || 'pickup');
         setSelectedZoneId(editData.delivery_zone_id || '');
         setAssignedDriverId(editData.assigned_driver_id || '');
-        setSelectedAttributeIds((editData.selected_attributes || []).map(a => a.id));
+        {
+          const editAttrs = editData.selected_attributes || [];
+          const qtyMap = {};
+          editAttrs.forEach(a => { qtyMap[a.id] = a.qty || 1; });
+          setAttributeQuantities(qtyMap);
+          setAttributeNoneChosen(false);
+        }
 
         if (editData.renter_phone) {
           const parts = editData.renter_phone.trim().split(' ');
@@ -458,9 +466,11 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
   const handleConfirmSave = async () => {
     const cleanVehicleId = (form.vehicle_id || '').trim();
     setShowConfirm(false);
-    const selectedAttrsForSubmit = attributes.filter(a => selectedAttributeIds.includes(a.id));
-    const attributesFeeForSubmit = selectedAttrsForSubmit.reduce((s, a) => s + Number(a.price || 0), 0);
-    const attributesPayload = selectedAttrsForSubmit.map(a => ({ id: a.id, name: a.name, price: Number(a.price) || 0 }));
+    const selectedAttrsForSubmit = attributes
+      .filter(a => (attributeQuantities[a.id] || 0) > 0)
+      .map(a => ({ ...a, qty: attributeQuantities[a.id] }));
+    const attributesFeeForSubmit = selectedAttrsForSubmit.reduce((s, a) => s + Number(a.price || 0) * a.qty, 0);
+    const attributesPayload = selectedAttrsForSubmit.map(a => ({ id: a.id, name: a.name, price: Number(a.price) || 0, qty: a.qty }));
 
     if (!editData && recordType === 'booking') {
       setBookingSaving(true);
@@ -774,8 +784,12 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
 
           <AttributeSelector
             attributes={attributes}
-            selectedIds={selectedAttributeIds}
-            onChange={setSelectedAttributeIds}
+            quantities={attributeQuantities}
+            noneChosen={attributeNoneChosen}
+            onChange={({ quantities, noneChosen }) => {
+              setAttributeQuantities(quantities);
+              setAttributeNoneChosen(noneChosen);
+            }}
           />
 
           {/* ── Nama Penyewa ── */}
@@ -956,8 +970,10 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
 
           {/* ── Ringkasan Totalan — paling bawah, sebelum tombol simpan ── */}
           {totalPrice > 0 && (() => {
-            const selectedAttrs = attributes.filter(a => selectedAttributeIds.includes(a.id));
-            const attributesFee = selectedAttrs.reduce((s, a) => s + Number(a.price || 0), 0);
+            const selectedAttrs = attributes
+              .filter(a => (attributeQuantities[a.id] || 0) > 0)
+              .map(a => ({ ...a, qty: attributeQuantities[a.id] }));
+            const attributesFee = selectedAttrs.reduce((s, a) => s + Number(a.price || 0) * a.qty, 0);
             const grandTotal = totalPrice + attributesFee;
             const statusColor = form.payment_status === 'paid' ? '#22C55E' : form.payment_status === 'down_payment' ? '#3B82F6' : '#EF4444';
             const sisaBayar = form.payment_status === 'paid' ? 0
@@ -987,7 +1003,7 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
                       <span style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <i className="fa-solid fa-layer-group" style={{ fontSize: '11px', color: 'var(--text-muted)', width: '14px' }}></i>
-                        Perlengkapan ({selectedAttrs.map(a => a.name).join(', ')})
+                        Perlengkapan ({selectedAttrs.map(a => (a.qty > 1 ? `${a.name} x${a.qty}` : a.name)).join(', ')})
                       </span>
                       <strong style={{ color: 'var(--text-primary)' }}>{attributesFee > 0 ? `+ ${formatRupiah(attributesFee)}` : 'Gratis'}</strong>
                     </div>
@@ -2107,7 +2123,7 @@ const handleSubmit = async (formData) => {
                           {b.selected_attributes.map((a, i) => (
                             <span key={i} style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
                               <i className="fa-solid fa-check" style={{ color: '#22C55E', fontSize: '9px', marginRight: '5px' }}></i>
-                              {a.name}{Number(a.price) > 0 ? ` (+${formatRupiah(a.price)})` : ''}
+                              {a.name}{a.qty > 1 ? ` x${a.qty}` : ''}{Number(a.price) > 0 ? ` (+${formatRupiah(a.price * (a.qty || 1))})` : ''}
                             </span>
                           ))}
                         </div>
@@ -2238,7 +2254,7 @@ const handleSubmit = async (formData) => {
                           {tx.selected_attributes.map((a, i) => (
                             <span key={i} style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
                               <i className="fa-solid fa-check" style={{ color: '#22C55E', fontSize: '9px', marginRight: '5px' }}></i>
-                              {a.name}{Number(a.price) > 0 ? ` (+${formatRupiah(a.price)})` : ''}
+                              {a.name}{a.qty > 1 ? ` x${a.qty}` : ''}{Number(a.price) > 0 ? ` (+${formatRupiah(a.price * (a.qty || 1))})` : ''}
                             </span>
                           ))}
                         </div>

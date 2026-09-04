@@ -1014,7 +1014,7 @@ function BookingsPageInner() {
                             {b.selected_attributes.map((a, i) => (
                               <span key={i} style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
                                 <i className="fa-solid fa-check" style={{ color: '#22C55E', fontSize: '9px', marginRight: '5px' }}></i>
-                                {a.name}{Number(a.price) > 0 ? ` (+${formatRupiah(a.price)})` : ''}
+                                {a.name}{a.qty > 1 ? ` x${a.qty}` : ''}{Number(a.price) > 0 ? ` (+${formatRupiah(a.price * (a.qty || 1))})` : ''}
                               </span>
                             ))}
                           </div>

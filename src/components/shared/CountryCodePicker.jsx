@@ -8,9 +8,13 @@ import { COUNTRY_CODES, getFlagImageUrl } from '@/lib/countryCodes';
 // ada 2 copy terpisah di transactions/page.jsx dan customers/page.jsx, dan
 // EditBookingModal di bookings/page.jsx malah nggak punya sama sekali (cuma
 // input polos tanpa kode negara).
-export default function CountryCodePicker({ value, onChange }) {
+export default function CountryCodePicker({ value, onChange, lang = 'id' }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
+
+  const t = lang === 'en'
+    ? { searchPlaceholder: 'Search 221 countries / codes...', noResults: 'No results found' }
+    : { searchPlaceholder: 'Cari 221 negara / kode...', noResults: 'Tidak ditemukan' };
 
   const currentCountry = COUNTRY_CODES.find(c => c.code === value) || COUNTRY_CODES[0];
 
@@ -71,7 +75,7 @@ export default function CountryCodePicker({ value, onChange }) {
               <input
                 type="text"
                 className="form-control"
-                placeholder="Cari 221 negara / kode..."
+                placeholder={t.searchPlaceholder}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 autoFocus
@@ -82,7 +86,7 @@ export default function CountryCodePicker({ value, onChange }) {
             <div style={{ overflowY: 'auto', flex: 1, padding: '4px' }}>
               {filtered.length === 0 ? (
                 <div style={{ padding: '12px', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center' }}>
-                  Tidak ditemukan
+                  {t.noResults}
                 </div>
               ) : (
                 filtered.map(c => {
