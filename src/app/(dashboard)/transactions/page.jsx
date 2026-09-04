@@ -609,54 +609,54 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
     setLoading(true);
     const selectedDriver = drivers.find(d => d.id === assignedDriverId);
     const selectedZoneObj = deliveryZones.find(z => z.id === selectedZoneId);
-    let extraFields = {};
 
-    if (!editData && recordType === 'transaction') {
-      extraFields = {
-        fulfillment_method: fulfillment,
-        delivery_zone_id: fulfillment === 'delivery' ? (selectedZoneObj?.id || null) : null,
-        delivery_zone_name: fulfillment === 'delivery' ? (selectedZoneObj?.zone_label || null) : null,
-        delivery_fee: fulfillment === 'delivery' ? (Number(selectedZoneObj?.fee) || 0) : 0,
-        assigned_driver_id: fulfillment === 'delivery' ? (selectedDriver?.id || null) : null,
-        assigned_driver_name: fulfillment === 'delivery' ? (selectedDriver?.full_name || null) : null,
-      };
-
-      // Transaksi sekarang tapi mau diantar (misalnya walk-in ke toko hari
-      // ini, tapi minta diantar sore ini ke lokasi lain) tetap butuh
-      // driver-nya TTD kontrak & confirm delivery — jadi bikinkan juga
-      // record Booking (status langsung 'confirmed') yang saling terhubung,
-      // biar driver bisa lihat & prosesnya lewat halaman Booking yang udah
-      // ada (Status Kontrak, Status Delivery, Confirm Delivered).
-      if (fulfillment === 'delivery' && selectedDriver) {
-        try {
-          const supabase = createClient();
-          const vehicleObj = vehicles.find(v => v.id === cleanVehicleId);
-          const { data: createdBooking, error: bookingErr } = await supabase.from('bookings').insert([{
-            vehicle_id: cleanVehicleId,
-            vehicle_name: vehicleObj?.name || '',
-            vehicle_category: vehicleObj?.category || null,
-            customer_name: form.renter_name.trim(),
-            customer_phone: form.renter_phone.trim(),
-            customer_address: form.renter_address.trim() || null,
-            fulfillment_method: 'delivery',
-            payment_method: form.payment_method,
-            delivery_zone_id: selectedZoneObj?.id || null,
-            delivery_zone_name: selectedZoneObj?.zone_label || null,
-            delivery_fee: Number(selectedZoneObj?.fee) || 0,
-            start_date: form.start_date,
-            end_date: form.end_date,
-            duration_days: Math.max(1, Math.ceil((new Date(form.end_date) - new Date(form.start_date)) / 86400000)),
-            estimated_price: totalPrice,
-            status: 'confirmed',
-            assigned_driver_id: selectedDriver.id,
-            assigned_driver_name: selectedDriver.full_name,
-          }]).select('id').single();
-          if (!bookingErr && createdBooking?.id) {
-            extraFields.booking_id = createdBooking.id;
-          }
-        } catch { /* transaksi tetap lanjut jalan walau booking gagal dibuat */ }
+    // Transaksi sekarang tapi mau diantar (misalnya walk-in ke toko hari
+    // ini, tapi minta diantar sore ini ke lokasi lain) — JANGAN langsung
+    // bikin Transaksi aktif, karena itu bakal nge-trigger Tracking Sewa
+    // ngitung mundur padahal motornya belum beneran diserahterimakan.
+    // Cukup bikin Booking-nya aja (status langsung 'confirmed', driver
+    // udah ke-assign) — Transaksinya baru dibuat nanti pas driver beneran
+    // confirm delivery, lewat alur Konfirmasi Transaksi yang udah ada.
+    if (!editData && recordType === 'transaction' && fulfillment === 'delivery' && selectedDriver) {
+      setBookingSaving(true);
+      setBookingError('');
+      try {
+        const supabase = createClient();
+        const vehicleObj = vehicles.find(v => v.id === cleanVehicleId);
+        const { error: bookingErr } = await supabase.from('bookings').insert([{
+          vehicle_id: cleanVehicleId,
+          vehicle_name: vehicleObj?.name || '',
+          vehicle_category: vehicleObj?.category || null,
+          customer_name: form.renter_name.trim(),
+          customer_phone: form.renter_phone.trim(),
+          customer_address: form.renter_address.trim() || null,
+          fulfillment_method: 'delivery',
+          payment_method: form.payment_method,
+          delivery_zone_id: selectedZoneObj?.id || null,
+          delivery_zone_name: selectedZoneObj?.zone_label || null,
+          delivery_fee: Number(selectedZoneObj?.fee) || 0,
+          start_date: form.start_date,
+          end_date: form.end_date,
+          duration_days: Math.max(1, Math.ceil((new Date(form.end_date) - new Date(form.start_date)) / 86400000)),
+          estimated_price: totalPrice,
+          status: 'confirmed',
+          assigned_driver_id: selectedDriver.id,
+          assigned_driver_name: selectedDriver.full_name,
+        }]);
+        if (bookingErr) throw bookingErr;
+        setBookingSuccess(true);
+        onBookingSaved?.();
+      } catch (err) {
+        setBookingError(err?.message || 'Gagal menyimpan booking.');
       }
+      setBookingSaving(false);
+      setLoading(false);
+      return;
     }
+
+    const extraFields = (!editData && recordType === 'transaction') ? {
+      fulfillment_method: fulfillment,
+    } : {};
 
     await onSubmit({ ...form, ...extraFields, vehicle_id: cleanVehicleId, total_price: totalPrice });
     setLoading(false);
@@ -1148,6 +1148,8 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
                 <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '4px' }}></i> Menyimpan...</>
               ) : !editData && recordType === 'booking' ? (
                 <><i className="fa-solid fa-calendar-plus" style={{ marginRight: '4px' }}></i> Simpan Booking</>
+              ) : !editData && recordType === 'transaction' && fulfillment === 'delivery' && assignedDriverId ? (
+                <><i className="fa-solid fa-motorcycle" style={{ marginRight: '4px' }}></i> Tugaskan Driver</>
               ) : (
                 <><i className="fa-solid fa-floppy-disk" style={{ marginRight: '4px' }}></i> Simpan Transaksi</>
               )}
@@ -1221,9 +1223,15 @@ function TransactionModal({ isOpen, onClose, onSubmit, onBookingSaved, vehicles,
               }}>
                 <i className="fa-solid fa-check"></i>
               </div>
-              <h3 style={{ margin: '0 0 6px 0', fontSize: '17px' }}>Booking Tersimpan!</h3>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '17px' }}>
+                {recordType === 'transaction' ? 'Driver Ditugaskan!' : 'Booking Tersimpan!'}
+              </h3>
               <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '22px' }}>
-                Reservasi untuk <strong>{form.renter_name}</strong> masuk ke Booking Confirmation dengan status Pending — juga langsung kelihatan di list Transaksi ini (ditandai ungu). Motor tetap kelihatan tersedia sampai booking-nya dikonfirmasi.
+                {recordType === 'transaction' ? (
+                  <>Reservasi untuk <strong>{form.renter_name}</strong> masuk ke Booking Confirmation dengan status Confirmed dan driver udah ditugaskan. Transaksinya (dan hitungan mundur Tracking Sewa) baru mulai begitu driver konfirmasi udah delivery — biar nggak mulai duluan sebelum motornya beneran diterima customer.</>
+                ) : (
+                  <>Reservasi untuk <strong>{form.renter_name}</strong> masuk ke Booking Confirmation dengan status Pending — juga langsung kelihatan di list Transaksi ini (ditandai ungu). Motor tetap kelihatan tersedia sampai booking-nya dikonfirmasi.</>
+                )}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <Link href="/bookings" className="btn btn-primary" style={{ textDecoration: 'none' }}>
