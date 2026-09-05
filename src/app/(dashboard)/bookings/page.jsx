@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useLanguage } from '@/lib/LanguageContext';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { formatRupiah, getLocalDateStr } from '@/lib/finance';
@@ -22,20 +23,20 @@ const PAYMENT_META = {
 };
 
 const STATUS_META = {
-  pending:   { label: 'Pending',   color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.15)' },
-  confirmed: { label: 'Confirmed', color: '#22C55E', bg: 'rgba(34, 197, 94, 0.15)' },
-  cancelled: { label: 'Cancelled', color: '#EF4444', bg: 'rgba(239, 68, 68, 0.15)' },
-  completed: { label: 'Completed', color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.15)' },
+  pending:   { label: 'bookingsPage.statusPending',   color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.15)' },
+  confirmed: { label: 'bookingsPage.statusConfirmed', color: '#22C55E', bg: 'rgba(34, 197, 94, 0.15)' },
+  cancelled: { label: 'bookingsPage.statusCancelled', color: '#EF4444', bg: 'rgba(239, 68, 68, 0.15)' },
+  completed: { label: 'bookingsPage.statusCompleted', color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.15)' },
 };
 
 const VALID_BOOKING_TABS = ['all', 'pending', 'confirmed', 'completed', 'cancelled'];
 
 const TABS = [
-  { key: 'all', label: 'Semua' },
-  { key: 'pending', label: 'Pending' },
-  { key: 'confirmed', label: 'Confirmed' },
-  { key: 'completed', label: 'Completed' },
-  { key: 'cancelled', label: 'Cancelled' },
+  { key: 'all', label: 'bookingsPage.all' },
+  { key: 'pending', label: 'bookingsPage.statusPending' },
+  { key: 'confirmed', label: 'bookingsPage.statusConfirmed' },
+  { key: 'completed', label: 'bookingsPage.statusCompleted' },
+  { key: 'cancelled', label: 'bookingsPage.statusCancelled' },
 ];
 
 // Reads ?tab= so the sidebar "Booking Confirmation" dropdown links land on
@@ -589,7 +590,7 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
                   }}
                 >
                   <i className={meta.icon} style={{ fontSize: '16px' }}></i>
-                  {meta.label}
+                  {t(meta.label)}
                 </button>
               ))}
             </div>
@@ -662,6 +663,7 @@ function ConfirmTransactionModal({ booking, contract, onClose, onConfirmed }) {
 }
 
 function BookingsPageInner() {
+  const { t } = useLanguage();
   const role = useRole();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -888,17 +890,17 @@ function BookingsPageInner() {
       <div className="page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '18px' }}>
         <div>
           <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-            Booking
+            {t('bookingsPage.title')}
             <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--brand-primary)', background: 'var(--brand-primary-bg, rgba(59,130,246,0.12))', padding: '3px 10px', borderRadius: 'var(--radius-full, 999px)' }}>
-              {TABS.find(t => t.key === tab)?.label || 'Semua'}
+              {(() => { const found = TABS.find(tabItem => tabItem.key === tab); return found ? t(found.label) : t('bookingsPage.all'); })()}
             </span>
           </h1>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
-            Booking masuk dari form &quot;Book Now&quot; di website publik (/fleet)
+            {t('bookingsPage.subtitle')}
           </p>
         </div>
         <button className="btn btn-secondary" onClick={fetchBookings} disabled={loading}>
-          <i className={`fa-solid fa-rotate ${loading ? 'fa-spin' : ''}`} style={{ marginRight: '6px' }}></i> Refresh
+          <i className={`fa-solid fa-rotate ${loading ? 'fa-spin' : ''}`} style={{ marginRight: '6px' }}></i> {t('bookingsPage.refresh')}
         </button>
       </div>
 
@@ -907,7 +909,7 @@ function BookingsPageInner() {
           <input
             type="text"
             className="form-control"
-            placeholder="Cari nama, WA, motor, atau ID booking..."
+            placeholder={t('bookingsPage.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{ paddingLeft: '36px' }}
@@ -920,8 +922,8 @@ function BookingsPageInner() {
             value={tab}
             onChange={(e) => setTab(e.target.value)}
           >
-            {TABS.map(t => (
-              <option key={t.key} value={t.key}>{t.label}</option>
+            {TABS.map(tabItem => (
+              <option key={tabItem.key} value={tabItem.key}>{t(tabItem.label)}</option>
             ))}
           </select>
         </div>
@@ -940,28 +942,28 @@ function BookingsPageInner() {
           ) : filtered.length === 0 ? (
             <div className="table-empty">
               <div className="table-empty-icon"><i className="fa-solid fa-inbox"></i></div>
-              <p>Belum ada booking {tab !== 'all' ? `dengan status "${STATUS_META[tab]?.label}"` : 'masuk'}</p>
+              <p>Belum ada booking {tab !== 'all' ? `dengan status "${t(STATUS_META[tab]?.label)}"` : 'masuk'}</p>
             </div>
           ) : (
             <table className="table table--stack-mobile">
               <thead>
                 <tr>
-                  <th>Kode Booking</th>
-                  <th>Customer</th>
-                  <th>Merk Motor</th>
-                  <th>Nama Motor</th>
-                  <th>Plat Motor</th>
-                  <th>Atribut Tambahan</th>
-                  <th>Tanggal Sewa</th>
-                  <th>Metode Pengambilan</th>
-                  <th>Metode Pembayaran</th>
-                  <th>Status Pembayaran</th>
-                  <th>Driver</th>
-                  <th>Status Kontrak</th>
-                  <th>Status Delivery</th>
-                  <th>Status</th>
-                  <th>Ringkasan Pembayaran</th>
-                  <th>Aksi</th>
+                  <th>{t('bookingsPage.thBookingCode')}</th>
+                  <th>{t('bookingsPage.thCustomer')}</th>
+                  <th>{t('bookingsPage.thBrand')}</th>
+                  <th>{t('bookingsPage.thVehicleName')}</th>
+                  <th>{t('bookingsPage.thPlateNumber')}</th>
+                  <th>{t('bookingsPage.thExtras')}</th>
+                  <th>{t('bookingsPage.thRentalDate')}</th>
+                  <th>{t('bookingsPage.thPickupMethod')}</th>
+                  <th>{t('bookingsPage.thPaymentMethod')}</th>
+                  <th>{t('bookingsPage.thPaymentStatus')}</th>
+                  <th>{t('bookingsPage.thDriver')}</th>
+                  <th>{t('bookingsPage.thContractStatus')}</th>
+                  <th>{t('bookingsPage.thDeliveryStatus')}</th>
+                  <th>{t('bookingsPage.thStatus')}</th>
+                  <th>{t('bookingsPage.thPaymentSummary')}</th>
+                  <th>{t('bookingsPage.thActions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1167,7 +1169,7 @@ function BookingsPageInner() {
                                     <span style={{ width: '15px', height: '15px', borderRadius: '50%', background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                       <i className="fa-solid fa-check" style={{ fontSize: '9px' }}></i>
                                     </span>
-                                    Confirm Delivered
+                                    {t('bookingsPage.confirmDelivered')}
                                   </>
                                 )}
                               </button>
@@ -1192,7 +1194,7 @@ function BookingsPageInner() {
                       </td>
                       <td data-label="Status">
                         <span className="badge" style={{ background: meta.bg, color: meta.color, border: `1px solid ${meta.color}` }}>
-                          {meta.label}
+                          {t(meta.label)}
                         </span>
                       </td>
                       <td data-label="Ringkasan Pembayaran" data-label-align="left">
