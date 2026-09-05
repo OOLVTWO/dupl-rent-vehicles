@@ -21,7 +21,7 @@ const oswald = Oswald({
 
 export const metadata = {
   title: "Demo Rental Preview — Scooter Rental Bali",
-  description: "Penyewaan sepeda motor matic resmi & admin panel Demo Rental Preview",
+  description: "Official scooter & motorbike rental with admin panel — Demo Rental Preview",
 };
 
 export default function RootLayout({ children }) {
