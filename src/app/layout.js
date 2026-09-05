@@ -22,15 +22,6 @@ const oswald = Oswald({
 export const metadata = {
   title: "Demo Rental Preview — Scooter Rental Bali",
   description: "Penyewaan sepeda motor matic resmi & admin panel Demo Rental Preview",
-  icons: {
-    icon: [
-      { url: '/images/logoCompany.png', type: 'image/png' },
-      { url: '/icon.png', type: 'image/png' },
-      { url: '/favicon.ico', type: 'image/x-icon' },
-    ],
-    shortcut: '/images/logoCompany.png',
-    apple: '/icon.png',
-  },
 };
 
 export default function RootLayout({ children }) {
