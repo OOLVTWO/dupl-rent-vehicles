@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useLanguage } from '@/lib/LanguageContext';
 import { useSearchParams } from 'next/navigation';
 import { exportTransactionsToExcel, exportExpensesToExcel, exportInvestorReportToExcel, formatRupiah } from '@/lib/excel';
 import {
@@ -45,6 +46,7 @@ function TabFromQuery({ onTab }) {
 }
 
 export default function ReportsPage() {
+  const { t } = useLanguage();
   const [activeReportTab, setActiveReportTab] = useState('income'); // 'income' | 'expenses' | 'profit_loss' | 'investor'
   const [transactions, setTransactions] = useState([]);
   const [expenses, setExpenses] = useState([]);
@@ -216,30 +218,30 @@ export default function ReportsPage() {
       </Suspense>
 
       <div className="page-header">
-        <h2><i className="fa-solid fa-chart-line" style={{ marginRight: '8px' }}></i> Laporan Keuangan & Laba Rugi</h2>
-        <p>Analisis terpisah antara Pemasukan, Pengeluaran, Laba Bersih & Bagi Hasil Investor</p>
+        <h2><i className="fa-solid fa-chart-line" style={{ marginRight: '8px' }}></i> {t('reportsPage.title')}</h2>
+        <p>{t('reportsPage.subtitle')}</p>
       </div>
 
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
         {[
-          { key: 'income', label: 'Pemasukan (Sewa)', icon: 'fa-solid fa-sack-dollar' },
-          { key: 'expenses', label: 'Pengeluaran', icon: 'fa-solid fa-money-bill-transfer' },
-          { key: 'profit_loss', label: 'Laba Rugi', icon: 'fa-solid fa-calculator' },
-          { key: 'investor', label: 'Bagi Hasil Investor', icon: 'fa-solid fa-crown' },
-        ].map(t => (
+          { key: 'income', label: t('reportsPage.tabIncome'), icon: 'fa-solid fa-sack-dollar' },
+          { key: 'expenses', label: t('reportsPage.tabExpenses'), icon: 'fa-solid fa-money-bill-transfer' },
+          { key: 'profit_loss', label: t('reportsPage.tabProfitLoss'), icon: 'fa-solid fa-calculator' },
+          { key: 'investor', label: t('reportsPage.tabInvestor'), icon: 'fa-solid fa-crown' },
+        ].map(tabItem => (
           <button
-            key={t.key}
+            key={tabItem.key}
             type="button"
-            onClick={() => setActiveReportTab(t.key)}
+            onClick={() => setActiveReportTab(tabItem.key)}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: '6px',
               padding: '7px 14px', borderRadius: 'var(--radius-full, 999px)', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer',
-              border: activeReportTab === t.key ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
-              background: activeReportTab === t.key ? 'var(--brand-primary-bg, rgba(59,130,246,0.12))' : 'transparent',
-              color: activeReportTab === t.key ? 'var(--brand-primary)' : 'var(--text-secondary)',
+              border: activeReportTab === tabItem.key ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+              background: activeReportTab === tabItem.key ? 'var(--brand-primary-bg, rgba(59,130,246,0.12))' : 'transparent',
+              color: activeReportTab === tabItem.key ? 'var(--brand-primary)' : 'var(--text-secondary)',
             }}
           >
-            <i className={t.icon}></i>{t.label}
+            <i className={tabItem.icon}></i>{tabItem.label}
           </button>
         ))}
       </div>
@@ -247,12 +249,12 @@ export default function ReportsPage() {
       {/* Filter */}
       <div className="card mb-6">
         <div className="card-header">
-          <div className="card-title"><i className="fa-solid fa-filter" style={{ marginRight: '6px' }}></i> Filter Periode</div>
+          <div className="card-title"><i className="fa-solid fa-filter" style={{ marginRight: '6px' }}></i> {t('reportsPage.filterPeriod')}</div>
         </div>
         <div className="form-row cols-3">
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" htmlFor="report-start">
-              <i className="fa-solid fa-calendar-days" style={{ marginRight: '6px' }}></i> Tanggal Mulai
+              <i className="fa-solid fa-calendar-days" style={{ marginRight: '6px' }}></i> {t('reportsPage.startDate')}
             </label>
             <input
               id="report-start"
@@ -264,7 +266,7 @@ export default function ReportsPage() {
           </div>
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" htmlFor="report-end">
-              <i className="fa-solid fa-calendar-days" style={{ marginRight: '6px' }}></i> Tanggal Selesai
+              <i className="fa-solid fa-calendar-days" style={{ marginRight: '6px' }}></i> {t('reportsPage.endDate')}
             </label>
             <input
               id="report-end"
@@ -277,24 +279,24 @@ export default function ReportsPage() {
           </div>
           {activeReportTab === 'income' && (
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label" htmlFor="report-status">Status Transaksi</label>
+              <label className="form-label" htmlFor="report-status">{t('reportsPage.transactionStatus')}</label>
               <select
                 id="report-status"
                 className="form-control"
                 value={statusFilter}
                 onChange={e => { setLoading(true); setStatusFilter(e.target.value); }}
               >
-                <option value="all">Semua Status</option>
-                <option value="active">Aktif</option>
-                <option value="completed">Selesai</option>
-                <option value="cancelled">Dibatalkan</option>
+                <option value="all">{t('reportsPage.allStatus')}</option>
+                <option value="active">{t('reportsPage.active')}</option>
+                <option value="completed">{t('reportsPage.completed')}</option>
+                <option value="cancelled">{t('reportsPage.cancelled')}</option>
               </select>
             </div>
           )}
           {activeReportTab === 'investor' && (
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label" htmlFor="report-investor">
-                <i className="fa-solid fa-crown" style={{ marginRight: '6px', color: '#A855F7' }}></i> Cari & Pilih Investor ({uniqueInvestorNames.length} Terdaftar)
+                <i className="fa-solid fa-crown" style={{ marginRight: '6px', color: '#A855F7' }}></i> {t('reportsPage.searchSelectInvestor').replace('{n}', uniqueInvestorNames.length)}
               </label>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <div style={{ position: 'relative', minWidth: '160px', flex: '1 1 160px' }}>
@@ -303,7 +305,7 @@ export default function ReportsPage() {
                     type="text"
                     className="form-control"
                     style={{ paddingLeft: '32px', border: '1px solid #A855F7' }}
-                    placeholder="Ketik nama investor..."
+                    placeholder={t('reportsPage.investorSearchPlaceholder')}
                     value={investorSearch}
                     onChange={e => setInvestorSearch(e.target.value)}
                   />
