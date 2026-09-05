@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useLanguage } from '@/lib/LanguageContext';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useRole } from '@/lib/RoleContext';
@@ -1733,6 +1734,7 @@ function ConfirmDeleteModal({ isOpen, onClose, onConfirm }) {
 
 // ===== MAIN TRANSACTIONS PAGE =====
 function TransactionsPageInner() {
+  const { t } = useLanguage();
   const role = useRole();
   const searchParams = useSearchParams();
   const [transactions, setTransactions] = useState([]);
@@ -2009,15 +2011,15 @@ const handleSubmit = async (formData) => {
       <div className="page-header">
         <div>
           <h2 style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-            <span><i className="fa-solid fa-file-invoice-dollar" style={{ marginRight: '8px' }}></i> Kelola Transaksi Sewa</span>
+            <span><i className="fa-solid fa-file-invoice-dollar" style={{ marginRight: '8px' }}></i> {t('transactionsPage.title')}</span>
             {statusFilter !== 'all' && (
               <span style={{ fontSize: '11px', fontWeight: 800, color: '#F59E0B', background: 'rgba(245,158,11,0.12)', padding: '3px 10px', borderRadius: 'var(--radius-full, 999px)', border: '1px solid rgba(245,158,11,0.4)' }}>
                 <i className="fa-solid fa-filter" style={{ marginRight: '5px' }}></i>
-                Filter aktif: {{ active: 'Sewa Aktif', down_payment: 'Down Payment', belum_bayar: 'Belum Bayar', completed: 'Selesai', cancelled: 'Dibatalkan' }[statusFilter] || statusFilter}
+                {t('transactionsPage.filterActive')}: {{ active: t('transactionsPage.statusActive'), down_payment: t('transactionsPage.statusDownPayment'), belum_bayar: t('transactionsPage.statusUnpaid'), completed: t('transactionsPage.statusCompleted'), cancelled: t('transactionsPage.statusCancelled') }[statusFilter] || statusFilter}
               </span>
             )}
           </h2>
-          <p>Catat transaksi penyewaan motor, kirim invoice WhatsApp, dan kelola deposit jaminan</p>
+          <p>{t('transactionsPage.subtitle')}</p>
         </div>
       </div>
 
@@ -2028,7 +2030,7 @@ const handleSubmit = async (formData) => {
             <input
               type="text"
               className="form-control"
-              placeholder="Cari penyewa, no HP, atau nama/plat motor..."
+              placeholder={t('transactionsPage.searchPlaceholder')}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
@@ -2038,12 +2040,12 @@ const handleSubmit = async (formData) => {
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
           >
-            <option value="all">Semua Status</option>
-            <option value="active">Sewa Aktif</option>
-            <option value="down_payment">Down Payment</option>
-            <option value="belum_bayar">Belum Bayar</option>
-            <option value="completed">Selesai</option>
-            <option value="cancelled">Dibatalkan</option>
+            <option value="all">{t('transactionsPage.allStatus')}</option>
+            <option value="active">{t('transactionsPage.statusActive')}</option>
+            <option value="down_payment">{t('transactionsPage.statusDownPayment')}</option>
+            <option value="belum_bayar">{t('transactionsPage.statusUnpaid')}</option>
+            <option value="completed">{t('transactionsPage.statusCompleted')}</option>
+            <option value="cancelled">{t('transactionsPage.statusCancelled')}</option>
           </select>
         </div>
         <button
@@ -2051,42 +2053,42 @@ const handleSubmit = async (formData) => {
           className="btn btn-primary"
           onClick={() => { setEditData(null); setShowModal(true); }}
         >
-          <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Transaksi Baru
+          <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> {t('transactionsPage.newTransaction')}
         </button>
       </div>
 
       <div className="card" style={{ padding: 0 }}>
         <div className="table-wrapper">
           {loading ? (
-            <div className="table-empty"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Memuat data...</div>
+            <div className="table-empty"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> {t('transactionsPage.loadingData')}</div>
           ) : filtered.length === 0 && filteredBookingRows.length === 0 ? (
             <div className="table-empty">
               <div className="table-empty-icon"><i className="fa-solid fa-file-invoice"></i></div>
-              <p>Tidak ada transaksi ditemukan</p>
+              <p>{t('transactionsPage.noTransactionsFound')}</p>
             </div>
           ) : (
             <table className="table table--stack-mobile">
               <thead>
                 <tr>
-                  <th>Kode</th>
-                  <th>Customer</th>
-                  <th>Merk Motor</th>
-                  <th>Nama Motor</th>
-                  <th>Plat Motor</th>
-                  <th>Atribut Tambahan</th>
-                  <th>Mulai / Selesai</th>
-                  <th>KM Odometer</th>
-                  <th>Diskon</th>
-                  <th>Denda / Deposit</th>
-                  <th>Status Motor</th>
-                  <th>Status Pembayaran</th>
-                  <th>Metode Pembayaran</th>
-                  <th>Kontrak</th>
-                  <th>Driver</th>
-                  <th>Zona Delivery</th>
-                  <th>Catatan</th>
-                  <th>Ringkasan Pembayaran</th>
-                  <th>Aksi</th>
+                  <th>{t('transactionsPage.thCode')}</th>
+                  <th>{t('transactionsPage.thCustomer')}</th>
+                  <th>{t('transactionsPage.thBrand')}</th>
+                  <th>{t('transactionsPage.thVehicleName')}</th>
+                  <th>{t('transactionsPage.thPlateNumber')}</th>
+                  <th>{t('transactionsPage.thExtras')}</th>
+                  <th>{t('transactionsPage.thStartEnd')}</th>
+                  <th>{t('transactionsPage.thOdometer')}</th>
+                  <th>{t('transactionsPage.thDiscount')}</th>
+                  <th>{t('transactionsPage.thDamageDeposit')}</th>
+                  <th>{t('transactionsPage.thVehicleStatus')}</th>
+                  <th>{t('transactionsPage.thPaymentStatus')}</th>
+                  <th>{t('transactionsPage.thPaymentMethod')}</th>
+                  <th>{t('transactionsPage.thContract')}</th>
+                  <th>{t('transactionsPage.thDriver')}</th>
+                  <th>{t('transactionsPage.thDeliveryZone')}</th>
+                  <th>{t('transactionsPage.thNotes')}</th>
+                  <th>{t('transactionsPage.thPaymentSummary')}</th>
+                  <th>{t('transactionsPage.thActions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -2148,7 +2150,7 @@ const handleSubmit = async (formData) => {
                     <td data-label="Status Pembayaran">
                       {b.payment_status === 'paid' && (
                         <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#22C55E', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                          <i className="fa-solid fa-circle-check" style={{ fontSize: '10px' }}></i>Lunas
+                          <i className="fa-solid fa-circle-check" style={{ fontSize: '10px' }}></i>{t('transactionsPage.statusPaid')}
                         </span>
                       )}
                       {b.payment_status === 'down_payment' && (
@@ -2158,7 +2160,7 @@ const handleSubmit = async (formData) => {
                       )}
                       {(!b.payment_status || b.payment_status === 'unpaid') && (
                         <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#F59E0B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                          <i className="fa-solid fa-clock" style={{ fontSize: '10px' }}></i>Belum Bayar
+                          <i className="fa-solid fa-clock" style={{ fontSize: '10px' }}></i>{t('transactionsPage.statusUnpaid')}
                         </span>
                       )}
                     </td>
@@ -2306,7 +2308,7 @@ const handleSubmit = async (formData) => {
                     </td>
                     <td data-label="Status Motor" style={{ verticalAlign: 'middle' }}>
                       {(() => {
-                        const map = { active: { icon: 'fa-solid fa-bolt', label: 'Sewa Aktif', color: '#3B82F6' }, completed: { icon: 'fa-solid fa-circle-check', label: 'Selesai', color: '#22C55E' }, cancelled: { icon: 'fa-solid fa-circle-xmark', label: 'Dibatalkan', color: '#EF4444' } };
+                        const map = { active: { icon: 'fa-solid fa-bolt', label: t('transactionsPage.statusActive'), color: '#3B82F6' }, completed: { icon: 'fa-solid fa-circle-check', label: t('transactionsPage.statusCompleted'), color: '#22C55E' }, cancelled: { icon: 'fa-solid fa-circle-xmark', label: t('transactionsPage.statusCancelled'), color: '#EF4444' } };
                         const m = map[tx.status] || map.active;
                         return (
                           <span style={{ fontSize: '11.5px', fontWeight: 700, color: m.color, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
@@ -2318,7 +2320,7 @@ const handleSubmit = async (formData) => {
                     <td data-label="Status Pembayaran" style={{ verticalAlign: 'middle' }}>
                       {tx.payment_status === 'paid' && (
                         <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#22C55E', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                          <i className="fa-solid fa-circle-check" style={{ fontSize: '10px' }}></i>Lunas
+                          <i className="fa-solid fa-circle-check" style={{ fontSize: '10px' }}></i>{t('transactionsPage.statusPaid')}
                         </span>
                       )}
                       {tx.payment_status === 'down_payment' && (
@@ -2328,7 +2330,7 @@ const handleSubmit = async (formData) => {
                       )}
                       {tx.payment_status === 'unpaid' && (
                         <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#F59E0B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                          <i className="fa-solid fa-clock" style={{ fontSize: '10px' }}></i>Belum Bayar
+                          <i className="fa-solid fa-clock" style={{ fontSize: '10px' }}></i>{t('transactionsPage.statusUnpaid')}
                         </span>
                       )}
                     </td>
