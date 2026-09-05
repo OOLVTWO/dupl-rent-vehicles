@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { formatRupiah, getLocalMonthStr, getLocalDateStr } from '@/lib/finance';
+import { useLanguage } from '@/lib/LanguageContext';
 
 function StatBox({ icon, label, value, color }) {
   return (
@@ -23,6 +24,7 @@ function StatBox({ icon, label, value, color }) {
 }
 
 export default function DriverDashboard({ fullName }) {
+  const { t, lang } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [myIncome, setMyIncome] = useState([]);
   const [myDeliveries, setMyDeliveries] = useState([]);
@@ -58,7 +60,7 @@ export default function DriverDashboard({ fullName }) {
   useEffect(() => { Promise.resolve().then(load); }, [load]);
 
   const confirmDelivery = async (id) => {
-    if (!confirm('Konfirmasi motor sudah sampai & diserahkan ke customer?')) return;
+    if (!confirm(t('driverDashboard.confirmDeliveryPrompt'))) return;
     try {
       const res = await fetch(`/api/bookings/${id}`, {
         method: 'PATCH',
@@ -69,10 +71,10 @@ export default function DriverDashboard({ fullName }) {
       if (res.ok) {
         setMyDeliveries(prev => prev.map(b => (b.id === id ? data : b)));
       } else {
-        alert(data.error || 'Gagal konfirmasi delivery.');
+        alert(data.error || t('driverDashboard.failConfirmDelivery'));
       }
     } catch {
-      alert('Gagal terhubung ke server.');
+      alert(t('driverDashboard.failConnectServer'));
     }
   };
 
@@ -93,7 +95,7 @@ export default function DriverDashboard({ fullName }) {
     return (
       <div className="page-content">
         <div className="card" style={{ padding: '40px', textAlign: 'center' }}>
-          <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Memuat dashboard...
+          <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> {t('driverDashboard.loading')}
         </div>
       </div>
     );
@@ -102,9 +104,9 @@ export default function DriverDashboard({ fullName }) {
   return (
     <div className="page-content">
       <div className="page-header-row" style={{ marginBottom: '18px' }}>
-        <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>Halo, {fullName || 'Driver'} 👋</h1>
+        <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>{t('driverDashboard.greeting').replace('{name}', fullName || 'Driver')} 👋</h1>
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
-          Ringkasan bulan ini — {new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+          {t('driverDashboard.monthSummary').replace('{month}', new Date().toLocaleDateString(lang === 'en' ? 'en-US' : 'id-ID', { month: 'long', year: 'numeric' }))}
         </p>
       </div>
 
@@ -125,10 +127,10 @@ export default function DriverDashboard({ fullName }) {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 800, fontSize: '13.5px', color: '#F59E0B' }}>
-              {todaysDeliveries.length} delivery kamu hari ini!
+              {t('driverDashboard.deliveriesToday').replace('{count}', todaysDeliveries.length)}
             </div>
             <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
-              Jangan lupa Confirm Delivered setelah motor sampai.
+              {t('driverDashboard.deliveredReminder')}
             </div>
           </div>
           <i className="fa-solid fa-chevron-right" style={{ color: '#F59E0B' }}></i>
@@ -137,10 +139,10 @@ export default function DriverDashboard({ fullName }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '10px', marginBottom: '20px' }}>
         {[
-          { href: '/bookings', icon: 'fa-solid fa-clipboard-list', label: 'Booking', color: '#3B82F6' },
-          { href: '/contracts/new', icon: 'fa-solid fa-file-signature', label: 'Kontrak', color: '#8B5CF6' },
-          { href: '/driver-income', icon: 'fa-solid fa-sack-dollar', label: 'History Pendapatan', color: '#22C55E' },
-          { href: '/tracking', icon: 'fa-solid fa-clock-rotate-left', label: 'Tracking Sewa', color: '#F59E0B' },
+          { href: '/bookings', icon: 'fa-solid fa-clipboard-list', label: t('sidebar.booking'), color: '#3B82F6' },
+          { href: '/contracts/new', icon: 'fa-solid fa-file-signature', label: t('sidebar.contract'), color: '#8B5CF6' },
+          { href: '/driver-income', icon: 'fa-solid fa-sack-dollar', label: t('sidebar.incomeHistory'), color: '#22C55E' },
+          { href: '/tracking', icon: 'fa-solid fa-clock-rotate-left', label: t('sidebar.tracking'), color: '#F59E0B' },
         ].map(action => (
           <Link
             key={action.href}
@@ -172,15 +174,15 @@ export default function DriverDashboard({ fullName }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
           <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800 }}>
             <i className="fa-solid fa-truck-fast" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
-            Delivery Yang Ditugaskan Ke Kamu
+            {t('driverDashboard.assignedDeliveries')}
           </h3>
-          <Link href="/bookings" className="btn btn-secondary btn-sm">Lihat Semua Booking</Link>
+          <Link href="/bookings" className="btn btn-secondary btn-sm">{t('driverDashboard.viewAllBookings')}</Link>
         </div>
 
         {upcomingDeliveries.length === 0 ? (
           <div className="table-empty">
             <div className="table-empty-icon"><i className="fa-solid fa-mug-hot"></i></div>
-            <p>Belum ada delivery yang ditugaskan ke kamu saat ini.</p>
+            <p>{t('driverDashboard.noAssignedDeliveries')}</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -200,7 +202,7 @@ export default function DriverDashboard({ fullName }) {
                     <div style={{ fontWeight: 800, color: '#8B5CF6', fontSize: '13px' }}>{formatRupiah(b.delivery_fee)}</div>
                     {!b.delivered_at && (
                       <span className="badge" style={{ background: b.status === 'confirmed' ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)', color: b.status === 'confirmed' ? '#22C55E' : '#F59E0B', border: `1px solid ${b.status === 'confirmed' ? '#22C55E' : '#F59E0B'}`, marginTop: '2px' }}>
-                        {b.status === 'confirmed' ? 'Ready To Deliver' : 'Pending Admin'}
+                        {b.status === 'confirmed' ? t('driverDashboard.readyToDeliver') : t('driverDashboard.pendingAdmin')}
                       </span>
                     )}
                   </div>
@@ -209,7 +211,7 @@ export default function DriverDashboard({ fullName }) {
                 {b.delivered_at ? (
                   <div style={{ padding: '12px 14px', background: 'rgba(34,197,94,0.1)', borderTop: '1px solid rgba(34,197,94,0.3)', color: '#22C55E', fontWeight: 800, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <i className="fa-solid fa-circle-check" style={{ fontSize: '16px' }}></i>
-                    Delivered — {new Date(b.delivered_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    {t('driverDashboard.delivered')} — {new Date(b.delivered_at).toLocaleString(lang === 'en' ? 'en-US' : 'id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </div>
                 ) : b.status === 'confirmed' && contractedBookingIds.has(b.id) ? (
                   <button
@@ -222,13 +224,13 @@ export default function DriverDashboard({ fullName }) {
                     }}
                   >
                     <i className="fa-solid fa-circle-check" style={{ fontSize: '20px' }}></i>
-                    CONFIRM DELIVERED
+                    {t('driverDashboard.confirmDelivered')}
                   </button>
                 ) : b.status === 'confirmed' ? (
                   b.start_date > getLocalDateStr() ? (
                     <div style={{ padding: '14px', background: 'var(--bg-elevated)', textAlign: 'center', color: 'var(--text-muted)' }}>
                       <i className="fa-solid fa-lock" style={{ marginRight: '6px' }}></i>
-                      Belum bisa buat kontrak — aktif mulai {new Date(b.start_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                      {t('driverDashboard.contractNotYet').replace('{date}', new Date(b.start_date).toLocaleDateString(lang === 'en' ? 'en-US' : 'id-ID', { day: '2-digit', month: 'short' }))}
                     </div>
                   ) : (
                     <Link
@@ -240,13 +242,13 @@ export default function DriverDashboard({ fullName }) {
                       }}
                     >
                       <i className="fa-solid fa-file-signature" style={{ fontSize: '18px' }}></i>
-                      BUAT KONTRAK DULU
+                      {t('driverDashboard.makeContractFirst')}
                     </Link>
                   )
                 ) : (
                   <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.25)', color: '#F59E0B', fontSize: '11.5px' }}>
                     <i className="fa-solid fa-hourglass-half" style={{ marginRight: '6px' }}></i>
-                    Waiting for admin to confirm this booking first.
+                    {t('driverDashboard.waitingAdminConfirm')}
                   </div>
                 )}
               </div>
@@ -259,27 +261,27 @@ export default function DriverDashboard({ fullName }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
           <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800 }}>
             <i className="fa-solid fa-motorcycle" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
-            Motor yang Sudah Di-booking
+            {t('driverDashboard.bookedVehicles')}
           </h3>
-          <Link href="/bookings" className="btn btn-secondary btn-sm">Lihat Semua</Link>
+          <Link href="/bookings" className="btn btn-secondary btn-sm">{t('driverDashboard.viewAll')}</Link>
         </div>
 
         {activeBookings.length === 0 ? (
           <div className="table-empty" style={{ padding: '32px 16px' }}>
             <div className="table-empty-icon"><i className="fa-solid fa-inbox"></i></div>
-            <p>Belum ada booking aktif saat ini.</p>
+            <p>{t('driverDashboard.noActiveBookings')}</p>
           </div>
         ) : (
           <div className="table-wrapper">
             <table className="table table--stack-mobile" style={{ minWidth: '620px' }}>
               <thead>
                 <tr>
-                  <th>Motor</th>
-                  <th>Customer</th>
-                  <th>Tanggal Sewa</th>
-                  <th>Metode</th>
-                  <th>Driver</th>
-                  <th>Status</th>
+                  <th>{t('driverDashboard.thVehicle')}</th>
+                  <th>{t('driverDashboard.thCustomer')}</th>
+                  <th>{t('driverDashboard.thRentalDate')}</th>
+                  <th>{t('driverDashboard.thMethod')}</th>
+                  <th>{t('driverDashboard.thDriver')}</th>
+                  <th>{t('driverDashboard.thStatus')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -297,11 +299,11 @@ export default function DriverDashboard({ fullName }) {
                     </td>
                     <td data-label="Metode">
                       <span className="badge" style={{ background: b.fulfillment_method === 'delivery' ? 'rgba(59,130,246,0.15)' : 'rgba(148,163,184,0.2)', color: b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8', border: `1px solid ${b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8'}` }}>
-                        {b.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup'}
+                        {b.fulfillment_method === 'delivery' ? t('driverDashboard.delivery') : t('driverDashboard.pickup')}
                       </span>
                     </td>
                     <td data-label="Driver" style={{ fontSize: '12px' }}>
-                      {b.fulfillment_method === 'delivery' ? (b.assigned_driver_name || <span style={{ color: '#F59E0B' }}>Belum ada</span>) : '\u2014'}
+                      {b.fulfillment_method === 'delivery' ? (b.assigned_driver_name || <span style={{ color: '#F59E0B' }}>{t('driverDashboard.notAssignedYet')}</span>) : '\u2014'}
                     </td>
                     <td data-label="Status">
                       <span className="badge" style={{
@@ -309,7 +311,7 @@ export default function DriverDashboard({ fullName }) {
                         color: b.status === 'confirmed' ? '#22C55E' : '#F59E0B',
                         border: `1px solid ${b.status === 'confirmed' ? '#22C55E' : '#F59E0B'}`,
                       }}>
-                        {b.status === 'confirmed' ? 'Confirmed' : 'Pending'}
+                        {b.status === 'confirmed' ? t('driverDashboard.confirmed') : t('driverDashboard.pending')}
                       </span>
                     </td>
                   </tr>
