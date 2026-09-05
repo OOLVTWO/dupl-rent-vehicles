@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/LanguageContext';
 
 const VALID_AVAIL_TABS = ['all', 'available', 'rented', 'overdue', 'maintenance'];
 
@@ -41,11 +42,12 @@ const BRAND_ICONS = {
   suzuki: { icon: 'fa-solid fa-motorcycle', color: '#F59E0B', label: 'Suzuki' },
   kawasaki: { icon: 'fa-solid fa-motorcycle', color: '#22C55E', label: 'Kawasaki' },
   vespa: { icon: 'fa-solid fa-person-biking', color: '#8B5CF6', label: 'Vespa' },
-  other: { icon: 'fa-solid fa-circle-question', color: '#9898B0', label: 'Lainnya' },
+  other: { icon: 'fa-solid fa-circle-question', color: '#9898B0', label: 'availabilityPage.brandOther' },
 };
 
 // ─── Vehicle Availability Card ──────────────────────────────────────────────
 function VehicleCard({ vehicle, activeTransaction }) {
+  const { t } = useLanguage();
   const brandMeta = BRAND_ICONS[vehicle.category] || BRAND_ICONS.other;
 
   const isRented = vehicle.status === 'rented' || !!activeTransaction;
@@ -55,14 +57,14 @@ function VehicleCard({ vehicle, activeTransaction }) {
   const daysLeft = activeTransaction ? getDaysLeft(activeTransaction.end_date) : null;
 
   const statusMeta = isAvailable
-    ? { label: 'Tersedia', color: '#22C55E', bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.3)', icon: 'fa-solid fa-circle-check', cls: 'avail-available' }
+    ? { label: t('availabilityPage.statusAvailable'), color: '#22C55E', bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.3)', icon: 'fa-solid fa-circle-check', cls: 'avail-available' }
     : isMaintenance
-    ? { label: 'Perawatan', color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)', icon: 'fa-solid fa-wrench', cls: 'avail-maintenance' }
+    ? { label: t('availabilityPage.statusMaintenance'), color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)', icon: 'fa-solid fa-wrench', cls: 'avail-maintenance' }
     : daysLeft < 0
-    ? { label: 'Overdue', color: '#EF4444', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.35)', icon: 'fa-solid fa-circle-exclamation', cls: 'avail-overdue' }
+    ? { label: t('availabilityPage.statusOverdue'), color: '#EF4444', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.35)', icon: 'fa-solid fa-circle-exclamation', cls: 'avail-overdue' }
     : daysLeft === 0
-    ? { label: 'Selesai Hari Ini', color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)', icon: 'fa-solid fa-bell', cls: 'avail-today' }
-    : { label: 'Sedang Disewa', color: '#3B82F6', bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.3)', icon: 'fa-solid fa-key', cls: 'avail-rented' };
+    ? { label: t('availabilityPage.statusEndingToday'), color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)', icon: 'fa-solid fa-bell', cls: 'avail-today' }
+    : { label: t('availabilityPage.statusRented'), color: '#3B82F6', bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.3)', icon: 'fa-solid fa-key', cls: 'avail-rented' };
 
   return (
     <div className={`avail-card ${statusMeta.cls}`} style={{ borderColor: statusMeta.border }}>
@@ -88,7 +90,7 @@ function VehicleCard({ vehicle, activeTransaction }) {
           </div>
           <div className="avail-vehicle-brand" style={{ color: brandMeta.color }}>
             <i className={`${brandMeta.icon}`} style={{ fontSize: '10px', marginRight: '4px' }}></i>
-            {brandMeta.label} · {vehicle.year}
+            {t(brandMeta.label)} · {vehicle.year}
           </div>
         </div>
       </div>
@@ -96,7 +98,7 @@ function VehicleCard({ vehicle, activeTransaction }) {
       {/* Rate */}
       <div className="avail-rate">
         <i className="fa-solid fa-tag" style={{ color: 'var(--brand-accent)', fontSize: '11px' }}></i>
-        <span>{formatRupiah(vehicle.rate_per_day)} / hari</span>
+        <span>{formatRupiah(vehicle.rate_per_day)} {t('availabilityPage.perDay')}</span>
       </div>
 
       {/* If rented — show renter info */}
@@ -104,7 +106,7 @@ function VehicleCard({ vehicle, activeTransaction }) {
         <div className="avail-renter-info">
           <div className="avail-renter-divider">
             <i className="fa-solid fa-user-tie" style={{ color: statusMeta.color, marginRight: '6px' }}></i>
-            Info Penyewa
+            {t('availabilityPage.renterInfo')}
           </div>
           <div className="avail-renter-row">
             <i className="fa-solid fa-user" style={{ color: '#9898B0', fontSize: '11px', width: '14px' }}></i>
@@ -116,11 +118,11 @@ function VehicleCard({ vehicle, activeTransaction }) {
           </div>
           <div className="avail-renter-row">
             <i className="fa-solid fa-calendar-plus" style={{ color: '#3B82F6', fontSize: '11px', width: '14px' }}></i>
-            <span>Mulai: {formatDate(activeTransaction.start_date)}</span>
+            <span>{t('availabilityPage.startLabel')}: {formatDate(activeTransaction.start_date)}</span>
           </div>
           <div className="avail-renter-row" style={{ color: statusMeta.color, fontWeight: 600 }}>
             <i className="fa-solid fa-calendar-xmark" style={{ fontSize: '11px', width: '14px' }}></i>
-            <span>Selesai: {formatDate(activeTransaction.end_date)}</span>
+            <span>{t('availabilityPage.endLabel')}: {formatDate(activeTransaction.end_date)}</span>
           </div>
 
           {/* Days left indicator */}
@@ -128,10 +130,10 @@ function VehicleCard({ vehicle, activeTransaction }) {
             <div className="avail-days-left" style={{ color: statusMeta.color, background: statusMeta.bg, borderColor: statusMeta.border }}>
               <i className={`fa-solid ${daysLeft < 0 ? 'fa-circle-exclamation fa-beat' : daysLeft === 0 ? 'fa-bell fa-shake' : 'fa-hourglass-half'}`}></i>
               {daysLeft < 0
-                ? `Overdue ${Math.abs(daysLeft)} hari`
+                ? t('availabilityPage.overdueDays').replace('{n}', Math.abs(daysLeft))
                 : daysLeft === 0
-                ? 'Selesai hari ini!'
-                : `Sisa ${daysLeft} hari`}
+                ? t('availabilityPage.endingTodayExcl')
+                : t('availabilityPage.daysLeft').replace('{n}', daysLeft)}
             </div>
           )}
         </div>
@@ -141,7 +143,7 @@ function VehicleCard({ vehicle, activeTransaction }) {
       {isAvailable && (
         <div className="avail-ready-badge">
           <i className="fa-solid fa-circle-check fa-beat-fade" style={{ color: '#22C55E' }}></i>
-          <span>Siap disewa sekarang</span>
+          <span>{t('availabilityPage.readyToRent')}</span>
         </div>
       )}
 
@@ -149,7 +151,7 @@ function VehicleCard({ vehicle, activeTransaction }) {
       {isMaintenance && (
         <div className="avail-maintenance-badge">
           <i className="fa-solid fa-wrench" style={{ color: '#F59E0B' }}></i>
-          <span>Sedang dalam perawatan</span>
+          <span>{t('availabilityPage.underMaintenance')}</span>
           {vehicle.notes && <p className="avail-notes">{vehicle.notes}</p>}
         </div>
       )}
@@ -168,6 +170,7 @@ function VehicleCard({ vehicle, activeTransaction }) {
 
 // ─── Main Availability Page ─────────────────────────────────────────────────
 export default function AvailabilityPage() {
+  const { t } = useLanguage();
   const [vehicles, setVehicles] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -236,11 +239,11 @@ export default function AvailabilityPage() {
   });
 
   const FILTERS = [
-    { key: 'all', label: 'Semua Armada', icon: 'fa-solid fa-grip', count: enrichedVehicles.length },
-    { key: 'available', label: 'Tersedia', icon: 'fa-solid fa-circle-check', count: availableCount, color: '#22C55E' },
-    { key: 'rented', label: 'Disewa', icon: 'fa-solid fa-key', count: rentedCount, color: '#3B82F6' },
-    { key: 'overdue', label: 'Overdue', icon: 'fa-solid fa-circle-exclamation', count: overdueCount, color: '#EF4444' },
-    { key: 'maintenance', label: 'Perawatan', icon: 'fa-solid fa-wrench', count: maintenanceCount, color: '#F59E0B' },
+    { key: 'all', label: t('availabilityPage.filterAll'), icon: 'fa-solid fa-grip', count: enrichedVehicles.length },
+    { key: 'available', label: t('availabilityPage.filterAvailable'), icon: 'fa-solid fa-circle-check', count: availableCount, color: '#22C55E' },
+    { key: 'rented', label: t('availabilityPage.filterRented'), icon: 'fa-solid fa-key', count: rentedCount, color: '#3B82F6' },
+    { key: 'overdue', label: t('availabilityPage.filterOverdue'), icon: 'fa-solid fa-circle-exclamation', count: overdueCount, color: '#EF4444' },
+    { key: 'maintenance', label: t('availabilityPage.filterMaintenance'), icon: 'fa-solid fa-wrench', count: maintenanceCount, color: '#F59E0B' },
   ];
 
   return (
@@ -256,20 +259,20 @@ export default function AvailabilityPage() {
             <i className="fa-solid fa-motorcycle"></i>
           </div>
           <div>
-            <h2>Ketersediaan Motor</h2>
-            <p>Pantau status seluruh armada motor secara real-time</p>
+            <h2>{t('availabilityPage.title')}</h2>
+            <p>{t('availabilityPage.subtitle')}</p>
           </div>
         </div>
         <div className="tracking-header-right">
           <div className="tracking-refresh-info">
             <i className="fa-solid fa-rotate" style={{ fontSize: '11px', color: '#22C55E' }}></i>
-            <span>Auto-refresh tiap 60 detik</span>
+            <span>{t('availabilityPage.autoRefresh')}</span>
             <span className="tracking-refresh-time">
               {lastRefresh.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </span>
           </div>
           <button className="btn-refresh" onClick={loadData}>
-            <i className="fa-solid fa-arrows-rotate"></i> Refresh
+            <i className="fa-solid fa-arrows-rotate"></i> {t('availabilityPage.refresh')}
           </button>
         </div>
       </div>
@@ -279,32 +282,32 @@ export default function AvailabilityPage() {
         <div className="avail-summary-item available-item">
           <div className="avail-summary-icon"><i className="fa-solid fa-circle-check"></i></div>
           <div className="avail-summary-count">{availableCount}</div>
-          <div className="avail-summary-label">Tersedia</div>
+          <div className="avail-summary-label">{t('availabilityPage.summaryAvailable')}</div>
         </div>
         <div className="avail-summary-divider"></div>
         <div className="avail-summary-item rented-item">
           <div className="avail-summary-icon"><i className="fa-solid fa-key"></i></div>
           <div className="avail-summary-count">{rentedCount}</div>
-          <div className="avail-summary-label">Disewa</div>
+          <div className="avail-summary-label">{t('availabilityPage.summaryRented')}</div>
         </div>
         <div className="avail-summary-divider"></div>
         <div className="avail-summary-item overdue-item-sm">
           <div className="avail-summary-icon"><i className="fa-solid fa-circle-exclamation fa-beat"></i></div>
           <div className="avail-summary-count">{overdueCount}</div>
-          <div className="avail-summary-label">Overdue</div>
+          <div className="avail-summary-label">{t('availabilityPage.summaryOverdue')}</div>
         </div>
         <div className="avail-summary-divider"></div>
         <div className="avail-summary-item maintenance-item">
           <div className="avail-summary-icon"><i className="fa-solid fa-wrench"></i></div>
           <div className="avail-summary-count">{maintenanceCount}</div>
-          <div className="avail-summary-label">Perawatan</div>
+          <div className="avail-summary-label">{t('availabilityPage.summaryMaintenance')}</div>
         </div>
 
         {/* Utilization bar */}
         <div className="avail-util-wrap">
           <div className="avail-util-label">
             <i className="fa-solid fa-chart-pie" style={{ marginRight: '5px', color: 'var(--brand-accent)' }}></i>
-            Utilisasi Armada
+            {t('availabilityPage.fleetUtilization')}
           </div>
           <div className="avail-util-bar">
             <div
@@ -313,7 +316,7 @@ export default function AvailabilityPage() {
             ></div>
           </div>
           <div className="avail-util-pct">
-            {enrichedVehicles.length ? Math.round((rentedCount / enrichedVehicles.length) * 100) : 0}% disewa
+            {t('availabilityPage.rentedPercent').replace('{n}', enrichedVehicles.length ? Math.round((rentedCount / enrichedVehicles.length) * 100) : 0)}
           </div>
         </div>
       </div>
@@ -341,7 +344,7 @@ export default function AvailabilityPage() {
           <i className="fa-solid fa-magnifying-glass"></i>
           <input
             type="text"
-            placeholder="Cari nama motor, plat, atau penyewa..."
+            placeholder={t('availabilityPage.searchPlaceholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="tracking-search-input"
@@ -358,19 +361,19 @@ export default function AvailabilityPage() {
       {loading ? (
         <div className="tracking-loading">
           <i className="fa-solid fa-spinner fa-spin-pulse" style={{ fontSize: '32px', color: 'var(--brand-primary)' }}></i>
-          <p>Memuat data armada motor...</p>
+          <p>{t('availabilityPage.loadingFleetData')}</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="tracking-empty">
           <i className="fa-solid fa-magnifying-glass" style={{ fontSize: '48px', color: 'var(--text-muted)', marginBottom: '16px' }}></i>
-          <h3>Tidak ada motor ditemukan</h3>
-          <p>Coba ubah filter atau kata pencarian.</p>
+          <h3>{t('availabilityPage.noVehiclesFound')}</h3>
+          <p>{t('availabilityPage.tryDifferentFilter')}</p>
         </div>
       ) : (
         <>
           <div className="tracking-results-info">
             <i className="fa-solid fa-motorcycle" style={{ color: 'var(--brand-primary)' }}></i>
-            Menampilkan <strong>{filtered.length}</strong> dari <strong>{enrichedVehicles.length}</strong> motor
+            {(() => { const parts = t('availabilityPage.showingVehicles').split(/\{shown\}|\{total\}/); return <>{parts[0]}<strong>{filtered.length}</strong>{parts[1]}<strong>{enrichedVehicles.length}</strong>{parts[2]}</>; })()}
           </div>
           <div className="avail-grid">
             {filtered.map(({ vehicle, activeTx }) => (
