@@ -1,21 +1,23 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 function formatRupiah(amount) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount || 0);
 }
 
 const ICON_OPTIONS = [
-  { value: 'fa-solid fa-hard-hat', label: 'Helm' },
-  { value: 'fa-solid fa-mobile-screen', label: 'Phone Holder' },
-  { value: 'fa-solid fa-cloud-rain', label: 'Jas Hujan' },
-  { value: 'fa-solid fa-box', label: 'Box / Shad' },
-  { value: 'fa-solid fa-water', label: 'Surf Rack' },
-  { value: 'fa-solid fa-plus', label: 'Lainnya' },
+  { value: 'fa-solid fa-hard-hat', label: 'attributesPage.iconHelmet' },
+  { value: 'fa-solid fa-mobile-screen', label: 'attributesPage.iconPhoneHolder' },
+  { value: 'fa-solid fa-cloud-rain', label: 'attributesPage.iconRaincoat' },
+  { value: 'fa-solid fa-box', label: 'attributesPage.iconBoxShad' },
+  { value: 'fa-solid fa-water', label: 'attributesPage.iconSurfRack' },
+  { value: 'fa-solid fa-plus', label: 'attributesPage.iconOther' },
 ];
 
 function AttributeModal({ editData, onClose, onSaved }) {
+  const { t } = useLanguage();
   const [form, setForm] = useState({
     name: editData?.name || '',
     quantity: editData?.quantity ?? 0,
@@ -32,7 +34,7 @@ function AttributeModal({ editData, onClose, onSaved }) {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) {
-      setError('Nama atribut wajib diisi.');
+      setError(t('attributesPage.nameRequired'));
       return;
     }
     setSaving(true);
@@ -51,13 +53,13 @@ function AttributeModal({ editData, onClose, onSaved }) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error || 'Gagal menyimpan atribut.');
+        setError(data.error || t('attributesPage.failSave'));
         setSaving(false);
         return;
       }
       onSaved(data);
     } catch {
-      setError('Gagal terhubung ke server.');
+      setError(t('attributesPage.failConnectServer'));
       setSaving(false);
     }
   };
@@ -66,17 +68,17 @@ function AttributeModal({ editData, onClose, onSaved }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <div className="modal-title">{editData ? 'Edit Atribut' : 'Tambah Atribut'}</div>
+          <div className="modal-title">{editData ? t('attributesPage.editAttribute') : t('attributesPage.addAttribute')}</div>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
 
         <form onSubmit={handleSave}>
           <div className="form-group">
-            <label className="form-label">Nama Atribut <span className="required">*</span></label>
+            <label className="form-label">{t('attributesPage.attributeName')} <span className="required">*</span></label>
             <input
               type="text"
               className="form-control"
-              placeholder="e.g. Box Shad, Surf Rack, Jas Hujan"
+              placeholder={t('attributesPage.attributeNamePlaceholder')}
               value={form.name}
               onChange={(e) => handleChange('name', e.target.value)}
               required
@@ -84,16 +86,16 @@ function AttributeModal({ editData, onClose, onSaved }) {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Ikon</label>
+            <label className="form-label">{t('attributesPage.icon')}</label>
             <select className="form-control" value={form.icon} onChange={(e) => handleChange('icon', e.target.value)}>
               {ICON_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                <option key={opt.value} value={opt.value}>{t(opt.label)}</option>
               ))}
             </select>
           </div>
 
           <div className="form-group">
-            <label className="form-label">Jumlah Stok <span className="required">*</span></label>
+            <label className="form-label">{t('attributesPage.stockQuantity')} <span className="required">*</span></label>
             <input
               type="number"
               min="0"
@@ -105,7 +107,7 @@ function AttributeModal({ editData, onClose, onSaved }) {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Urutan Tampil</label>
+            <label className="form-label">{t('attributesPage.sortOrder')}</label>
             <input
               type="number"
               min="0"
@@ -114,7 +116,7 @@ function AttributeModal({ editData, onClose, onSaved }) {
               onChange={(e) => handleChange('sort_order', e.target.value)}
             />
             <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', marginBottom: 0 }}>
-              Angka kecil tampil duluan di form booking (0, 1, 2, dst).
+              {t('attributesPage.sortOrderHint')}
             </p>
           </div>
 
@@ -127,23 +129,23 @@ function AttributeModal({ editData, onClose, onSaved }) {
               style={{ width: '18px', height: '18px', cursor: 'pointer' }}
             />
             <label htmlFor="attr-auto-included" style={{ margin: 0, fontSize: '13px', cursor: 'pointer' }}>
-              Selalu disertakan gratis (tampil sebagai info, bukan checkbox pilihan di form booking)
+              {t('attributesPage.alwaysIncludedFree')}
             </label>
           </div>
 
           {!form.is_auto_included && (
             <div className="form-group">
-              <label className="form-label">Biaya Tambahan (Rp)</label>
+              <label className="form-label">{t('attributesPage.extraCost')}</label>
               <input
                 type="number"
                 min="0"
                 className="form-control"
-                placeholder="0 kalau gratis"
+                placeholder={t('attributesPage.extraCostPlaceholder')}
                 value={form.price}
                 onChange={(e) => handleChange('price', e.target.value)}
               />
               <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', marginBottom: 0 }}>
-                Biaya berlaku flat sampai pemakaian motor selesai (bukan per hari). Kosongkan / isi 0 kalau gratis.
+                {t('attributesPage.extraCostHint')}
               </p>
             </div>
           )}
@@ -155,9 +157,9 @@ function AttributeModal({ editData, onClose, onSaved }) {
           )}
 
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>Batal</button>
+            <button type="button" className="btn btn-secondary" onClick={onClose}>{t('attributesPage.cancel')}</button>
             <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>Menyimpan...</> : 'Simpan'}
+              {saving ? <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>{t('attributesPage.saving')}</> : t('attributesPage.save')}
             </button>
           </div>
         </form>
@@ -167,6 +169,7 @@ function AttributeModal({ editData, onClose, onSaved }) {
 }
 
 export default function AttributesPage() {
+  const { t } = useLanguage();
   const [attributes, setAttributes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -182,12 +185,12 @@ export default function AttributesPage() {
       const res = await fetch('/api/attributes');
       const data = await res.json().catch(() => []);
       if (res.ok) setAttributes(Array.isArray(data) ? data : []);
-      else setError(data.error || 'Gagal memuat data atribut.');
+      else setError(data.error || t('attributesPage.failSave'));
     } catch {
-      setError('Gagal terhubung ke server.');
+      setError(t('attributesPage.failConnectServer'));
     }
     setLoading(false);
-  }, []);
+  }, [t]);
 
   useEffect(() => { Promise.resolve().then(fetchAttributes); }, [fetchAttributes]);
 
@@ -212,13 +215,13 @@ export default function AttributesPage() {
     <div>
       <div className="page-header">
         <div>
-          <h2><i className="fa-solid fa-layer-group" style={{ marginRight: '8px' }}></i> Atribut Motor</h2>
-          <p>Kelola aksesoris tambahan (Helm, Phone Holder, Box Shad, Surf Rack, Jas Hujan, dll) beserta stok dan harganya</p>
+          <h2><i className="fa-solid fa-layer-group" style={{ marginRight: '8px' }}></i> {t('attributesPage.title')}</h2>
+          <p>{t('attributesPage.subtitle')}</p>
         </div>
       </div>
 
       <button className="btn btn-primary" style={{ marginBottom: '18px' }} onClick={() => { setEditData(null); setShowModal(true); }}>
-        <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Tambah Atribut
+        <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> {t('attributesPage.addAttribute')}
       </button>
 
       {error && (
@@ -230,21 +233,21 @@ export default function AttributesPage() {
       <div className="card" style={{ padding: 0 }}>
         <div className="table-wrapper">
           {loading ? (
-            <div className="table-empty"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Memuat data...</div>
+            <div className="table-empty"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> {t('attributesPage.loadingAttrData')}</div>
           ) : attributes.length === 0 ? (
             <div className="table-empty">
               <div className="table-empty-icon"><i className="fa-solid fa-layer-group"></i></div>
-              <p>Belum ada atribut. Klik &quot;Tambah Atribut&quot; untuk mulai.</p>
+              <p>{t('attributesPage.noAttributesYet')}</p>
             </div>
           ) : (
             <table className="table table--stack-mobile">
               <thead>
                 <tr>
-                  <th>Atribut</th>
-                  <th>Tipe</th>
-                  <th>Stok</th>
-                  <th>Biaya</th>
-                  <th>Aksi</th>
+                  <th>{t('attributesPage.thAttribute')}</th>
+                  <th>{t('attributesPage.thType')}</th>
+                  <th>{t('attributesPage.thStock')}</th>
+                  <th>{t('attributesPage.thCost')}</th>
+                  <th>{t('attributesPage.thActions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -260,21 +263,21 @@ export default function AttributesPage() {
                     </td>
                     <td data-label="Tipe" data-label-align="left">
                       {attr.is_auto_included ? (
-                        <span className="badge badge-success"><i className="fa-solid fa-circle-info" style={{ marginRight: '4px' }}></i>Selalu Disertakan</span>
+                        <span className="badge badge-success"><i className="fa-solid fa-circle-info" style={{ marginRight: '4px' }}></i>{t('attributesPage.alwaysIncluded')}</span>
                       ) : (
-                        <span className="badge badge-info"><i className="fa-solid fa-square-check" style={{ marginRight: '4px' }}></i>Opsional (Checkbox)</span>
+                        <span className="badge badge-info"><i className="fa-solid fa-square-check" style={{ marginRight: '4px' }}></i>{t('attributesPage.optionalCheckbox')}</span>
                       )}
                     </td>
                     <td data-label="Stok">
                       <span style={{ fontWeight: 800, color: Number(attr.quantity) > 0 ? 'var(--text-primary)' : '#EF4444' }}>
-                        {attr.quantity} unit
+                        {attr.quantity} {t('attributesPage.unit')}
                       </span>
                     </td>
                     <td data-label="Biaya">
                       {Number(attr.price) > 0 ? (
                         <strong style={{ color: '#F59E0B' }}>{formatRupiah(attr.price)}</strong>
                       ) : (
-                        <span style={{ color: '#22C55E', fontWeight: 700 }}>Gratis</span>
+                        <span style={{ color: '#22C55E', fontWeight: 700 }}>{t('attributesPage.free')}</span>
                       )}
                     </td>
                     <td data-label="Aksi" data-label-align="left">
@@ -314,16 +317,16 @@ export default function AttributesPage() {
         <div className="modal-overlay" onClick={() => setDeleteTarget(null)}>
           <div className="modal modal-sm" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <div className="modal-title">Hapus Atribut?</div>
+              <div className="modal-title">{t('attributesPage.deleteAttribute')}</div>
               <button className="modal-close" onClick={() => setDeleteTarget(null)}>✕</button>
             </div>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-              Yakin mau hapus <strong>{deleteTarget.name}</strong>? Booking/transaksi yang sudah memilih atribut ini tetap menyimpan datanya, cuma nggak akan muncul lagi sebagai pilihan baru.
+              {t('attributesPage.confirmDelete').split('{name}')[0]}<strong>{deleteTarget.name}</strong>{t('attributesPage.confirmDelete').split('{name}')[1]}
             </p>
             <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setDeleteTarget(null)}>Batal</button>
+              <button className="btn btn-secondary" onClick={() => setDeleteTarget(null)}>{t('attributesPage.cancel')}</button>
               <button className="btn btn-danger" disabled={busyId === deleteTarget.id} onClick={handleDelete}>
-                {busyId === deleteTarget.id ? <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>Menghapus...</> : 'Hapus'}
+                {busyId === deleteTarget.id ? <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>{t('attributesPage.deleting')}</> : t('attributesPage.delete')}
               </button>
             </div>
           </div>
