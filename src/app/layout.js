@@ -1,6 +1,7 @@
 import { Inter, Oswald } from "next/font/google";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "@/styles/globals.css";
+import { LanguageProvider } from "@/lib/LanguageContext";
 
 // Self-hosted via Next.js at build time — no runtime CDN request, no CORS/font-block risk.
 const inter = Inter({
@@ -27,7 +28,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="id" className={`${inter.variable} ${oswald.variable}`}>
-      <body>{children}</body>
+      <body>
+        <LanguageProvider>{children}</LanguageProvider>
+      </body>
     </html>
   );
 }

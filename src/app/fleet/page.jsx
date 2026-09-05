@@ -11,6 +11,8 @@ import SectionHeading from '@/components/fleet/SectionHeading';
 import SharpButton from '@/components/fleet/SharpButton';
 import TrustSeal from '@/components/fleet/TrustSeal';
 import ThemeToggle from '@/components/fleet/ThemeToggle';
+import LanguageToggle from '@/components/fleet/LanguageToggle';
+import { useLanguage } from '@/lib/LanguageContext';
 
 function formatRupiah(amount) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount || 0);
@@ -52,6 +54,7 @@ function useCountUp(targetVal, durationMs = 1500, isDecimal = false) {
 }
 
 export default function SharpSquareBusinessWebsitePage() {
+  const { t } = useLanguage();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -436,7 +439,7 @@ export default function SharpSquareBusinessWebsitePage() {
         </span>
         <a href={biz.mapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#E8C179', textDecoration: 'none', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
           <i className="fa-solid fa-star" style={{ color: '#E8C179' }}></i>
-          {animatedRating} Google Rating ({animatedReviews} Reviews)
+          {t('fleet.googleRating').replace('{rating}', animatedRating).replace('{count}', animatedReviews)}
         </a>
       </div>
 
@@ -461,6 +464,8 @@ export default function SharpSquareBusinessWebsitePage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
+            <LanguageToggle />
             <SharpButton
               href={`https://wa.me/${biz.phone.replace(/[^0-9]/g, '')}`}
               target="_blank"
@@ -470,9 +475,8 @@ export default function SharpSquareBusinessWebsitePage() {
               icon="fa-brands fa-whatsapp"
               className="fleet-header-cta"
             >
-              Book Now
+              {t('fleet.bookNow')}
             </SharpButton>
-            <ThemeToggle theme={theme} onToggle={toggleTheme} />
           </div>
         </div>
       </header>
@@ -573,15 +577,15 @@ export default function SharpSquareBusinessWebsitePage() {
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           <SectionHeading
             eyebrow="How It Works"
-            title="Booking In 3 Simple Steps"
+            title={t('fleet.stepsTitle')}
             icon="fa-solid fa-route"
             style={{ marginBottom: '40px' }}
           />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
             {[
-              { icon: 'fa-solid fa-calendar-check', title: 'Pick Your Dates', desc: 'Select pickup and return dates — daily, weekly, and monthly rates auto-calculated.' },
-              { icon: 'fa-solid fa-motorcycle', title: 'Choose Your Scooter', desc: 'Browse available scooters for your dates and pick the model that fits your trip.' },
-              { icon: 'fa-brands fa-whatsapp', title: 'Book Via WhatsApp', desc: 'Confirm instantly over WhatsApp. Pay on pickup, no deposit surprises.' },
+              { icon: 'fa-solid fa-calendar-check', title: t('fleet.step1Title'), desc: t('fleet.step1Desc') },
+              { icon: 'fa-solid fa-motorcycle', title: t('fleet.step2Title'), desc: t('fleet.step2Desc') },
+              { icon: 'fa-brands fa-whatsapp', title: t('fleet.step3Title'), desc: t('fleet.step3Desc') },
             ].map((step, idx) => (
               <div key={idx} className="sharp-card" style={{ padding: '32px 24px', textAlign: 'center' }}>
                 <div style={{
@@ -592,7 +596,7 @@ export default function SharpSquareBusinessWebsitePage() {
                 }}>
                   <i className={step.icon}></i>
                 </div>
-                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sharp-accent)', marginBottom: '6px' }}>STEP {idx + 1}</div>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sharp-accent)', marginBottom: '6px' }}>{t('fleet.stepLabel').replace('{n}', idx + 1)}</div>
                 <div style={{ fontSize: '17px', fontWeight: 700, color: 'var(--sharp-ink)', marginBottom: '8px' }}>{step.title}</div>
                 <div style={{ fontSize: '13.5px', color: 'var(--sharp-muted)', lineHeight: 1.6 }}>{step.desc}</div>
               </div>
@@ -605,8 +609,8 @@ export default function SharpSquareBusinessWebsitePage() {
       <section style={{ padding: '48px 24px', background: 'var(--sharp-surface)' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto 28px auto', textAlign: 'center' }}>
           <SectionHeading
-            eyebrow="Schedule Your Rental"
-            title="Pick Your Dates"
+            eyebrow={t('fleet.scheduleEyebrow')}
+            title={t('fleet.pickYourDates')}
             icon="fa-solid fa-calendar-days"
           />
         </div>
@@ -618,13 +622,13 @@ export default function SharpSquareBusinessWebsitePage() {
         }}>
           <div>
             <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px', textAlign: 'left', letterSpacing: '0.4px' }}>
-              <i className="fa-solid fa-location-dot" style={{ marginRight: '4px', color: 'var(--sharp-accent)' }}></i> Where To Pick Up
+              <i className="fa-solid fa-location-dot" style={{ marginRight: '4px', color: 'var(--sharp-accent)' }}></i> {t('fleet.whereToPickUp')}
             </label>
             <div className="sharp-input" style={{ color: 'var(--sharp-ink-soft)' }}>{biz.name}</div>
           </div>
           <div>
             <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px', textAlign: 'left', letterSpacing: '0.4px' }}>
-              Pickup Date
+              {t('fleet.pickupDate')}
             </label>
             <input
               type="date"
@@ -635,7 +639,7 @@ export default function SharpSquareBusinessWebsitePage() {
           </div>
           <div>
             <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px', textAlign: 'left', letterSpacing: '0.4px' }}>
-              Return Date
+              {t('fleet.returnDate')}
             </label>
             <input
               type="date"
@@ -646,7 +650,7 @@ export default function SharpSquareBusinessWebsitePage() {
             />
           </div>
           <SharpButton href="#fleet-grid" variant="accent" size="md" icon="fa-solid fa-magnifying-glass">
-            Search
+            {t('fleet.search')}
           </SharpButton>
         </div>
 
@@ -656,18 +660,18 @@ export default function SharpSquareBusinessWebsitePage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
           <div>
             <h2 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--sharp-ink)', margin: 0, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-              <span>Available Fleet & Smart Pricing</span>
+              <span>{t('fleet.availableFleetTitle')}</span>
               <i className="fa-solid fa-motorcycle" style={{ color: 'var(--sharp-accent)' }}></i>
             </h2>
             <div style={{ fontSize: '13px', color: 'var(--sharp-muted)', marginTop: '4px' }}>
-              Daily, Weekly, & Monthly rate tiers automatically calculated for best savings.
+              {t('fleet.availableFleetEyebrow')}
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
             {dynamicCategories.map(catId => {
               const label = catId === 'all'
-                ? 'All Scooters'
+                ? t('fleet.allScooters')
                 : catId.charAt(0).toUpperCase() + catId.slice(1);
 
               return (
@@ -685,7 +689,7 @@ export default function SharpSquareBusinessWebsitePage() {
 
             <input
               type="text"
-              placeholder="Search model..."
+              placeholder={t('fleet.searchModel')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="sharp-input"

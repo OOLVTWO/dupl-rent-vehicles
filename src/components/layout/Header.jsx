@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import VuiVoiceControl from '@/components/dashboard/VuiVoiceControl';
+import { useLanguage } from '@/lib/LanguageContext';
 
 const pageMeta = {
   '/dashboard':   { title: 'Dashboard',       subtitle: 'Ringkasan statistik usaha rental' },
@@ -43,6 +44,7 @@ function SettingsTabWatcher({ onChange }) {
 }
 
 export default function Header({ onToggleMobile, theme, onToggleTheme }) {
+  const { lang, setLang } = useLanguage();
   const pathname = usePathname();
   const [settingsTab, setSettingsTab] = useState('');
   const matchedKey = Object.keys(pageMeta).find(key => pathname.startsWith(key));
@@ -108,6 +110,18 @@ export default function Header({ onToggleMobile, theme, onToggleTheme }) {
 
       <div className="header-right-wrap">
         <VuiVoiceControl />
+
+        {/* ── Language Toggle ── */}
+        <button
+          type="button"
+          className="theme-dropdown-trigger"
+          onClick={() => setLang(lang === 'en' ? 'id' : 'en')}
+          aria-label="Ganti bahasa / Switch language"
+          title="Ganti bahasa / Switch language"
+          style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.3px' }}
+        >
+          {lang === 'en' ? 'EN' : 'ID'}
+        </button>
 
         {/* ── Theme Dropdown Toggle ── */}
         <div className="theme-dropdown-wrap" ref={themeRef}>
