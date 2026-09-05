@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 // ===== IMAGE ADJUSTER MODAL (With Mouse Dragging & 9-Box Grid Alignment) =====
 function ImageAdjusterModal({ isOpen, imageSrc, onConfirm, onCancel }) {
@@ -340,6 +341,7 @@ function ImageAdjusterModal({ isOpen, imageSrc, onConfirm, onCancel }) {
 }
 
 export default function GalleryPage() {
+  const { t } = useLanguage();
   const [transactions, setTransactions] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -438,8 +440,8 @@ export default function GalleryPage() {
   return (
     <div className="fade-in">
       <div className="page-header">
-        <h2><i className="fa-solid fa-images" style={{ marginRight: '8px', color: 'var(--brand-primary-light)' }}></i> Galeri Foto Transaksi & Armada Motor</h2>
-        <p>Arsip terpilah 3 kategori foto: Foto Identitas Customer (KTP/Paspor), Foto Serah Terima (Orang + Motor), dan Foto Fisik Armada.</p>
+        <h2><i className="fa-solid fa-images" style={{ marginRight: '8px', color: 'var(--brand-primary-light)' }}></i> {t('galleryPage.title')}</h2>
+        <p>{t('galleryPage.subtitle')}</p>
       </div>
 
       {/* 3-Tab Filter Category Pills */}
@@ -450,7 +452,7 @@ export default function GalleryPage() {
           onClick={() => setActiveTab('id_cards')}
         >
           <i className="fa-solid fa-id-card"></i>
-          1. Foto Identitas Customer ({hasPhotoIdCards})
+          {t('galleryPage.tabIdCards')} ({hasPhotoIdCards})
         </button>
         <button
           type="button"
@@ -458,7 +460,7 @@ export default function GalleryPage() {
           onClick={() => setActiveTab('handover')}
         >
           <i className="fa-solid fa-camera"></i>
-          2. Foto Orang + Motor ({hasPhotoHandover})
+          {t('galleryPage.tabHandover')} ({hasPhotoHandover})
         </button>
         <button
           type="button"
@@ -466,7 +468,7 @@ export default function GalleryPage() {
           onClick={() => setActiveTab('vehicles')}
         >
           <i className="fa-solid fa-motorcycle"></i>
-          3. Foto Fisik Motor ({hasPhotoVehicles})
+          {t('galleryPage.tabVehicles')} ({hasPhotoVehicles})
         </button>
       </div>
 
@@ -478,7 +480,7 @@ export default function GalleryPage() {
             <input
               type="text"
               className="form-control"
-              placeholder="Cari nama customer, HP, motor, atau plat nomor..."
+              placeholder={t('galleryPage.searchPlaceholder')}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
@@ -489,14 +491,14 @@ export default function GalleryPage() {
       {/* Loading */}
       {loading ? (
         <div className="card table-empty">
-          <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Memuat galeri foto terpilah...
+          <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> {t('galleryPage.loadingGallery')}
         </div>
       ) : activeTab === 'id_cards' ? (
         /* TAB 1: CUSTOMER ID CARD PHOTOS (KTP/PASPOR/SIM) */
         idCardTransactions.length === 0 ? (
           <div className="card table-empty">
             <div className="table-empty-icon"><i className="fa-solid fa-id-card"></i></div>
-            <p>Belum ada foto identitas customer (KTP/Paspor/SIM). Upload saat membuat transaksi baru.</p>
+            <p>{t('galleryPage.noIdPhotos')}</p>
           </div>
         ) : (
           <div className="grid-3">
@@ -600,7 +602,7 @@ export default function GalleryPage() {
         handoverTransactions.length === 0 ? (
           <div className="card table-empty">
             <div className="table-empty-icon"><i className="fa-solid fa-camera"></i></div>
-            <p>Belum ada foto serah terima orang + motor. Upload di Form Transaksi pada saat penyerahan unit.</p>
+            <p>{t('galleryPage.noHandoverPhotos')}</p>
           </div>
         ) : (
           <div className="grid-3">
@@ -699,7 +701,7 @@ export default function GalleryPage() {
         filteredVehicles.length === 0 ? (
           <div className="card table-empty">
             <div className="table-empty-icon"><i className="fa-solid fa-motorcycle"></i></div>
-            <p>Belum ada data foto fisik kendaraan.</p>
+            <p>{t('galleryPage.noVehiclePhotos')}</p>
           </div>
         ) : (
           <div className="grid-3">
