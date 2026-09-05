@@ -463,7 +463,7 @@ export default function SharpSquareBusinessWebsitePage() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '14px', flex: '1 1 auto', minWidth: 0 }}>
             <ThemeToggle theme={theme} onToggle={toggleTheme} />
             <LanguageToggle />
             <SharpButton
