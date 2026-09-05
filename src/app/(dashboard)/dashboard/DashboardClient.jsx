@@ -6,34 +6,39 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { analyzeVehicleHealth } from '@/lib/aiDiagnostic';
 import { calcFinancialSummary, formatRupiah, getLocalMonthStr, getLocalDateStr, toLocalDateStr, isPaidTransaction, isIncomeEntry } from '@/lib/finance';
+import { useLanguage } from '@/lib/LanguageContext';
 
-const MONTH_NAMES = [
+const MONTH_NAMES_ID = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
 ];
+const MONTH_NAMES_EN = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
 
-const statusBadge = (status, paymentStatus) => {
+const statusBadge = (status, paymentStatus, t) => {
   if (status === 'active' && paymentStatus === 'unpaid') {
     return (
       <span className="tx-status-pill" style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B', borderColor: 'rgba(245,158,11,0.4)' }}>
-        <i className="fa-solid fa-clock" style={{ fontSize: '11px' }}></i> Belum Bayar
+        <i className="fa-solid fa-clock" style={{ fontSize: '11px' }}></i> {t('dashboard.unpaid')}
       </span>
     );
   }
   const map = {
     active: (
       <span className="tx-status-pill active">
-        <i className="fa-solid fa-bolt" style={{ fontSize: '11px' }}></i> Sewa Aktif
+        <i className="fa-solid fa-bolt" style={{ fontSize: '11px' }}></i> {t('dashboard.activeRental')}
       </span>
     ),
     completed: (
       <span className="tx-status-pill completed">
-        <i className="fa-solid fa-circle-check" style={{ fontSize: '11px' }}></i> Selesai
+        <i className="fa-solid fa-circle-check" style={{ fontSize: '11px' }}></i> {t('dashboard.completed')}
       </span>
     ),
     cancelled: (
       <span className="tx-status-pill cancelled">
-        <i className="fa-solid fa-circle-xmark" style={{ fontSize: '11px' }}></i> Dibatalkan
+        <i className="fa-solid fa-circle-xmark" style={{ fontSize: '11px' }}></i> {t('dashboard.cancelled')}
       </span>
     ),
   };
@@ -47,14 +52,15 @@ function fleetStatusDot(status) {
   return '#5C5C78';
 }
 
-function fleetStatusLabel(status) {
-  if (status === 'available') return 'Tersedia';
-  if (status === 'rented') return 'Disewa';
-  if (status === 'maintenance') return 'Servis';
+function fleetStatusLabel(status, t) {
+  if (status === 'available') return t('dashboard.available');
+  if (status === 'rented') return t('dashboard.rented');
+  if (status === 'maintenance') return t('dashboard.maintenance');
   return status;
 }
 
 export default function DashboardClient({ transactions, vehicles }) {
+  const { t, lang } = useLanguage();
   const [expenses, setExpenses] = useState([]);
   const [periodMode, setPeriodMode] = useState('month');
   const [selectedMonth, setSelectedMonth] = useState(getLocalMonthStr());
@@ -109,11 +115,12 @@ export default function DashboardClient({ transactions, vehicles }) {
 
   const periodRange = useMemo(() => {
     const currentYear = getLocalMonthStr().substring(0, 4);
+    const MONTH_NAMES = lang === 'en' ? MONTH_NAMES_EN : MONTH_NAMES_ID;
     if (periodMode === 'year') {
       return {
         start: `${selectedYear}-01-01`,
         end: `${selectedYear}-12-31`,
-        label: `Tahun ${selectedYear}`,
+        label: t('dashboard.yearLabel').replace('{year}', selectedYear),
         isCurrent: selectedYear === currentYear,
       };
     }
@@ -127,7 +134,7 @@ export default function DashboardClient({ transactions, vehicles }) {
       label: `${MONTH_NAMES[m - 1]} ${y}`,
       isCurrent: selectedMonth === getLocalMonthStr(),
     };
-  }, [periodMode, selectedMonth, selectedYear]);
+  }, [periodMode, selectedMonth, selectedYear, lang, t]);
 
   const filteredTx = safeTx.filter(t => {
     const d = toLocalDateStr(t.created_at);
@@ -221,36 +228,36 @@ export default function DashboardClient({ transactions, vehicles }) {
       iconBg: 'rgba(232,93,4,0.12)',
       iconColor: '#E85D04',
       icon: 'fa-solid fa-sack-dollar',
-      label: showToday ? 'Pendapatan Hari Ini' : `Pendapatan ${periodRange.label}`,
+      label: showToday ? t('dashboard.revenueToday') : t('dashboard.revenuePeriod').replace('{period}', periodRange.label),
       value: formatRupiah(showToday ? todayRevenue : periodRevenue),
-      sub: showToday ? `${periodRange.label}: ${formatRupiah(periodRevenue)}` : `${paidTx.length} transaksi terbayar`,
+      sub: showToday ? `${periodRange.label}: ${formatRupiah(periodRevenue)}` : t('dashboard.paidTxCount').replace('{n}', paidTx.length),
     },
     {
       accent: '#3B82F6',
       iconBg: 'rgba(59,130,246,0.12)',
       iconColor: '#3B82F6',
       icon: 'fa-solid fa-key',
-      label: 'Motor Sedang Disewa',
+      label: t('dashboard.vehiclesRented'),
       value: `${activeCount} Unit`,
-      sub: `dari ${safeVehicles.length} total armada`,
+      sub: t('dashboard.ofTotalFleet').replace('{n}', safeVehicles.length),
     },
     {
       accent: '#22C55E',
       iconBg: 'rgba(34,197,94,0.12)',
       iconColor: '#22C55E',
       icon: 'fa-solid fa-circle-check',
-      label: 'Motor Tersedia',
+      label: t('dashboard.vehiclesAvailable'),
       value: `${availableCount} Unit`,
-      sub: 'siap sewa sekarang',
+      sub: t('dashboard.readyToRentNow'),
     },
     {
       accent: '#F59E0B',
       iconBg: 'rgba(245,158,11,0.12)',
       iconColor: '#F59E0B',
       icon: 'fa-solid fa-wrench',
-      label: 'Dalam Perawatan',
+      label: t('dashboard.underMaintenance'),
       value: `${maintenanceCount} Unit`,
-      sub: 'tidak beroperasi',
+      sub: t('dashboard.notOperating'),
     },
   ];
 
@@ -262,39 +269,39 @@ export default function DashboardClient({ transactions, vehicles }) {
           {pendingBookings.length > 0 && (
             <Link href="/bookings?tab=pending" className="dash-alert-bar" style={{ background: 'rgba(245, 158, 11, 0.12)', borderColor: 'rgba(245, 158, 11, 0.4)', color: '#F59E0B' }}>
               <i className="fa-solid fa-inbox"></i>
-              <span>{pendingBookings.length} booking baru menunggu konfirmasi</span>
-              <span className="alert-cta">Cek Booking &rarr;</span>
+              <span>{t('dashboard.newBookingsWaiting').replace('{n}', pendingBookings.length)}</span>
+              <span className="alert-cta">{t('dashboard.checkBooking')} &rarr;</span>
             </Link>
           )}
           {todaysBookings.length > 0 && (
             <Link href="/bookings?tab=confirmed" className="dash-alert-bar" style={{ background: 'rgba(59, 130, 246, 0.12)', borderColor: 'rgba(59, 130, 246, 0.4)', color: '#3B82F6' }}>
               <i className="fa-solid fa-calendar-day"></i>
               <span>
-                {todaysBookings.length} jadwal booking hari ini
-                {unassignedDeliveriesToday.length > 0 && ` — ${unassignedDeliveriesToday.length} delivery belum ada driver!`}
+                {t('dashboard.todaySchedule').replace('{n}', todaysBookings.length)}
+                {unassignedDeliveriesToday.length > 0 && t('dashboard.unassignedDelivery').replace('{n}', unassignedDeliveriesToday.length)}
               </span>
-              <span className="alert-cta">Lihat Jadwal &rarr;</span>
+              <span className="alert-cta">{t('dashboard.viewSchedule')} &rarr;</span>
             </Link>
           )}
           {tomorrowBookings.length > 0 && (
             <Link href="/bookings" className="dash-alert-bar" style={{ background: 'rgba(139, 92, 246, 0.12)', borderColor: 'rgba(139, 92, 246, 0.4)', color: '#8B5CF6' }}>
               <i className="fa-solid fa-calendar-plus"></i>
-              <span>{tomorrowBookings.length} booking untuk besok — siap-siap dari sekarang</span>
-              <span className="alert-cta">Lihat Jadwal &rarr;</span>
+              <span>{t('dashboard.tomorrowBookings').replace('{n}', tomorrowBookings.length)}</span>
+              <span className="alert-cta">{t('dashboard.viewSchedule')} &rarr;</span>
             </Link>
           )}
           {unpaidTx.length > 0 && (
             <Link href="/transactions" className="dash-alert-bar unpaid">
               <i className="fa-solid fa-triangle-exclamation"></i>
-              <span>{unpaidTx.length} sewa aktif belum bayar — total piutang {formatRupiah(totalUnpaid)}</span>
-              <span className="alert-cta">Lihat Transaksi &rarr;</span>
+              <span>{t('dashboard.unpaidActiveRentals').replace('{n}', unpaidTx.length).replace('{amount}', formatRupiah(totalUnpaid))}</span>
+              <span className="alert-cta">{t('dashboard.viewTransactions')} &rarr;</span>
             </Link>
           )}
           {urgentVehicles.length > 0 && (
             <Link href="/maintenance" className="dash-alert-bar maintenance">
               <i className="fa-solid fa-robot"></i>
-              <span>AI Diagnostic: {urgentVehicles.length} motor perlu perhatian — {urgentVehicles.map(v => v.vehicleName).join(', ')}</span>
-              <span className="alert-cta">Cek Diagnostic &rarr;</span>
+              <span>{t('dashboard.aiDiagnosticAlert').replace('{n}', urgentVehicles.length).replace('{names}', urgentVehicles.map(v => v.vehicleName).join(', '))}</span>
+              <span className="alert-cta">{t('dashboard.checkDiagnostic')} &rarr;</span>
             </Link>
           )}
         </div>
@@ -304,9 +311,9 @@ export default function DashboardClient({ transactions, vehicles }) {
         <div>
           <h2 className="dash-title">
             <i className="fa-solid fa-chart-pie" style={{ marginRight: '8px', color: 'var(--brand-primary)' }}></i>
-            Dashboard
+            {t('dashboard.title')}
           </h2>
-          <p className="dash-subtitle">Ringkasan performa usaha — {periodRange.label}</p>
+          <p className="dash-subtitle">{t('dashboard.subtitle').replace('{period}', periodRange.label)}</p>
         </div>
 
         <div className="dash-period-bar">
@@ -315,12 +322,12 @@ export default function DashboardClient({ transactions, vehicles }) {
               type="button"
               className={`dash-ptab ${periodMode === 'month' ? 'active' : ''}`}
               onClick={() => setPeriodMode('month')}
-            >Bulanan</button>
+            >{t('dashboard.monthly')}</button>
             <button
               type="button"
               className={`dash-ptab ${periodMode === 'year' ? 'active' : ''}`}
               onClick={() => setPeriodMode('year')}
-            >Tahunan</button>
+            >{t('dashboard.yearly')}</button>
           </div>
 
           {/* Always rendered — hidden in year mode to prevent layout shift */}
@@ -330,7 +337,7 @@ export default function DashboardClient({ transactions, vehicles }) {
             value={selectedMonth.substring(5, 7)}
             onChange={e => setSelectedMonth(`${selectedMonth.substring(0, 4)}-${e.target.value}`)}
           >
-            {MONTH_NAMES.map((name, i) => (
+            {(lang === 'en' ? MONTH_NAMES_EN : MONTH_NAMES_ID).map((name, i) => (
               <option key={i} value={String(i + 1).padStart(2, '0')}>{name}</option>
             ))}
           </select>
@@ -348,7 +355,7 @@ export default function DashboardClient({ transactions, vehicles }) {
 
           {!periodRange.isCurrent && (
             <button type="button" className="dash-period-reset" onClick={handleResetPeriod}>
-              <i className="fa-solid fa-rotate-left"></i> Periode Berjalan
+              <i className="fa-solid fa-rotate-left"></i> {t('dashboard.currentPeriod')}
             </button>
           )}
         </div>
@@ -373,7 +380,7 @@ export default function DashboardClient({ transactions, vehicles }) {
         <div className="dash-finance-item income">
           <i className="fa-solid fa-circle-arrow-down"></i>
           <div>
-            <div className="fin-label">Total Pemasukan</div>
+            <div className="fin-label">{t('dashboard.totalIncome')}</div>
             <div className="fin-value">{formatRupiah(totalRevenue)}</div>
           </div>
         </div>
@@ -381,7 +388,7 @@ export default function DashboardClient({ transactions, vehicles }) {
         <div className="dash-finance-item expense">
           <i className="fa-solid fa-circle-arrow-up"></i>
           <div>
-            <div className="fin-label">Total Pengeluaran</div>
+            <div className="fin-label">{t('dashboard.totalExpenses')}</div>
             <div className="fin-value">{formatRupiah(totalExpenses)}</div>
           </div>
         </div>
@@ -391,7 +398,7 @@ export default function DashboardClient({ transactions, vehicles }) {
             <div className="dash-finance-item investor">
               <i className="fa-solid fa-crown"></i>
               <div>
-                <div className="fin-label">Bagi Hasil Investor</div>
+                <div className="fin-label">{t('dashboard.investorPayout')}</div>
                 <div className="fin-value">{formatRupiah(investorPayout)}</div>
               </div>
             </div>
@@ -401,13 +408,13 @@ export default function DashboardClient({ transactions, vehicles }) {
         <div className={`dash-finance-item profit ${netProfit >= 0 ? 'positive' : 'negative'}`}>
           <i className={`fa-solid ${netProfit >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}`}></i>
           <div>
-            <div className="fin-label">Laba Bersih</div>
+            <div className="fin-label">{t('dashboard.netProfit')}</div>
             <div className="fin-value">{formatRupiah(netProfit)}</div>
           </div>
         </div>
         <div style={{ marginLeft: 'auto' }}>
           <Link href="/reports" className="btn btn-secondary btn-sm">
-            Laporan Lengkap <i className="fa-solid fa-arrow-right" style={{ marginLeft: '4px' }}></i>
+            {t('dashboard.fullReport')} <i className="fa-solid fa-arrow-right" style={{ marginLeft: '4px' }}></i>
           </Link>
         </div>
       </div>
@@ -424,32 +431,32 @@ export default function DashboardClient({ transactions, vehicles }) {
           <div className="dash-card-header">
             <div className="dash-card-title">
               <i className="fa-solid fa-vault" style={{ color: 'var(--brand-primary)' }}></i>
-              Rekap Deposit Jaminan
+              {t('dashboard.depositRecap')}
             </div>
-            <div className="dash-card-sub">Monitoring garansi &amp; klaim denda</div>
+            <div className="dash-card-sub">{t('dashboard.depositMonitoring')}</div>
           </div>
           <div className="dash-deposit-list">
             <div className="dash-deposit-item dep-held">
               <div className="dep-dot"></div>
               <div className="dep-info">
-                <div className="dep-name">Deposit Ditahan (Aktif)</div>
-                <div className="dep-count">{activeTx.length} sewa berjalan</div>
+                <div className="dep-name">{t('dashboard.depositHeld')}</div>
+                <div className="dep-count">{t('dashboard.rentalsRunning').replace('{n}', activeTx.length)}</div>
               </div>
               <div className="dep-amount" style={{ color: '#F59E0B' }}>{formatRupiah(totalDepositHeld)}</div>
             </div>
             <div className="dash-deposit-item dep-damage">
               <div className="dep-dot"></div>
               <div className="dep-info">
-                <div className="dep-name">Klaim Denda Ganti Rugi</div>
-                <div className="dep-count">Masuk sebagai pemasukan</div>
+                <div className="dep-name">{t('dashboard.damageClaim')}</div>
+                <div className="dep-count">{t('dashboard.countedAsIncome')}</div>
               </div>
               <div className="dep-amount" style={{ color: '#A855F7' }}>{formatRupiah(totalDepositDamage)}</div>
             </div>
             <div className="dash-deposit-item dep-returned">
               <div className="dep-dot"></div>
               <div className="dep-info">
-                <div className="dep-name">Deposit Dikembalikan</div>
-                <div className="dep-count">{completedTx.length} transaksi selesai</div>
+                <div className="dep-name">{t('dashboard.depositReturned')}</div>
+                <div className="dep-count">{t('dashboard.txCompleted').replace('{n}', completedTx.length)}</div>
               </div>
               <div className="dep-amount" style={{ color: '#3B82F6' }}>{formatRupiah(totalDepositReturned)}</div>
             </div>
@@ -460,29 +467,29 @@ export default function DashboardClient({ transactions, vehicles }) {
           <div className="dash-card-header">
             <div className="dash-card-title">
               <i className="fa-solid fa-bolt" style={{ color: 'var(--brand-primary)' }}></i>
-              Aksi Cepat
+              {t('dashboard.quickActions')}
             </div>
           </div>
           <div className="dash-quick-grid">
             <Link href="/transactions" className="dash-quick-btn q-orange">
               <i className="fa-solid fa-plus"></i>
-              <div className="qbtn-label">Transaksi Baru</div>
-              <div className="qbtn-sub">Catat sewa motor</div>
+              <div className="qbtn-label">{t('dashboard.newTransaction')}</div>
+              <div className="qbtn-sub">{t('dashboard.recordRental')}</div>
             </Link>
             <Link href="/availability" className="dash-quick-btn q-blue">
               <i className="fa-solid fa-circle-half-stroke"></i>
-              <div className="qbtn-label">Cek Armada</div>
-              <div className="qbtn-sub">Status real-time</div>
+              <div className="qbtn-label">{t('dashboard.checkFleet')}</div>
+              <div className="qbtn-sub">{t('dashboard.realtimeStatus')}</div>
             </Link>
             <Link href="/reports?tab=investor" className="dash-quick-btn q-green">
               <i className="fa-solid fa-chart-line"></i>
-              <div className="qbtn-label">Laporan Investor</div>
-              <div className="qbtn-sub">Export Excel</div>
+              <div className="qbtn-label">{t('dashboard.investorReport')}</div>
+              <div className="qbtn-sub">{t('dashboard.exportExcel')}</div>
             </Link>
             <Link href="/maintenance" className="dash-quick-btn q-purple">
               <i className="fa-solid fa-robot"></i>
-              <div className="qbtn-label">AI Diagnostic</div>
-              <div className="qbtn-sub">Kesehatan motor</div>
+              <div className="qbtn-label">{t('sidebar.aiDiagnostic')}</div>
+              <div className="qbtn-sub">{t('dashboard.vehicleHealth')}</div>
             </Link>
           </div>
         </div>
@@ -494,30 +501,30 @@ export default function DashboardClient({ transactions, vehicles }) {
             <div>
               <div className="dash-card-title">
                 <i className="fa-solid fa-receipt" style={{ color: 'var(--brand-primary)' }}></i>
-                Transaksi Terbaru
+                {t('dashboard.recentTransactions')}
               </div>
-              <div className="dash-card-sub">5 terkini pada {periodRange.label}</div>
+              <div className="dash-card-sub">{t('dashboard.recentOnPeriod').replace('{period}', periodRange.label)}</div>
             </div>
             <Link href="/transactions" className="btn btn-secondary btn-sm">
-              Lihat Semua <i className="fa-solid fa-arrow-right" style={{ marginLeft: '4px' }}></i>
+              {t('dashboard.viewAll')} <i className="fa-solid fa-arrow-right" style={{ marginLeft: '4px' }}></i>
             </Link>
           </div>
 
           {recentTx.length === 0 ? (
             <div className="table-empty" style={{ padding: '32px 16px' }}>
               <div className="table-empty-icon"><i className="fa-solid fa-receipt"></i></div>
-              <p>Belum ada transaksi. <Link href="/transactions">Catat transaksi baru</Link></p>
+              <p>{t('dashboard.noTransactionsYet')} <Link href="/transactions">{t('dashboard.recordNewTransaction')}</Link></p>
             </div>
           ) : (
             <div className="table-wrapper">
               <table className="table table--stack-mobile" style={{ minWidth: '580px' }}>
                 <thead>
                   <tr>
-                    <th>Penyewa</th>
-                    <th>Motor</th>
-                    <th>Tanggal</th>
-                    <th>Total</th>
-                    <th>Status</th>
+                    <th>{t('dashboard.thRenter')}</th>
+                    <th>{t('dashboard.thVehicle')}</th>
+                    <th>{t('dashboard.thDate')}</th>
+                    <th>{t('dashboard.thTotal')}</th>
+                    <th>{t('dashboard.thStatus')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -546,7 +553,7 @@ export default function DashboardClient({ transactions, vehicles }) {
                       <td data-label="Total">
                         <strong style={{ fontSize: '13px' }}>{formatRupiah(tx.total_price)}</strong>
                       </td>
-                      <td data-label="Status">{statusBadge(tx.status, tx.payment_status)}</td>
+                      <td data-label="Status">{statusBadge(tx.status, tx.payment_status, t)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -560,19 +567,19 @@ export default function DashboardClient({ transactions, vehicles }) {
             <div>
               <div className="dash-card-title">
                 <i className="fa-solid fa-motorcycle" style={{ color: 'var(--brand-primary)' }}></i>
-                Status Armada
+                {t('dashboard.fleetStatus')}
               </div>
-              <div className="dash-card-sub">{safeVehicles.length} unit terdaftar</div>
+              <div className="dash-card-sub">{t('dashboard.unitsRegistered').replace('{n}', safeVehicles.length)}</div>
             </div>
             <Link href="/availability" className="btn btn-secondary btn-sm">
-              Selengkapnya <i className="fa-solid fa-arrow-right" style={{ marginLeft: '4px' }}></i>
+              {t('dashboard.moreDetails')} <i className="fa-solid fa-arrow-right" style={{ marginLeft: '4px' }}></i>
             </Link>
           </div>
 
           <div className="fleet-legend">
-            <span className="fleet-legend-item"><span className="fleet-dot-lg" style={{ background: '#22C55E' }}></span>{availableCount} Tersedia</span>
-            <span className="fleet-legend-item"><span className="fleet-dot-lg" style={{ background: '#3B82F6' }}></span>{activeCount} Disewa</span>
-            <span className="fleet-legend-item"><span className="fleet-dot-lg" style={{ background: '#F59E0B' }}></span>{maintenanceCount} Servis</span>
+            <span className="fleet-legend-item"><span className="fleet-dot-lg" style={{ background: '#22C55E' }}></span>{availableCount} {t('dashboard.available')}</span>
+            <span className="fleet-legend-item"><span className="fleet-dot-lg" style={{ background: '#3B82F6' }}></span>{activeCount} {t('dashboard.rented')}</span>
+            <span className="fleet-legend-item"><span className="fleet-dot-lg" style={{ background: '#F59E0B' }}></span>{maintenanceCount} {t('dashboard.maintenance')}</span>
           </div>
 
           <div className="dash-fleet-grid">
@@ -584,13 +591,13 @@ export default function DashboardClient({ transactions, vehicles }) {
                   <div className="fleet-item-plate">{v.plate_number}</div>
                 </div>
                 <div className="fleet-item-status" style={{ color: fleetStatusDot(v.status) }}>
-                  {fleetStatusLabel(v.status)}
+                  {fleetStatusLabel(v.status, t)}
                 </div>
               </div>
             ))}
             {safeVehicles.length === 0 && (
               <div className="table-empty" style={{ padding: '24px' }}>
-                <p><Link href="/vehicles">Tambah motor pertama</Link></p>
+                <p><Link href="/vehicles">{t('dashboard.addFirstVehicle')}</Link></p>
               </div>
             )}
           </div>
@@ -602,31 +609,31 @@ export default function DashboardClient({ transactions, vehicles }) {
           <div>
             <div className="dash-card-title">
               <i className="fa-solid fa-motorcycle" style={{ color: 'var(--brand-primary)' }}></i>
-              Motor yang Sudah Di-booking
+              {t('driverDashboard.bookedVehicles')}
             </div>
-            <div className="dash-card-sub">{activeBookings.length} booking aktif (pending + confirmed)</div>
+            <div className="dash-card-sub">{t('dashboard.activeBookingsCount').replace('{n}', activeBookings.length)}</div>
           </div>
           <Link href="/bookings" className="btn btn-secondary btn-sm">
-            Lihat Semua <i className="fa-solid fa-arrow-right" style={{ marginLeft: '4px' }}></i>
+            {t('dashboard.viewAll')} <i className="fa-solid fa-arrow-right" style={{ marginLeft: '4px' }}></i>
           </Link>
         </div>
 
         {activeBookings.length === 0 ? (
           <div className="table-empty" style={{ padding: '32px 16px' }}>
             <div className="table-empty-icon"><i className="fa-solid fa-inbox"></i></div>
-            <p>Belum ada booking aktif saat ini.</p>
+            <p>{t('driverDashboard.noActiveBookings')}</p>
           </div>
         ) : (
           <div className="table-wrapper">
             <table className="table table--stack-mobile" style={{ minWidth: '620px' }}>
               <thead>
                 <tr>
-                  <th>Motor</th>
-                  <th>Customer</th>
-                  <th>Tanggal Sewa</th>
-                  <th>Metode</th>
-                  <th>Driver</th>
-                  <th>Status</th>
+                  <th>{t('driverDashboard.thVehicle')}</th>
+                  <th>{t('driverDashboard.thCustomer')}</th>
+                  <th>{t('driverDashboard.thRentalDate')}</th>
+                  <th>{t('driverDashboard.thMethod')}</th>
+                  <th>{t('driverDashboard.thDriver')}</th>
+                  <th>{t('driverDashboard.thStatus')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -644,11 +651,11 @@ export default function DashboardClient({ transactions, vehicles }) {
                     </td>
                     <td data-label="Metode">
                       <span className="badge" style={{ background: b.fulfillment_method === 'delivery' ? 'rgba(59,130,246,0.15)' : 'rgba(148,163,184,0.2)', color: b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8', border: `1px solid ${b.fulfillment_method === 'delivery' ? '#3B82F6' : '#94A3B8'}` }}>
-                        {b.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup'}
+                        {b.fulfillment_method === 'delivery' ? t('driverDashboard.delivery') : t('driverDashboard.pickup')}
                       </span>
                     </td>
                     <td data-label="Driver" style={{ fontSize: '12px' }}>
-                      {b.fulfillment_method === 'delivery' ? (b.assigned_driver_name || <span style={{ color: '#F59E0B' }}>Belum ada</span>) : '\u2014'}
+                      {b.fulfillment_method === 'delivery' ? (b.assigned_driver_name || <span style={{ color: '#F59E0B' }}>{t('driverDashboard.notAssignedYet')}</span>) : '\u2014'}
                     </td>
                     <td data-label="Status">
                       <span className="badge" style={{
@@ -656,7 +663,7 @@ export default function DashboardClient({ transactions, vehicles }) {
                         color: b.status === 'confirmed' ? '#22C55E' : '#F59E0B',
                         border: `1px solid ${b.status === 'confirmed' ? '#22C55E' : '#F59E0B'}`,
                       }}>
-                        {b.status === 'confirmed' ? 'Confirmed' : 'Pending'}
+                        {b.status === 'confirmed' ? t('driverDashboard.confirmed') : t('driverDashboard.pending')}
                       </span>
                     </td>
                   </tr>
