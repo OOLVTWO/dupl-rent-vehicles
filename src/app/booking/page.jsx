@@ -339,18 +339,18 @@ function BookingPageInner() {
         ) : !vehicle ? (
           <div className="sharp-card" style={{ padding: '40px 28px', textAlign: 'center' }}>
             <i className="fa-solid fa-circle-exclamation" style={{ fontSize: '28px', color: 'var(--sharp-muted)', marginBottom: '12px' }}></i>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 8px 0' }}>Vehicle not found</h2>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 8px 0' }}>{t('booking.vehicleNotFound')}</h2>
             <p style={{ fontSize: '13px', color: 'var(--sharp-muted)', marginBottom: '20px' }}>
-              This scooter may no longer be available. Please head back and pick another one.
+              {t('booking.vehicleNotFoundDesc')}
             </p>
-            <SharpButton href="/fleet" variant="dark">Back to Home</SharpButton>
+            <SharpButton href="/fleet" variant="dark">{t('booking.backToHome')}</SharpButton>
           </div>
         ) : (
           <div className="sharp-card" style={{ padding: '28px' }}>
             {step === 'form' && (
               <>
                 <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sharp-accent)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
-                  Booking Confirmation
+                  {t('booking.bookingConfirmationLabel')}
                 </div>
                 <h1 style={{ fontSize: '22px', fontWeight: 900, color: 'var(--sharp-ink)', margin: '0 0 4px 0' }}>
                   {vehicle.name}
@@ -504,8 +504,8 @@ function BookingPageInner() {
                     <div style={{ marginTop: '10px', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.25)', fontSize: '12px', color: 'var(--sharp-ink)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                       <i className="fa-solid fa-circle-info" style={{ color: '#3B82F6', marginTop: '2px' }}></i>
                       <span>
-                        Payment is collected in person when our driver arrives with your scooter.
-                        {form.payment_method === 'card' && ' Our driver will bring a portable card machine (EDC) for card payment.'}
+                        {t('booking.paymentCollectedInPerson')}
+                        {form.payment_method === 'card' && t('booking.edcNoteFull')}
                       </span>
                     </div>
                   </div>
@@ -615,10 +615,10 @@ function BookingPageInner() {
             {step === 'review' && reviewPayload && (
               <div>
                 <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--sharp-ink)', margin: '0 0 4px 0' }}>
-                  Review Your Booking
+                  {t('booking.reviewYourBooking')}
                 </h2>
                 <p style={{ fontSize: '13px', color: 'var(--sharp-muted)', margin: '0 0 18px 0' }}>
-                  Please check everything below before confirming.
+                  {t('booking.checkEverythingBelow')}
                 </p>
 
                 {/* ── Summary Card ── */}
@@ -710,7 +710,7 @@ function BookingPageInner() {
 
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <SharpButton type="button" variant="outline" onClick={() => setStep('form')} disabled={submitting}>
-                    Back
+                    {t('booking.back')}
                   </SharpButton>
                   <div style={{ flex: 1 }}>
                     <SharpButton type="button" variant="accent" block disabled={submitting || !agreedToTerms} onClick={submitBooking}>

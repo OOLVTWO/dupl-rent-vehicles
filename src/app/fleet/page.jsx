@@ -523,14 +523,14 @@ export default function SharpSquareBusinessWebsitePage() {
                 size="lg"
                 icon="fa-brands fa-whatsapp"
               >
-                Rent Now
+                {t('fleet.rentNow')}
               </SharpButton>
               <SharpButton
                 href="#fleet-grid"
                 variant="outline"
                 size="lg"
               >
-                See Fleet
+                {t('fleet.seeFleet')}
               </SharpButton>
             </div>
           </div>
@@ -885,7 +885,7 @@ export default function SharpSquareBusinessWebsitePage() {
               </span>
               {!brand.available && (
                 <span style={{ fontSize: '9px', fontWeight: 800, color: 'var(--sharp-muted)', background: 'var(--sharp-surface-2)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-full)', padding: '2px 8px', textTransform: 'uppercase', letterSpacing: '0.4px', whiteSpace: 'nowrap' }}>
-                  Coming Soon
+                  {t('fleet.comingSoon')}
                 </span>
               )}
             </div>
@@ -961,9 +961,9 @@ export default function SharpSquareBusinessWebsitePage() {
           gap: '48px', alignItems: 'center',
         }}>
           <div>
-            <div className="sharp-eyebrow">What Riders Say</div>
+            <div className="sharp-eyebrow">{t('fleet.whatRidersSay')}</div>
             <h2 className="font-display" style={{ fontSize: '30px', fontWeight: 600, color: 'var(--sharp-ink)', margin: '6px 0 20px 0' }}>
-              Real Reviews From Real Riders
+              {t('fleet.realReviews')}
             </h2>
             <div style={{ color: 'var(--sharp-star)', fontSize: '16px', display: 'flex', gap: '3px', marginBottom: '16px' }}>
               {[...Array(reviews[activeTestimonial]?.rating || 5)].map((_, i) => (
@@ -1165,7 +1165,7 @@ export default function SharpSquareBusinessWebsitePage() {
             {/* Business Contact Info */}
             <div className="sharp-card" style={{ padding: '28px' }}>
               <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--sharp-ink)', marginBottom: '16px' }}>
-                Store Information
+                {t('fleet.storeInformation')}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', fontSize: '13.5px', color: 'var(--sharp-ink-soft)', lineHeight: 1.6 }}>
@@ -1174,7 +1174,7 @@ export default function SharpSquareBusinessWebsitePage() {
                     <i className="fa-solid fa-location-dot" style={{ fontSize: '16px' }}></i>
                   </div>
                   <div>
-                    <strong style={{ color: 'var(--sharp-ink)' }}>Address:</strong><br />
+                    <strong style={{ color: 'var(--sharp-ink)' }}>{t('fleet.address')}:</strong><br />
                     {biz.address}
                   </div>
                 </div>
@@ -1184,7 +1184,7 @@ export default function SharpSquareBusinessWebsitePage() {
                     <i className="fa-solid fa-phone" style={{ fontSize: '16px' }}></i>
                   </div>
                   <div>
-                    <strong style={{ color: 'var(--sharp-ink)' }}>Phone / WhatsApp:</strong><br />
+                    <strong style={{ color: 'var(--sharp-ink)' }}>{t('fleet.phoneWhatsapp')}:</strong><br />
                     <a href={`https://wa.me/${biz.phone.replace(/[^0-9]/g, '')}`} style={{ color: 'var(--sharp-whatsapp)', fontWeight: 800 }}>
                       {biz.phoneRaw} ({biz.phone})
                     </a>
@@ -1196,7 +1196,7 @@ export default function SharpSquareBusinessWebsitePage() {
                     <i className="fa-solid fa-clock" style={{ fontSize: '16px' }}></i>
                   </div>
                   <div>
-                    <strong style={{ color: 'var(--sharp-ink)' }}>Operating Hours:</strong><br />
+                    <strong style={{ color: 'var(--sharp-ink)' }}>{t('fleet.operatingHours')}:</strong><br />
                     {biz.hours}
                   </div>
                 </div>
@@ -1210,7 +1210,7 @@ export default function SharpSquareBusinessWebsitePage() {
                   variant="accent"
                   icon="fa-solid fa-route"
                 >
-                  Open Directions on Google Maps
+                  {t('fleet.openDirections')}
                 </SharpButton>
               </div>
             </div>
