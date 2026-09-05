@@ -1,11 +1,13 @@
 import { createAdminClient } from '@/lib/supabase/server';
-import { requireAuth, readJsonBody, missingFields, toNonNegativeNumber } from '@/lib/apiAuth';
+import { requireAuth, requireAdmin, getUserRole, redactVehicleFields, readJsonBody, missingFields, toNonNegativeNumber } from '@/lib/apiAuth';
 import { NextResponse } from 'next/server';
 
 const VALID_STATUS = ['available', 'rented', 'maintenance'];
 const VALID_CATEGORIES = ['honda', 'yamaha', 'suzuki', 'kawasaki', 'vespa', 'other'];
 
-// GET /api/vehicles
+// GET /api/vehicles — admin & driver boleh akses (driver butuh ini untuk
+// lihat plat motor di Booking), TAPI field rahasia investor/harga beli
+// disaring dulu untuk role driver sebelum dikirim.
 export async function GET(request) {
   const authError = await requireAuth(request);
   if (authError) return authError;
@@ -27,12 +29,14 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-  return NextResponse.json(Array.isArray(data) ? data : []);
+  const role = await getUserRole(request);
+  const safeData = role === 'driver' ? redactVehicleFields(data) : data;
+  return NextResponse.json(Array.isArray(safeData) ? safeData : []);
 }
 
-// POST /api/vehicles
+// POST /api/vehicles — khusus admin, driver tidak boleh membuat data motor.
 export async function POST(request) {
-  const authError = await requireAuth(request);
+  const authError = await requireAdmin(request);
   if (authError) return authError;
 
   const supabase = await createAdminClient();

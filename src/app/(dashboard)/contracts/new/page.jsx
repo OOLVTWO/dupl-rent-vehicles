@@ -141,16 +141,17 @@ function NewContractInner() {
   useEffect(() => {
     Promise.resolve().then(async () => {
       const supabase = createClient();
-      const { data: vData } = await supabase.from('vehicles').select('id, name, plate_number, category, image_url, rate_per_day, status').order('name');
+      const { data: vData } = await supabase.from('vehicles_public').select('id, name, plate_number, category, image_url, rate_per_day, status').order('name');
       setVehicles(vData || []);
 
       if (transactionId) {
-        const { data: tx } = await supabase.from('transactions').select('*, vehicles(name, plate_number)').eq('id', transactionId).maybeSingle();
+        const { data: tx } = await supabase.from('transactions').select('*').eq('id', transactionId).maybeSingle();
         if (tx) {
+          const veh = tx.vehicle_id ? (vData || []).find(v => v.id === tx.vehicle_id) : null;
           setForm(prev => ({
             ...prev,
             vehicle_id: tx.vehicle_id || prev.vehicle_id,
-            vehicle_label: tx.vehicles ? `${tx.vehicles.name}${tx.vehicles.plate_number ? ' — ' + tx.vehicles.plate_number : ''}` : '',
+            vehicle_label: veh ? `${veh.name}${veh.plate_number ? ' — ' + veh.plate_number : ''}` : '',
             customer_name: tx.renter_name || '',
             customer_phone: tx.renter_phone || '',
             customer_address: tx.renter_address || '',
@@ -187,23 +188,28 @@ function NewContractInner() {
     if (transactionId || bookingId) return;
     Promise.resolve().then(async () => {
       const supabase = createClient();
-      const [{ data: activeTx }, { data: confirmedBookings }, { data: contractedTx }, { data: contractedBookings }] = await Promise.all([
-        supabase.from('transactions').select('id, renter_name, renter_phone, start_date, end_date, vehicles(name, plate_number)').eq('status', 'active').order('created_at', { ascending: false }),
+      const [{ data: activeTx }, { data: confirmedBookings }, { data: contractedTx }, { data: contractedBookings }, { data: vList }] = await Promise.all([
+        supabase.from('transactions').select('id, renter_name, renter_phone, start_date, end_date, vehicle_id').eq('status', 'active').order('created_at', { ascending: false }),
         supabase.from('bookings').select('id, customer_name, customer_phone, start_date, end_date, vehicle_name, fulfillment_method, assigned_driver_id').eq('status', 'confirmed').order('created_at', { ascending: false }),
         supabase.from('contracts').select('transaction_id').not('transaction_id', 'is', null),
         supabase.from('contracts').select('booking_id').not('booking_id', 'is', null),
+        supabase.from('vehicles_public').select('id, name, plate_number'),
       ]);
       const doneTx = new Set((contractedTx || []).map(c => c.transaction_id));
       const doneBooking = new Set((contractedBookings || []).map(c => c.booking_id));
+      const vehicleById = Object.fromEntries((vList || []).map(v => [v.id, v]));
 
       const txItems = (activeTx || [])
         .filter(t => !doneTx.has(t.id))
-        .map(t => ({
-          kind: 'transaction', id: t.id,
-          customer_name: t.renter_name, customer_phone: t.renter_phone,
-          vehicle_label: t.vehicles ? `${t.vehicles.name}${t.vehicles.plate_number ? ' — ' + t.vehicles.plate_number : ''}` : '-',
-          start_date: t.start_date, end_date: t.end_date,
-        }));
+        .map(t => {
+          const veh = vehicleById[t.vehicle_id];
+          return {
+            kind: 'transaction', id: t.id,
+            customer_name: t.renter_name, customer_phone: t.renter_phone,
+            vehicle_label: veh ? `${veh.name}${veh.plate_number ? ' — ' + veh.plate_number : ''}` : '-',
+            start_date: t.start_date, end_date: t.end_date,
+          };
+        });
       const bookingItems = (confirmedBookings || [])
         .filter(b => !doneBooking.has(b.id))
         .filter(b => role !== 'driver' || b.assigned_driver_id === user?.id) // driver cuma lihat yg ditugaskan ke dia

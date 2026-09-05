@@ -438,12 +438,12 @@ export default function TrackingPage() {
     const [{ data: txData }, { data: vData }] = await Promise.all([
       supabase
         .from('transactions')
-        .select('*, vehicles(id, name, plate_number, category, rate_per_day)')
+        .select('*')
         .eq('status', 'active')
         .order('end_date', { ascending: true }),
-      supabase.from('vehicles').select('*'),
+      supabase.from('vehicles_public').select('*'),
     ]);
-    const validTxData = (txData || []).filter(tx => tx.vehicles && tx.vehicles.id);
+    const validTxData = (txData || []).filter(tx => tx.vehicle_id);
     setTransactions(validTxData);
     setVehicles(vData || []);
     setLastRefresh(new Date());

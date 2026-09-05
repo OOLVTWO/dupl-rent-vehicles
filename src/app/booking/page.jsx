@@ -160,7 +160,7 @@ function BookingPageInner() {
       if (!vehicleId) { setLoadingVehicle(false); return; }
       try {
         const supabase = createClient();
-        const { data } = await supabase.from('vehicles').select('*').eq('id', vehicleId).maybeSingle();
+        const { data } = await supabase.from('vehicles_public').select('*').eq('id', vehicleId).maybeSingle();
         setVehicle(data || null);
       } catch {
         setVehicle(null);

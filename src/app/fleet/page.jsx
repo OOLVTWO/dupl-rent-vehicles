@@ -338,7 +338,7 @@ export default function SharpSquareBusinessWebsitePage() {
       try {
         const supabase = createClient();
         const { data, error } = await supabase
-          .from('vehicles')
+          .from('vehicles_public')
           .select('*')
           .order('name', { ascending: true });
 

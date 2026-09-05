@@ -1,8 +1,9 @@
 import { createAdminClient } from '@/lib/supabase/server';
-import { requireAuth } from '@/lib/apiAuth';
+import { requireAuth, requireAdmin, getUserRole, redactVehicleFields } from '@/lib/apiAuth';
 import { NextResponse } from 'next/server';
 
-// GET /api/vehicles/[id]
+// GET /api/vehicles/[id] — admin & driver boleh akses, field rahasia
+// investor/harga beli disaring untuk role driver.
 export async function GET(request, { params }) {
   const authError = await requireAuth(request);
   if (authError) return authError;
@@ -16,12 +17,13 @@ export async function GET(request, { params }) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
-  return NextResponse.json(data);
+  const role = await getUserRole(request);
+  return NextResponse.json(role === 'driver' ? redactVehicleFields(data) : data);
 }
 
-// PUT /api/vehicles/[id]
+// PUT /api/vehicles/[id] — khusus admin.
 export async function PUT(request, { params }) {
-  const authError = await requireAuth(request);
+  const authError = await requireAdmin(request);
   if (authError) return authError;
 
   const { id } = await params;
@@ -70,13 +72,13 @@ export async function PUT(request, { params }) {
   return NextResponse.json(data);
 }
 
-// DELETE /api/vehicles/[id]
+// DELETE /api/vehicles/[id] — khusus admin.
 export async function DELETE(request, { params }) {
   const { id } = await params;
   const { searchParams } = new URL(request.url);
   const cascade = searchParams.get('cascade') === 'true';
 
-  const authError = await requireAuth(request);
+  const authError = await requireAdmin(request);
   if (authError) return authError;
 
   const supabase = await createAdminClient();

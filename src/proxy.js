@@ -40,6 +40,8 @@ const PROTECTED_PREFIXES = [
   '/maintenance',
   '/gallery',
   '/contracts',
+  '/driver-income',
+  '/attributes',
 ];
 
 export async function proxy(request) {
@@ -125,5 +127,6 @@ export const config = {
     '/gallery/:path*',
     '/contracts/:path*',
     '/driver-income/:path*',
+    '/attributes/:path*',
   ],
 };

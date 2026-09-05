@@ -79,6 +79,53 @@ export async function requireAdmin(request) {
   }
 }
 
+/**
+ * Ambil role user yang sedang login ('admin' | 'driver'). Dipakai untuk
+ * endpoint yang boleh diakses kedua role tapi perlu menyaring field
+ * sensitif (misal data investor di /api/vehicles) berdasarkan role,
+ * bukan cuma untuk blokir total lewat requireAdmin().
+ *
+ * Akun lama tanpa baris staff_profiles diperlakukan sebagai admin, sama
+ * seperti requireAdmin() — konsisten dengan aturan backward-compat.
+ */
+export async function getUserRole(request) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    const { data: profile } = await supabase
+      .from('staff_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+    return profile?.role || 'admin';
+  } catch (err) {
+    console.error('getUserRole error:', err);
+    return null;
+  }
+}
+
+/**
+ * Field vehicles yang RAHASIA (data investor & harga beli internal) —
+ * TIDAK PERNAH boleh dikirim ke akun Driver, walaupun mereka boleh baca
+ * data motor lain (nama, plat, tarif) untuk keperluan Booking/Kontrak.
+ */
+const CONFIDENTIAL_VEHICLE_FIELDS = [
+  'owner_type', 'owner_name', 'owner_contact', 'revenue_share_percentage',
+  'purchase_date', 'purchase_price',
+];
+
+/** Hapus field rahasia dari satu atau banyak record vehicles sebelum dikirim ke Driver. */
+export function redactVehicleFields(data) {
+  const strip = (row) => {
+    if (!row || typeof row !== 'object') return row;
+    const clean = { ...row };
+    for (const f of CONFIDENTIAL_VEHICLE_FIELDS) delete clean[f];
+    return clean;
+  };
+  return Array.isArray(data) ? data.map(strip) : strip(data);
+}
+
 /** Ambil body JSON dengan aman → null jika tidak valid (400). */
 export async function readJsonBody(request) {
   try {

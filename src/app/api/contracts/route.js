@@ -1,18 +1,29 @@
 import { createAdminClient, createClient } from '@/lib/supabase/server';
-import { requireAuth, missingFields } from '@/lib/apiAuth';
+import { requireAuth, getUserRole, missingFields } from '@/lib/apiAuth';
 import { NextResponse } from 'next/server';
 
-// GET /api/contracts — laporan kontrak (admin & driver boleh lihat)
+// GET /api/contracts — admin lihat semua kontrak; driver hanya lihat
+// kontrak yang dia buat sendiri (di-scope di server) — sebelumnya endpoint
+// ini mengembalikan semua kontrak (termasuk data pribadi customer: nama,
+// No. KTP, telepon, foto, tanda tangan) ke siapa pun yang login.
 export async function GET(request) {
   const authError = await requireAuth(request);
   if (authError) return authError;
 
   const supabase = await createAdminClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from('contracts')
     .select('*')
     .order('created_at', { ascending: false });
 
+  const role = await getUserRole(request);
+  if (role === 'driver') {
+    const sessionClient = await createClient();
+    const { data: { user } } = await sessionClient.auth.getUser();
+    query = query.eq('created_by', user.id);
+  }
+
+  const { data, error } = await query;
   if (error) {
     console.error('GET /api/contracts error:', error.message);
     return NextResponse.json({ error: 'Gagal mengambil data kontrak.' }, { status: 500 });
