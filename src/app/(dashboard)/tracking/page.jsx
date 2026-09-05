@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getWhatsAppShareUrl, getWaReminderTemplate } from '@/lib/countryCodes';
 import { useRole } from '@/lib/RoleContext';
+import { useLanguage } from '@/lib/LanguageContext';
 
 const VALID_TRACKING_TABS = ['all', 'overdue', 'critical', 'upcoming'];
 
@@ -152,6 +153,7 @@ function classifyTx(tx) {
 
 // ─── Countdown Display ─────────────────────────────────────────────────────
 function CountdownTimer({ tx }) {
+  const { t } = useLanguage();
   const [countdown, setCountdown] = useState(null);
 
   useEffect(() => {
@@ -169,13 +171,13 @@ function CountdownTimer({ tx }) {
     const overdueMs = now - targetEnd;
     const overdueHours = Math.floor(overdueMs / (1000 * 60 * 60));
     const overdueDays = Math.floor(overdueHours / 24);
-    const overdueText = overdueDays > 0 ? `${overdueDays} HARI ${overdueHours % 24} JAM` : `${overdueHours} JAM`;
+    const overdueText = overdueDays > 0 ? `${overdueDays} ${t('trackingPage.day')} ${overdueHours % 24} ${t('trackingPage.hour')}` : `${overdueHours} ${t('trackingPage.hour')}`;
 
     return (
       <div className="countdown-display overdue">
         <div className="countdown-overdue-badge">
           <i className="fa-solid fa-triangle-exclamation"></i>
-          <span>OVERDUE {overdueText}</span>
+          <span>{t('trackingPage.overdueBy').replace('{text}', overdueText)}</span>
         </div>
       </div>
     );
@@ -186,7 +188,7 @@ function CountdownTimer({ tx }) {
       <div className="countdown-display overdue">
         <div className="countdown-overdue-badge">
           <i className="fa-solid fa-triangle-exclamation"></i>
-          <span>BERAKHIR SEKARANG</span>
+          <span>{t('trackingPage.endedNow')}</span>
         </div>
       </div>
     );
@@ -197,22 +199,22 @@ function CountdownTimer({ tx }) {
       <div className="countdown-units">
         <div className="countdown-unit">
           <span className="countdown-value">{String(countdown.days).padStart(2, '0')}</span>
-          <span className="countdown-label">Hari</span>
+          <span className="countdown-label">{t('trackingPage.days')}</span>
         </div>
         <div className="countdown-separator">:</div>
         <div className="countdown-unit">
           <span className="countdown-value">{String(countdown.hours).padStart(2, '0')}</span>
-          <span className="countdown-label">Jam</span>
+          <span className="countdown-label">{t('trackingPage.hours')}</span>
         </div>
         <div className="countdown-separator">:</div>
         <div className="countdown-unit">
           <span className="countdown-value">{String(countdown.minutes).padStart(2, '0')}</span>
-          <span className="countdown-label">Mnt</span>
+          <span className="countdown-label">{t('trackingPage.minutes')}</span>
         </div>
         <div className="countdown-separator">:</div>
         <div className="countdown-unit">
           <span className="countdown-value">{String(countdown.seconds).padStart(2, '0')}</span>
-          <span className="countdown-label">Dtk</span>
+          <span className="countdown-label">{t('trackingPage.seconds')}</span>
         </div>
       </div>
     </div>
@@ -221,6 +223,7 @@ function CountdownTimer({ tx }) {
 
 // ─── Tracking Card ──────────────────────────────────────────────────────────
 function TrackingCard({ tx, vehicle, onComplete, role }) {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const [confirmSelesai, setConfirmSelesai] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -238,11 +241,11 @@ function TrackingCard({ tx, vehicle, onComplete, role }) {
   }, []);
 
   const categoryMeta = {
-    overdue: { label: 'Overdue', color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)', icon: 'fa-solid fa-circle-exclamation', pulse: true },
-    today: { label: 'Hari Ini', color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)', icon: 'fa-solid fa-bell', pulse: true },
-    tomorrow: { label: 'Besok', color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', icon: 'fa-solid fa-clock', pulse: false },
-    upcoming: { label: `${daysLeft} Hari Lagi`, color: '#3B82F6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.2)', icon: 'fa-solid fa-calendar-days', pulse: false },
-    future: { label: `${daysLeft} Hari Lagi`, color: '#22C55E', bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.2)', icon: 'fa-solid fa-calendar-check', pulse: false },
+    overdue: { label: t('trackingPage.catOverdue'), color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)', icon: 'fa-solid fa-circle-exclamation', pulse: true },
+    today: { label: t('trackingPage.catToday'), color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)', icon: 'fa-solid fa-bell', pulse: true },
+    tomorrow: { label: t('trackingPage.catTomorrow'), color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', icon: 'fa-solid fa-clock', pulse: false },
+    upcoming: { label: t('trackingPage.catDaysLeft').replace('{n}', daysLeft), color: '#3B82F6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.2)', icon: 'fa-solid fa-calendar-days', pulse: false },
+    future: { label: t('trackingPage.catDaysLeft').replace('{n}', daysLeft), color: '#22C55E', bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.2)', icon: 'fa-solid fa-calendar-check', pulse: false },
   };
   const meta = categoryMeta[type];
 
@@ -275,7 +278,7 @@ function TrackingCard({ tx, vehicle, onComplete, role }) {
         </div>
         <div className="tracking-vehicle-info">
           <i className="fa-solid fa-motorcycle" style={{ color: meta.color }}></i>
-          <span>{vehicle?.name || 'Motor'}</span>
+          <span>{vehicle?.name || t('trackingPage.vehicleFallback')}</span>
           <span className="tracking-plate">{vehicle?.plate_number || '-'}</span>
         </div>
       </div>
@@ -310,11 +313,11 @@ function TrackingCard({ tx, vehicle, onComplete, role }) {
       {/* Progress Bar */}
       <div className="tracking-progress-wrap">
         <div className="tracking-progress-labels">
-          <span><i className="fa-solid fa-hourglass-start" style={{ fontSize: '10px', marginRight: '4px' }}></i>Mulai</span>
+          <span><i className="fa-solid fa-hourglass-start" style={{ fontSize: '10px', marginRight: '4px' }}></i>{t('trackingPage.progressStart')}</span>
           <span style={{ color: isOverProgress ? '#EF4444' : meta.color }}>
-            {isOverProgress ? 'Sudah Berakhir' : `${Math.round(progress)}% berjalan`}
+            {isOverProgress ? t('trackingPage.progressEnded') : t('trackingPage.progressPercent').replace('{n}', Math.round(progress))}
           </span>
-          <span><i className="fa-solid fa-flag-checkered" style={{ fontSize: '10px', marginRight: '4px' }}></i>Selesai</span>
+          <span><i className="fa-solid fa-flag-checkered" style={{ fontSize: '10px', marginRight: '4px' }}></i>{t('trackingPage.progressEnd')}</span>
         </div>
         <div className="tracking-progress-bar">
           <div
@@ -342,11 +345,11 @@ function TrackingCard({ tx, vehicle, onComplete, role }) {
             className="tracking-btn-wa"
           >
             <i className="fa-brands fa-whatsapp"></i>
-            <span>Kirim Reminder WA</span>
+            <span>{t('trackingPage.sendWaReminder')}</span>
           </a>
           <button className="tracking-btn-copy" onClick={handleCopy} title="Salin teks pesan">
             <i className={copied ? 'fa-solid fa-check' : 'fa-solid fa-copy'}></i>
-            <span>{copied ? 'Tersalin!' : 'Salin Teks'}</span>
+            <span>{copied ? t('trackingPage.copied') : t('trackingPage.copyText')}</span>
           </button>
         </div>
       )}
@@ -365,7 +368,7 @@ function TrackingCard({ tx, vehicle, onComplete, role }) {
           }}
         >
           <i className="fa-solid fa-flag-checkered"></i>
-          Selesai Sewa (Manual)
+          {t('trackingPage.finishRentalManual')}
         </button>
       ) : (
         <div style={{
@@ -374,7 +377,7 @@ function TrackingCard({ tx, vehicle, onComplete, role }) {
         }}>
           <div style={{ fontSize: '12px', color: '#22C55E', fontWeight: 700, marginBottom: '8px', textAlign: 'center' }}>
             <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '5px', color: '#F59E0B' }}></i>
-            Yakin selesaikan sewa ini? Motor akan langsung jadi <strong>Tersedia</strong>.
+            {t('trackingPage.confirmFinishRental')} <strong>{t('trackingPage.available')}</strong>.
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
@@ -384,7 +387,7 @@ function TrackingCard({ tx, vehicle, onComplete, role }) {
                 border: '1px solid var(--bg-border)', background: 'var(--bg-elevated)',
                 color: 'var(--text-secondary)', fontWeight: 600, fontSize: '12px', cursor: 'pointer'
               }}
-            >Batal</button>
+            >{t('trackingPage.cancel')}</button>
             <button
               disabled={completing}
               onClick={async () => {
@@ -401,8 +404,8 @@ function TrackingCard({ tx, vehicle, onComplete, role }) {
               }}
             >
               {completing
-                ? <><i className="fa-solid fa-spinner fa-spin"></i> Memproses...</>
-                : <><i className="fa-solid fa-flag-checkered"></i> Ya, Selesaikan!</>}
+                ? <><i className="fa-solid fa-spinner fa-spin"></i> {t('trackingPage.processing')}</>
+                : <><i className="fa-solid fa-flag-checkered"></i> {t('trackingPage.yesFinish')}</>}
             </button>
           </div>
         </div>
@@ -413,7 +416,7 @@ function TrackingCard({ tx, vehicle, onComplete, role }) {
         <details className="tracking-msg-preview">
           <summary>
             <i className="fa-solid fa-eye" style={{ marginRight: '6px' }}></i>
-            Lihat Preview Pesan WA
+            {t('trackingPage.previewWaMessage')}
           </summary>
           <pre className="tracking-msg-text">{reminderText}</pre>
         </details>
@@ -424,6 +427,7 @@ function TrackingCard({ tx, vehicle, onComplete, role }) {
 
 // ─── Main Page ──────────────────────────────────────────────────────────────
 export default function TrackingPage() {
+  const { t } = useLanguage();
   const role = useRole();
   const [transactions, setTransactions] = useState([]);
   const [vehicles, setVehicles] = useState([]);
@@ -526,10 +530,10 @@ export default function TrackingPage() {
   const upcomingCnt = enriched.filter(e => e.type === 'upcoming').length;
 
   const FILTERS = [
-    { key: 'all', label: 'Semua', icon: 'fa-solid fa-list', count: enriched.length },
-    { key: 'overdue', label: 'Overdue', icon: 'fa-solid fa-circle-exclamation', count: overdueCnt, color: '#EF4444' },
-    { key: 'critical', label: 'Kritis', icon: 'fa-solid fa-bell', count: criticalCnt, color: '#F59E0B' },
-    { key: 'upcoming', label: 'Akan Datang', icon: 'fa-solid fa-calendar-days', count: upcomingCnt, color: '#3B82F6' },
+    { key: 'all', label: t('trackingPage.filterAll'), icon: 'fa-solid fa-list', count: enriched.length },
+    { key: 'overdue', label: t('trackingPage.catOverdue'), icon: 'fa-solid fa-circle-exclamation', count: overdueCnt, color: '#EF4444' },
+    { key: 'critical', label: t('trackingPage.filterCritical'), icon: 'fa-solid fa-bell', count: criticalCnt, color: '#F59E0B' },
+    { key: 'upcoming', label: t('trackingPage.filterUpcoming'), icon: 'fa-solid fa-calendar-days', count: upcomingCnt, color: '#3B82F6' },
   ];
 
   return (
@@ -545,20 +549,20 @@ export default function TrackingPage() {
             <i className="fa-solid fa-clock-rotate-left"></i>
           </div>
           <div>
-            <h2>Tracking Sewa Motor</h2>
-            <p>Monitor masa sewa aktif & kirim pengingat ke customer via WhatsApp</p>
+            <h2>{t('trackingPage.title')}</h2>
+            <p>{t('trackingPage.subtitle')}</p>
           </div>
         </div>
         <div className="tracking-header-right">
           <div className="tracking-refresh-info">
             <i className="fa-solid fa-rotate" style={{ fontSize: '11px', color: '#22C55E' }}></i>
-            <span>Auto-refresh tiap 60 detik</span>
+            <span>{t('trackingPage.autoRefresh')}</span>
             <span className="tracking-refresh-time">
               {lastRefresh.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </span>
           </div>
           <button className="btn-refresh" onClick={loadData}>
-            <i className="fa-solid fa-arrows-rotate"></i> Refresh
+            <i className="fa-solid fa-arrows-rotate"></i> {t('trackingPage.refresh')}
           </button>
         </div>
       </div>
@@ -569,28 +573,28 @@ export default function TrackingPage() {
           <div className="tracking-stat-icon"><i className="fa-solid fa-circle-exclamation fa-beat"></i></div>
           <div>
             <div className="tracking-stat-val">{overdueCnt}</div>
-            <div className="tracking-stat-label">Overdue</div>
+            <div className="tracking-stat-label">{t('trackingPage.statOverdue')}</div>
           </div>
         </div>
         <div className="tracking-stat critical-stat">
           <div className="tracking-stat-icon"><i className="fa-solid fa-bell fa-shake"></i></div>
           <div>
             <div className="tracking-stat-val">{criticalCnt}</div>
-            <div className="tracking-stat-label">Kritis (Hari ini/Besok)</div>
+            <div className="tracking-stat-label">{t('trackingPage.statCritical')}</div>
           </div>
         </div>
         <div className="tracking-stat upcoming-stat">
           <div className="tracking-stat-icon"><i className="fa-solid fa-calendar-days"></i></div>
           <div>
             <div className="tracking-stat-val">{upcomingCnt}</div>
-            <div className="tracking-stat-label">Akan Datang (2-7 Hari)</div>
+            <div className="tracking-stat-label">{t('trackingPage.statUpcoming')}</div>
           </div>
         </div>
         <div className="tracking-stat total-stat">
           <div className="tracking-stat-icon"><i className="fa-solid fa-motorcycle"></i></div>
           <div>
             <div className="tracking-stat-val">{enriched.length}</div>
-            <div className="tracking-stat-label">Total Aktif</div>
+            <div className="tracking-stat-label">{t('trackingPage.statTotalActive')}</div>
           </div>
         </div>
       </div>
@@ -621,7 +625,7 @@ export default function TrackingPage() {
           <i className="fa-solid fa-magnifying-glass"></i>
           <input
             type="text"
-            placeholder="Cari nama, HP, atau motor..."
+            placeholder={t('trackingPage.searchPlaceholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="tracking-search-input"
@@ -638,22 +642,25 @@ export default function TrackingPage() {
       {loading ? (
         <div className="tracking-loading">
           <i className="fa-solid fa-spinner fa-spin-pulse" style={{ fontSize: '32px', color: 'var(--brand-primary)' }}></i>
-          <p>Memuat data sewa aktif...</p>
+          <p>{t('trackingPage.loadingActiveData')}</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="tracking-empty">
           <i className="fa-solid fa-motorcycle" style={{ fontSize: '48px', color: 'var(--text-muted)', marginBottom: '16px' }}></i>
-          <h3>Tidak ada data</h3>
-          <p>{enriched.length === 0 ? 'Tidak ada transaksi sewa aktif saat ini.' : 'Tidak ada transaksi yang sesuai filter.'}</p>
+          <h3>{t('trackingPage.noData')}</h3>
+          <p>{enriched.length === 0 ? t('trackingPage.noActiveRentals') : t('trackingPage.noMatchingFilter')}</p>
           {search && <button className="btn-refresh" onClick={() => setSearch('')} style={{ marginTop: '12px' }}>
-            <i className="fa-solid fa-xmark"></i> Reset Pencarian
+            <i className="fa-solid fa-xmark"></i> {t('trackingPage.resetSearch')}
           </button>}
         </div>
       ) : (
         <>
           <div className="tracking-results-info">
             <i className="fa-solid fa-list-check" style={{ color: 'var(--brand-primary)' }}></i>
-            Menampilkan <strong>{filtered.length}</strong> dari <strong>{enriched.length}</strong> transaksi aktif
+            {(() => {
+              const parts = t('trackingPage.showingResults').split(/\{shown\}|\{total\}/);
+              return <>{parts[0]}<strong>{filtered.length}</strong>{parts[1]}<strong>{enriched.length}</strong>{parts[2]}</>;
+            })()}
           </div>
           <div className="tracking-grid">
             {filtered.map(({ tx, vehicle }) => (
