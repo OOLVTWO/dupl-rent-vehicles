@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useLanguage } from '@/lib/LanguageContext';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { fetchCustomers, upsertCustomer, syncTransactionsToCustomers, deleteCustomer } from '@/lib/customers';
@@ -23,6 +24,7 @@ function TabFromQuery({ onTab }) {
 }
 
 export default function CustomersPage() {
+  const { t } = useLanguage();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -262,10 +264,10 @@ export default function CustomersPage() {
         <div>
           <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
             <i className="fa-solid fa-users" style={{ color: 'var(--brand-primary)' }}></i>
-            Database Master Customer
+            {t('customersPage.title')}
           </h1>
           <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: '14px' }}>
-            Kelola data penyewa, histori transaksi client, dan backup data pelanggan Demo Rental Preview.
+            {t('customersPage.subtitle')}
           </p>
         </div>
 
@@ -278,7 +280,7 @@ export default function CustomersPage() {
             style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}
           >
             <i className={`fa-solid fa-rotate ${syncing ? 'fa-spin' : ''}`}></i>
-            {syncing ? 'Menyinkronkan...' : 'Sync Histori Transaksi'}
+            {syncing ? t('customersPage.syncing') : t('customersPage.syncHistory')}
           </button>
 
           <button
@@ -288,7 +290,7 @@ export default function CustomersPage() {
             style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', background: 'rgba(34, 197, 94, 0.15)', borderColor: '#22C55E', color: '#22C55E' }}
           >
             <i className="fa-solid fa-file-excel"></i>
-            Download Backup Excel
+            {t('customersPage.downloadBackup')}
           </button>
 
           <button
@@ -298,30 +300,30 @@ export default function CustomersPage() {
             style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}
           >
             <i className="fa-solid fa-user-plus"></i>
-            Tambah Customer
+            {t('customersPage.addCustomer')}
           </button>
         </div>
       </div>
 
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
         {[
-          { key: 'all', label: 'Semua Customer', icon: 'fa-solid fa-users' },
-          { key: 'repeat', label: 'Repeat Customer', icon: 'fa-solid fa-crown' },
-          { key: 'new', label: 'Customer Baru', icon: 'fa-solid fa-user-plus' },
-        ].map(t => (
+          { key: 'all', label: t('customersPage.tabAll'), icon: 'fa-solid fa-users' },
+          { key: 'repeat', label: t('customersPage.tabRepeat'), icon: 'fa-solid fa-crown' },
+          { key: 'new', label: t('customersPage.tabNew'), icon: 'fa-solid fa-user-plus' },
+        ].map(tabItem => (
           <button
-            key={t.key}
+            key={tabItem.key}
             type="button"
-            onClick={() => setActiveTab(t.key)}
+            onClick={() => setActiveTab(tabItem.key)}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: '6px',
               padding: '7px 14px', borderRadius: 'var(--radius-full, 999px)', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer',
-              border: activeTab === t.key ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
-              background: activeTab === t.key ? 'var(--brand-primary-bg, rgba(59,130,246,0.12))' : 'transparent',
-              color: activeTab === t.key ? 'var(--brand-primary)' : 'var(--text-secondary)',
+              border: activeTab === tabItem.key ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+              background: activeTab === tabItem.key ? 'var(--brand-primary-bg, rgba(59,130,246,0.12))' : 'transparent',
+              color: activeTab === tabItem.key ? 'var(--brand-primary)' : 'var(--text-secondary)',
             }}
           >
-            <i className={t.icon}></i>{t.label}
+            <i className={tabItem.icon}></i>{tabItem.label}
           </button>
         ))}
       </div>
@@ -351,8 +353,8 @@ export default function CustomersPage() {
             <i className="fa-solid fa-address-book"></i>
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Total Customer</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)' }}>{totalCustomersCount} <span style={{ fontSize: '13px', fontWeight: 500 }}>Orang</span></div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>{t('customersPage.metricTotal')}</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)' }}>{totalCustomersCount} <span style={{ fontSize: '13px', fontWeight: 500 }}>{t('customersPage.people')}</span></div>
           </div>
         </div>
 
@@ -374,8 +376,8 @@ export default function CustomersPage() {
             <i className="fa-solid fa-user-check"></i>
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Repeat Customer (Loyal)</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#3B82F6' }}>{repeatCustomersCount} <span style={{ fontSize: '13px', fontWeight: 500 }}>Client</span></div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>{t('customersPage.metricRepeat')}</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#3B82F6' }}>{repeatCustomersCount} <span style={{ fontSize: '13px', fontWeight: 500 }}>{t('customersPage.clients')}</span></div>
           </div>
         </div>
 
@@ -397,7 +399,7 @@ export default function CustomersPage() {
             <i className="fa-solid fa-vault"></i>
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Omset dari Customer</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>{t('customersPage.metricRevenue')}</div>
             <div style={{ fontSize: '20px', fontWeight: 800, color: '#22C55E' }}>{formatRupiah(totalSpendSum)}</div>
           </div>
         </div>
@@ -420,8 +422,8 @@ export default function CustomersPage() {
             <i className="fa-solid fa-user-plus"></i>
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Customer Baru Bulan Ini</div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#A855F7' }}>{newThisMonthCount} <span style={{ fontSize: '13px', fontWeight: 500 }}>Orang</span></div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>{t('customersPage.metricNewThisMonth')}</div>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: '#A855F7' }}>{newThisMonthCount} <span style={{ fontSize: '13px', fontWeight: 500 }}>{t('customersPage.people')}</span></div>
           </div>
         </div>
       </div>
@@ -443,9 +445,9 @@ export default function CustomersPage() {
             sidebar "Data Customer" dropdown, this just confirms what's showing */}
         {(() => {
           const TABS = {
-            all: { label: `Semua Customer (${totalCustomersCount})`, icon: 'fa-solid fa-users', color: 'var(--brand-primary)' },
-            repeat: { label: `Repeat Customer (${repeatCustomersCount})`, icon: 'fa-solid fa-crown', color: '#60A5FA' },
-            new: { label: 'Customer Baru', icon: 'fa-solid fa-user-plus', color: '#C084FC' },
+            all: { label: `${t('customersPage.tabAll')} (${totalCustomersCount})`, icon: 'fa-solid fa-users', color: 'var(--brand-primary)' },
+            repeat: { label: `${t('customersPage.tabRepeat')} (${repeatCustomersCount})`, icon: 'fa-solid fa-crown', color: '#60A5FA' },
+            new: { label: t('customersPage.tabNew'), icon: 'fa-solid fa-user-plus', color: '#C084FC' },
           };
           const current = TABS[activeTab] || TABS.all;
           return (
@@ -464,7 +466,7 @@ export default function CustomersPage() {
           <input
             type="text"
             className="form-control"
-            placeholder="Cari nama, WhatsApp, KTP, alamat..."
+            placeholder={t('customersPage.searchPlaceholder')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             style={{ paddingLeft: '38px', fontSize: '13px' }}
