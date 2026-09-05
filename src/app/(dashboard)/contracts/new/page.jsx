@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { compressImage } from '@/lib/imageCompressor';
 import SignaturePad from '@/components/contracts/SignaturePad';
 import { useRole } from '@/lib/RoleContext';
+import { useLanguage } from '@/lib/LanguageContext';
 
 function formatDate(d) {
   if (!d) return '-';
@@ -90,6 +91,7 @@ function RecapRow({ icon, label, value }) {
 }
 
 function NewContractInner() {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const router = useRouter();
   const role = useRole();
@@ -281,18 +283,18 @@ function NewContractInner() {
     return (
       <div className="page-content">
         <div className="page-header">
-          <h1><i className="fa-solid fa-file-signature" style={{ marginRight: '10px', color: 'var(--brand-primary)' }}></i>Kontrak</h1>
+          <h1><i className="fa-solid fa-file-signature" style={{ marginRight: '10px', color: 'var(--brand-primary)' }}></i>{t('contractsNew.title')}</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>
-            Pilih customer yang sudah transaksi/booking tapi belum tanda tangan kontrak.
+            {t('contractsNew.pickerSubtitle')}
           </p>
         </div>
 
         {pickerLoading ? (
-          <div className="table-empty"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>Memuat...</div>
+          <div className="table-empty"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>{t('contractsNew.loading')}</div>
         ) : needsContractItems.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: '40px 20px' }}>
             <i className="fa-solid fa-circle-check" style={{ fontSize: '32px', color: '#22C55E', marginBottom: '12px' }}></i>
-            <p style={{ color: 'var(--text-muted)', margin: 0 }}>Semua transaksi & booking aktif sudah ada kontraknya. 🎉</p>
+            <p style={{ color: 'var(--text-muted)', margin: 0 }}>{t('contractsNew.noneNeeded')}</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -309,13 +311,13 @@ function NewContractInner() {
               >
                 <div>
                   <div style={{ fontWeight: 800, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {item.customer_name || 'Tanpa nama'}
+                    {item.customer_name || t('contractsNew.noName')}
                     <span style={{
                       fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px',
                       background: item.kind === 'booking' ? 'rgba(139,92,246,0.15)' : 'rgba(37,99,235,0.15)',
                       color: item.kind === 'booking' ? '#8B5CF6' : 'var(--brand-primary-light)',
                     }}>
-                      {item.kind === 'booking' ? 'Booking' : 'Transaksi'}
+                      {item.kind === 'booking' ? t('contractsNew.booking') : t('contractsNew.transaction')}
                     </span>
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '3px' }}>
@@ -347,24 +349,24 @@ function NewContractInner() {
           }}>
             <i className="fa-solid fa-check"></i>
           </div>
-          <h2 style={{ margin: '0 0 6px 0', fontSize: '19px' }}>Kontrak Tersimpan!</h2>
+          <h2 style={{ margin: '0 0 6px 0', fontSize: '19px' }}>{t('contractsNew.contractSaved')}</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '26px' }}>
-            Kontrak sewa untuk <strong>{form.customer_name}</strong> sudah tercatat lengkap dengan tanda tangan &amp; foto.
+            {t('contractsNew.contractSavedDesc').replace('{name}', form.customer_name)}
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
             {isFromBooking ? (
               <button className="btn btn-primary" onClick={() => router.push('/bookings')}>
-                <i className="fa-solid fa-truck-fast" style={{ marginRight: '6px' }}></i> Go to Booking — Confirm Delivery
+                <i className="fa-solid fa-truck-fast" style={{ marginRight: '6px' }}></i> {t('contractsNew.goToBookingConfirm')}
               </button>
             ) : isFromTransaction ? (
               <button className="btn btn-primary" onClick={() => router.push('/transactions')}>
-                <i className="fa-solid fa-arrow-left" style={{ marginRight: '6px' }}></i> Kembali ke Transaksi
+                <i className="fa-solid fa-arrow-left" style={{ marginRight: '6px' }}></i> {t('contractsNew.backToTransaction')}
               </button>
             ) : (
               <button className="btn btn-primary" onClick={() => router.push('/contracts')}>
-                <i className="fa-solid fa-list" style={{ marginRight: '6px' }}></i> Lihat Laporan Kontrak
+                <i className="fa-solid fa-list" style={{ marginRight: '6px' }}></i> {t('contractsNew.viewContractReports')}
               </button>
             )}
 
@@ -374,7 +376,7 @@ function NewContractInner() {
                 className="btn btn-secondary"
                 onClick={() => router.push('/dashboard')}
               >
-                <i className="fa-solid fa-house" style={{ marginRight: '6px' }}></i> Kembali ke Halaman Dashboard
+                <i className="fa-solid fa-house" style={{ marginRight: '6px' }}></i> {t('contractsNew.backToDashboard')}
               </button>
             ) : (
               <button
@@ -382,7 +384,7 @@ function NewContractInner() {
                 className="btn btn-secondary"
                 onClick={() => router.push('/contracts/new')}
               >
-                <i className="fa-solid fa-file-circle-plus" style={{ marginRight: '6px' }}></i> Buat Kontrak Lainnya
+                <i className="fa-solid fa-file-circle-plus" style={{ marginRight: '6px' }}></i> {t('contractsNew.makeAnotherContract')}
               </button>
             )}
           </div>
@@ -394,11 +396,11 @@ function NewContractInner() {
   return (
     <div className="page-content">
       <div className="page-header-row" style={{ marginBottom: '18px' }}>
-        <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>Kontrak</h1>
+        <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>{t('contractsNew.title')}</h1>
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
           {isPrefilled
-            ? `Data ${isFromBooking ? 'booking' : 'transaksi'} sudah otomatis terisi — tinggal lengkapi no. ID, foto, dan tanda tangan customer.`
-            : 'Isi data diri customer, ambil foto, lalu minta customer tanda tangan langsung di layar ini.'}
+            ? t('contractsNew.prefilledSubtitle').replace('{source}', isFromBooking ? t('contractsNew.bookingWord') : t('contractsNew.transactionWord'))
+            : t('contractsNew.manualSubtitle')}
         </p>
       </div>
 
