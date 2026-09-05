@@ -12,6 +12,8 @@ import { getWhatsAppShareUrl, getWaGatewayConfig, sendWhatsAppGateway } from '@/
 import '@/styles/sharp-system.css';
 import SharpButton from '@/components/fleet/SharpButton';
 import ThemeToggle from '@/components/fleet/ThemeToggle';
+import LanguageToggle from '@/components/fleet/LanguageToggle';
+import { useLanguage } from '@/lib/LanguageContext';
 
 // Matches the default business profile set on the fleet homepage.
 const OWNER_PHONE = '+62 812-3962-7764';
@@ -109,6 +111,7 @@ function BrandHeader({ theme, onToggleTheme }) {
           >
             <i className="fa-solid fa-arrow-left"></i> Back
           </Link>
+          <LanguageToggle />
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
         </div>
       </div>
@@ -117,6 +120,7 @@ function BrandHeader({ theme, onToggleTheme }) {
 }
 
 function BookingPageInner() {
+  const { t, lang } = useLanguage();
   const searchParams = useSearchParams();
   const vehicleId = searchParams.get('vehicleId') || '';
   const startDate = searchParams.get('start') || '';
@@ -367,7 +371,7 @@ function BookingPageInner() {
                 <form onSubmit={proceedToReview}>
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
-                      Full Name *
+                      {t('booking.fullName')} *
                     </label>
                     <input
                       type="text"
@@ -375,14 +379,14 @@ function BookingPageInner() {
                       style={{ width: '100%' }}
                       value={form.name}
                       onChange={(e) => handleChange('name', e.target.value)}
-                      placeholder="Full name"
+                      placeholder={t('booking.fullNamePlaceholder')}
                       required
                     />
                   </div>
 
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
-                      Phone / WhatsApp *
+                      {t('booking.phoneWhatsapp')} *
                     </label>
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap' }}>
                       <CountryCodePicker
@@ -391,7 +395,7 @@ function BookingPageInner() {
                           setCountryCode(newCode);
                           handleChange('phone', `${newCode} ${phoneNumber}`);
                         }}
-                        lang="en"
+                        lang={lang}
                       />
                       <input
                         type="tel"
@@ -411,7 +415,7 @@ function BookingPageInner() {
 
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
-                      ID / Passport Number *
+                      {t('booking.idPassportNumber')} *
                     </label>
                     <input
                       type="text"
@@ -419,36 +423,36 @@ function BookingPageInner() {
                       style={{ width: '100%' }}
                       value={form.id_number}
                       onChange={(e) => handleChange('id_number', e.target.value)}
-                      placeholder="ID card, passport, or driving license number"
+                      placeholder={t('booking.idPassportPlaceholder')}
                       required
                     />
                     <p style={{ fontSize: '10.5px', color: 'var(--sharp-muted)', marginTop: '5px', marginBottom: 0 }}>
-                      This pre-fills your rental contract, so you&apos;ll have less to fill in at handover.
+                      {t('booking.idPassportHint')}
                     </p>
                   </div>
 
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
-                      {form.fulfillment === 'delivery' ? 'Delivery Address *' : 'Address *'}
+                      {form.fulfillment === 'delivery' ? `${t('booking.deliveryAddress')} *` : `${t('booking.address')} *`}
                     </label>
                     <textarea
                       className="sharp-input"
                       style={{ width: '100%', resize: 'vertical', minHeight: '64px' }}
                       value={form.address}
                       onChange={(e) => handleChange('address', e.target.value)}
-                      placeholder={form.fulfillment === 'delivery' ? 'Villa / hotel name & full address' : 'Your address'}
+                      placeholder={form.fulfillment === 'delivery' ? t('booking.deliveryAddressPlaceholder') : t('booking.addressPlaceholder')}
                       required
                     />
                   </div>
 
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
-                      Fulfillment *
+                      {t('booking.fulfillment')} *
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
                       {[
-                        { key: 'pickup', label: 'Self Pickup', icon: 'fa-solid fa-store' },
-                        { key: 'delivery', label: 'Delivery', icon: 'fa-solid fa-truck-fast' },
+                        { key: 'pickup', label: t('booking.selfPickup'), icon: 'fa-solid fa-store' },
+                        { key: 'delivery', label: t('booking.delivery'), icon: 'fa-solid fa-truck-fast' },
                       ].map(opt => (
                         <button
                           type="button"
@@ -471,7 +475,7 @@ function BookingPageInner() {
 
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--sharp-muted)', marginBottom: '6px' }}>
-                      Payment Method *
+                      {t('booking.paymentMethod')} *
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '10px' }}>
                       {[
@@ -561,7 +565,7 @@ function BookingPageInner() {
                       setAttributeQuantities(quantities);
                       setAttributeNoneChosen(noneChosen);
                     }}
-                    lang="en"
+                    lang={lang}
                   />
 
                   {showMapModal && createPortal(
@@ -602,7 +606,7 @@ function BookingPageInner() {
                   )}
 
                   <SharpButton type="submit" variant="accent" block disabled={submitting}>
-                    Review Booking
+                    {t('booking.reviewBooking')}
                   </SharpButton>
                 </form>
               </>
@@ -620,18 +624,18 @@ function BookingPageInner() {
                 {/* ── Summary Card ── */}
                 <div style={{ background: 'var(--sharp-surface)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-md)', padding: '16px', marginBottom: '18px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', paddingBottom: '10px', marginBottom: '4px', borderBottom: '1px dashed var(--sharp-line)' }}>
-                    <span style={{ color: 'var(--sharp-muted)', fontSize: '13px' }}>Booking Code</span>
+                    <span style={{ color: 'var(--sharp-muted)', fontSize: '13px' }}>{t('booking.bookingCode')}</span>
                     <span style={{ color: 'var(--sharp-accent)', fontWeight: 900, fontSize: '17px', letterSpacing: '1px' }}>{reviewPayload.booking_code}</span>
                   </div>
                   {[
-                    ['Vehicle', reviewPayload.vehicle_name],
-                    ['Renter', reviewPayload.customer_name],
+                    [t('booking.vehicle'), reviewPayload.vehicle_name],
+                    [t('booking.renter'), reviewPayload.customer_name],
                     ['WhatsApp', reviewPayload.customer_phone],
-                    ['ID / Passport', reviewPayload.customer_id_number],
-                    ['Rental Period', `${new Date(reviewPayload.start_date).toLocaleDateString('en-GB')} — ${new Date(reviewPayload.end_date).toLocaleDateString('en-GB')} (${reviewPayload.duration_days} day${reviewPayload.duration_days > 1 ? 's' : ''})`],
-                    ['Fulfillment', reviewPayload.fulfillment_method === 'delivery' ? `Delivery (${reviewPayload.delivery_zone_name || '-'})` : 'Self Pickup at Shop'],
-                    ...(reviewPayload.fulfillment_method === 'delivery' ? [['Delivery Address', reviewPayload.customer_address]] : []),
-                    ['Payment Method', PAYMENT_METHOD_META[reviewPayload.payment_method]?.label || 'Cash'],
+                    [t('booking.idPassportShort'), reviewPayload.customer_id_number],
+                    [t('booking.rentalPeriod'), `${new Date(reviewPayload.start_date).toLocaleDateString('en-GB')} — ${new Date(reviewPayload.end_date).toLocaleDateString('en-GB')} (${reviewPayload.duration_days} ${reviewPayload.duration_days > 1 ? t('booking.days') : t('booking.day')})`],
+                    [t('booking.fulfillment'), reviewPayload.fulfillment_method === 'delivery' ? `${t('booking.delivery')} (${reviewPayload.delivery_zone_name || '-'})` : t('booking.selfPickupAtShop')],
+                    ...(reviewPayload.fulfillment_method === 'delivery' ? [[t('booking.deliveryAddress'), reviewPayload.customer_address]] : []),
+                    [t('booking.paymentMethod'), PAYMENT_METHOD_META[reviewPayload.payment_method]?.label || 'Cash'],
                   ].map(([label, value]) => (
                     <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '8px 0', borderBottom: '1px dashed var(--sharp-line)', fontSize: '13px' }}>
                       <span style={{ color: 'var(--sharp-muted)', flexShrink: 0 }}>{label}</span>
@@ -639,27 +643,27 @@ function BookingPageInner() {
                     </div>
                   ))}
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '8px 0', borderBottom: '1px dashed var(--sharp-line)', fontSize: '13px' }}>
-                    <span style={{ color: 'var(--sharp-muted)' }}>Vehicle Rental Cost</span>
+                    <span style={{ color: 'var(--sharp-muted)' }}>{t('booking.vehicleRentalCost')}</span>
                     <span style={{ color: 'var(--sharp-ink)', fontWeight: 700 }}>{formatRupiah(Math.max(0, Number(reviewPayload.estimated_price) - Number(reviewPayload.delivery_fee || 0) - (reviewPayload.selected_attributes || []).reduce((s, a) => s + Number(a.price || 0), 0)))}</span>
                   </div>
                   {reviewPayload.fulfillment_method === 'delivery' && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '8px 0', borderBottom: '1px dashed var(--sharp-line)', fontSize: '13px' }}>
-                      <span style={{ color: 'var(--sharp-muted)' }}>Delivery Fee</span>
-                      <span style={{ color: 'var(--sharp-ink)', fontWeight: 700 }}>{Number(reviewPayload.delivery_fee) > 0 ? formatRupiah(reviewPayload.delivery_fee) : 'FREE'}</span>
+                      <span style={{ color: 'var(--sharp-muted)' }}>{t('booking.deliveryFee')}</span>
+                      <span style={{ color: 'var(--sharp-ink)', fontWeight: 700 }}>{Number(reviewPayload.delivery_fee) > 0 ? formatRupiah(reviewPayload.delivery_fee) : t('booking.free')}</span>
                     </div>
                   )}
                   {(reviewPayload.selected_attributes || []).length > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '8px 0', borderBottom: '1px dashed var(--sharp-line)', fontSize: '13px' }}>
-                      <span style={{ color: 'var(--sharp-muted)' }}>Extras ({reviewPayload.selected_attributes.map(a => (a.qty > 1 ? `${a.name} x${a.qty}` : a.name)).join(', ')})</span>
+                      <span style={{ color: 'var(--sharp-muted)' }}>{t('booking.extras')} ({reviewPayload.selected_attributes.map(a => (a.qty > 1 ? `${a.name} x${a.qty}` : a.name)).join(', ')})</span>
                       <span style={{ color: 'var(--sharp-ink)', fontWeight: 700 }}>
                         {reviewPayload.selected_attributes.reduce((s, a) => s + Number(a.price || 0) * (a.qty || 1), 0) > 0
                           ? formatRupiah(reviewPayload.selected_attributes.reduce((s, a) => s + Number(a.price || 0) * (a.qty || 1), 0))
-                          : 'FREE'}
+                          : t('booking.free')}
                       </span>
                     </div>
                   )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', paddingTop: '12px', fontSize: '15px' }}>
-                    <span style={{ color: 'var(--sharp-ink)', fontWeight: 800 }}>Total Estimated</span>
+                    <span style={{ color: 'var(--sharp-ink)', fontWeight: 800 }}>{t('booking.totalEstimated')}</span>
                     <span style={{ color: 'var(--sharp-accent)', fontWeight: 900 }}>{formatRupiah(reviewPayload.estimated_price)}</span>
                   </div>
                 </div>
@@ -667,7 +671,7 @@ function BookingPageInner() {
                 {/* ── Terms & Conditions ── */}
                 <div style={{ marginBottom: '14px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: 800, color: 'var(--sharp-ink)', margin: '0 0 8px 0' }}>
-                    Terms &amp; Conditions
+                    {t('booking.termsConditions')}
                   </h3>
                   <div style={{
                     background: 'var(--sharp-surface)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-md)',
@@ -695,7 +699,7 @@ function BookingPageInner() {
                     onChange={(e) => setAgreedToTerms(e.target.checked)}
                     style={{ width: '18px', height: '18px', marginTop: '1px', flexShrink: 0, cursor: 'pointer' }}
                   />
-                  <span>I have read and agree to the Terms &amp; Conditions above, and confirm that the information I provided is accurate.</span>
+                  <span>{t('booking.agreeTerms')}</span>
                 </label>
 
                 {error && (
@@ -713,7 +717,7 @@ function BookingPageInner() {
                       {submitting ? (
                         <><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>Submitting...</>
                       ) : (
-                        'Confirm Booking'
+                        t('booking.confirmBooking')
                       )}
                     </SharpButton>
                   </div>
@@ -729,31 +733,31 @@ function BookingPageInner() {
                 }}>
                   <i className="fa-solid fa-check"></i>
                 </div>
-                <h1 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--sharp-ink)', margin: '0 0 6px 0' }}>Booking Confirmed!</h1>
+                <h1 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--sharp-ink)', margin: '0 0 6px 0' }}>{t('booking.bookingConfirmed')}</h1>
                 {confirmedBooking.booking_code && (
                   <div style={{ display: 'inline-block', background: 'rgba(37,99,235,0.1)', border: '1px solid var(--sharp-accent)', borderRadius: 'var(--radius-full, 999px)', padding: '5px 16px', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--sharp-muted)', marginRight: '6px' }}>Booking Code</span>
+                    <span style={{ fontSize: '11px', color: 'var(--sharp-muted)', marginRight: '6px' }}>{t('booking.bookingCode')}</span>
                     <strong style={{ fontSize: '15px', color: 'var(--sharp-accent)', letterSpacing: '1px' }}>{confirmedBooking.booking_code}</strong>
                   </div>
                 )}
                 <p style={{ fontSize: '13px', color: 'var(--sharp-muted)', margin: '0 0 20px 0' }}>
-                  Your request has been sent to our system. Notify us on WhatsApp to speed things up.
+                  {t('booking.requestSentNote')}
                 </p>
 
                 <div style={{ background: 'var(--sharp-bg)', border: '1px solid var(--sharp-line)', borderRadius: 'var(--radius-md)', padding: '16px', textAlign: 'left', fontSize: '12.5px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div><i className="fa-solid fa-motorcycle" style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {confirmedBooking.vehicle_name}</div>
-                  <div><i className="fa-solid fa-calendar-days" style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {formatEnDate(confirmedBooking.start_date)} — {formatEnDate(confirmedBooking.end_date)} ({confirmedBooking.duration_days} day{confirmedBooking.duration_days > 1 ? 's' : ''})</div>
-                  <div><i className={`fa-solid ${confirmedBooking.fulfillment_method === 'delivery' ? 'fa-truck-fast' : 'fa-store'}`} style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {confirmedBooking.fulfillment_method === 'delivery' ? `Delivery — ${confirmedBooking.delivery_zone_name || ''}` : 'Self Pickup'}</div>
-                  <div><i className={PAYMENT_METHOD_META[confirmedBooking.payment_method]?.icon || 'fa-solid fa-wallet'} style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {PAYMENT_METHOD_META[confirmedBooking.payment_method]?.label || 'Cash'}{confirmedBooking.payment_method === 'card' && <span style={{ color: 'var(--sharp-muted)' }}> — driver will bring an EDC machine</span>}</div>
-                  <div><i className="fa-solid fa-wallet" style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> Est. {formatRupiah(confirmedBooking.estimated_price)}</div>
+                  <div><i className="fa-solid fa-calendar-days" style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {formatEnDate(confirmedBooking.start_date)} — {formatEnDate(confirmedBooking.end_date)} ({confirmedBooking.duration_days} {confirmedBooking.duration_days > 1 ? t('booking.days') : t('booking.day')})</div>
+                  <div><i className={`fa-solid ${confirmedBooking.fulfillment_method === 'delivery' ? 'fa-truck-fast' : 'fa-store'}`} style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {confirmedBooking.fulfillment_method === 'delivery' ? `${t('booking.delivery')} — ${confirmedBooking.delivery_zone_name || ''}` : t('booking.selfPickup')}</div>
+                  <div><i className={PAYMENT_METHOD_META[confirmedBooking.payment_method]?.icon || 'fa-solid fa-wallet'} style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {PAYMENT_METHOD_META[confirmedBooking.payment_method]?.label || 'Cash'}{confirmedBooking.payment_method === 'card' && <span style={{ color: 'var(--sharp-muted)' }}> {t('booking.edcNote')}</span>}</div>
+                  <div><i className="fa-solid fa-wallet" style={{ width: '18px', color: 'var(--sharp-accent)' }}></i> {t('booking.estimated')} {formatRupiah(confirmedBooking.estimated_price)}</div>
                 </div>
 
                 <SharpButton variant="whatsapp" block icon="fa-brands fa-whatsapp" onClick={notifyOwnerViaWhatsApp}>
-                  Notify via WhatsApp
+                  {t('booking.notifyWhatsapp')}
                 </SharpButton>
                 <div style={{ marginTop: '14px' }}>
                   <SharpButton href="/fleet" variant="outline" block>
-                    Back to Home
+                    {t('booking.backToHome')}
                   </SharpButton>
                 </div>
               </div>

@@ -499,15 +499,15 @@ export default function SharpSquareBusinessWebsitePage() {
                 <span>{animatedRating}</span>
               </span>
               <span className="badge-bullet">•</span>
-              <span>Google Verified Business ({animatedReviews} Google Reviews)</span>
+              <span>{t('fleet.googleVerified').replace('{count}', animatedReviews)}</span>
             </div>
 
             <h1 className="font-display" style={{ fontSize: '44px', fontWeight: 600, margin: '18px 0 16px 0', color: 'var(--sharp-ink)', lineHeight: 1.12, letterSpacing: '-0.5px' }}>
-              Clean &amp; reliable scooters,<br />ridden with an easy mind.
+              {t('fleet.heroHeading1')}<br />{t('fleet.heroHeading2')}
             </h1>
 
             <p style={{ fontSize: '16px', color: 'var(--sharp-ink-soft)', lineHeight: 1.65, marginBottom: '24px', maxWidth: '460px', fontWeight: 400 }}>
-              Explore Pererenan &amp; Canggu with confidence — clean helmets, villa delivery, transparent daily &amp; weekly rates, and 24/7 WhatsApp support if anything comes up.
+              {t('fleet.heroSubtext')}
             </p>
 
             <div style={{ marginBottom: '28px' }}>
@@ -864,7 +864,7 @@ export default function SharpSquareBusinessWebsitePage() {
       <section style={{ padding: '28px 0', background: 'var(--sharp-surface)', borderBottom: '1px solid var(--sharp-line)', overflow: 'hidden', position: 'relative' }}>
         <div style={{ textAlign: 'center', marginBottom: '14px' }}>
           <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sharp-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Brands We Carry
+            {t('fleet.brandsWeCarry')}
           </span>
         </div>
 
@@ -1078,10 +1078,10 @@ export default function SharpSquareBusinessWebsitePage() {
       <section id="faq" style={{ padding: '56px 24px', background: 'var(--sharp-surface)', borderTop: '1px solid var(--sharp-line)', borderBottom: '1px solid var(--sharp-line)', scrollMarginTop: '90px' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <SectionHeading
-            eyebrow="Frequently Asked Questions"
-            title="Frequently Asked Questions (FAQ)"
+            eyebrow={t('fleet.faqEyebrow')}
+            title={t('fleet.faqTitle')}
             icon="fa-solid fa-circle-question"
-            subtitle="Everything you need to know about rental requirements, amenities, delivery services, and security deposit policies"
+            subtitle={t('fleet.faqSubtitle')}
             style={{ marginBottom: '36px' }}
           />
 
