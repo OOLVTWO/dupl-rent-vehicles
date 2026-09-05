@@ -235,21 +235,55 @@ Booking Pending → Admin Confirm (motor jadi Booked di Fleet)
 
 ## 🔒 ASPEK KEAMANAN (SECURITY POSTURE)
 
-- **Supabase Auth Guard**: Rute manajemen terlindungi oleh pengecekan sesi server `supabase.auth.getUser()`. User tanpa login otomatis di-redirect ke `/login`.
-- **Role-Based Access Control (Admin/Driver)**: Selain login, setiap user punya role di tabel `staff_profiles`. Endpoint sensitif (edit/hapus transaksi & booking, kelola akun staff) wajib lolos guard `requireAdmin()`, sementara `src/proxy.js` mencegah akun Driver membuka halaman admin-only lewat URL langsung.
-- **API Route Protection**: Semua endpoint `/api/*` (vehicles, transactions, expenses, bookings, contracts, staff) wajib lolos guard `requireAuth()` / `requireAdmin()` (`src/lib/apiAuth.js`). Request tanpa sesi login valid ditolak dengan **HTTP 401** — wajib karena route memakai service role (bypass RLS).
-- **HTTP Security Headers**: Ditambahkan pada level Next.js & Vercel edge:
-  - `X-Frame-Options: SAMEORIGIN` (Proteksi Clickjacking & iframe embedding ilegal).
-  - `X-Content-Type-Options: nosniff` (Proteksi MIME-type sniffing).
-  - `Referrer-Policy: strict-origin-when-cross-origin`.
-  - `X-XSS-Protection: 1; mode=block`.
-- **Data Sanitization**: Sanitasi otomatis string tanggal `purchase_date` ke `NULL` untuk mencegah SQL syntax error.
+Aplikasi ini pakai **beberapa lapis keamanan berlapis (defense in depth)** — kalau satu lapis gagal/salah konfigurasi, lapis lain tetap menahan. Berikut rincian tiap metode yang dipakai:
+
+### 1. Autentikasi (Supabase Auth)
+- Login lewat `/api/auth/login` (bukan langsung browser → Supabase) supaya bisa di-rate-limit dulu di server (**5 percobaan / 5 menit**) sebelum kredensial dicek — proteksi brute-force.
+- Pesan error login **generik** ("Email atau password salah") — tidak membocorkan apakah email terdaftar atau tidak (mencegah user enumeration).
+- Middleware (`src/proxy.js`) memanggil `supabase.auth.getUser()` (bukan `getSession()`) di **setiap request** — ini memvalidasi ULANG token ke server Supabase (bukan cuma baca cookie), sekaligus me-refresh token supaya sesi tidak mati diam-diam setelah ±1 jam.
+
+### 2. Kontrol Akses Berbasis Peran (RBAC — Admin vs Driver)
+- Role user disimpan di tabel `staff_profiles` (`admin` / `driver`). Akun lama dari sebelum fitur role ada diperlakukan sebagai **admin** (backward-compatible).
+- **Middleware level**: `PROTECTED_PREFIXES` di `src/proxy.js` menahan semua halaman `(dashboard)` dari akses tanpa login, dan `DRIVER_ALLOWED_PREFIXES` membatasi akun Driver cuma bisa buka Dashboard/Booking/Kontrak/Tracking/History Pendapatan — selain itu otomatis dialihkan ke `/dashboard`.
+- **API level**: `requireAuth()` (wajib login) dan `requireAdmin()` (wajib role admin) di `src/lib/apiAuth.js` — dipasang di **setiap** route `/api/*` yang memodifikasi data (vehicles, transactions, expenses, staff, delivery-zones, attributes).
+- **Database level (RLS)**: kebijakan Row Level Security di Postgres bukan cuma cek "sudah login", tapi cek **role spesifik** lewat sub-query ke `staff_profiles` (pola yang sama dipakai konsisten di semua tabel admin-only: `transactions`, `customers`, `business_settings`, `contracts` (write), `bookings` (aksi admin), `vehicle_attributes` (write)) — supaya proteksi tetap berlaku sekalipun seseorang mencoba memanggil Supabase client langsung dari console browser, melewati API/UI aplikasi.
+- **Data scoping per-baris**: endpoint yang boleh diakses driver TAPI harus dibatasi ke data miliknya sendiri di-scope di server, bukan cuma disaring tampilannya — `/api/bookings` & `/api/contracts` cuma balikin baris dengan `assigned_driver_id`/`created_by` = user yang login untuk role Driver; RLS `expenses` juga punya kebijakan tambahan `staff_id = auth.uid()` khusus supaya Driver bisa lihat riwayat pendapatan sendiri tanpa perlu akses admin.
+- **Redaksi field rahasia**: data investor & harga beli motor (`owner_type`, `owner_name`, `owner_contact`, `revenue_share_percentage`, `purchase_date`, `purchase_price`) otomatis dihapus dari response `/api/vehicles` kalau requester-nya Driver (`redactVehicleFields()`), dan halaman publik/driver yang baca tabel motor langsung lewat client Supabase pakai **VIEW terpisah** `vehicles_public` (cuma kolom aman) — bukan tabel `vehicles` yang asli.
+
+### 3. Proteksi API & Rate Limiting
+- Rate limiter in-memory per-instance (`src/lib/rateLimit.js`) — 120 request/menit untuk API umum, 5 percobaan/5 menit khusus login. Catatan jujur: di Vercel serverless tiap instance punya memory sendiri, jadi ini proteksi *best-effort*, bukan hard-limit skala produksi besar (disarankan Redis/Upstash kalau traffic makin besar).
+- Body request JSON di-parse dengan aman (`readJsonBody`) — request malformed ditolak **400**, bukan bikin server crash.
+- Validasi input (angka non-negatif, field wajib) dilakukan di server sebelum data masuk database, bukan cuma di client.
+
+### 4. Keamanan Query & Data
+- **Tidak ada raw SQL / string concatenation** di manapun — semua query lewat Supabase query builder (`.select()`, `.insert()`, `.eq()`, dst.) yang otomatis pakai parameterized query, jadi secara desain kebal SQL Injection.
+- **Tidak ada `dangerouslySetInnerHTML` / `eval()`** di seluruh codebase — menutup vektor XSS paling umum di React.
+- Sanitasi field tanggal kosong (`purchase_date` dsb.) jadi `NULL`, bukan string kosong — mencegah error tipe data di Postgres.
+
+### 5. Manajemen Secret
+- Kunci rahasia (`SUPABASE_SERVICE_ROLE_KEY`) cuma dipakai di sisi server (`createAdminClient()`), **tidak pernah** dikirim ke browser.
+- `.gitignore` menahan semua file `.env*` (termasuk `.env.local`) dari ter-commit — cuma `.env.example` (isinya placeholder, bukan secret asli) yang di-track git.
+
+### 6. HTTP Security Headers
+Ditambahkan pada level Next.js & Vercel edge:
+- `X-Frame-Options: SAMEORIGIN` (proteksi clickjacking & iframe embedding ilegal).
+- `X-Content-Type-Options: nosniff` (proteksi MIME-type sniffing).
+- `Referrer-Policy: strict-origin-when-cross-origin`.
+- `X-XSS-Protection: 1; mode=block`.
+
+### 📋 Riwayat Audit Keamanan
+Audit menyeluruh (autentikasi, RBAC, RLS, exposed secrets, pola XSS/SQLi, file tak terpakai) sudah dilakukan dan menemukan + memperbaiki beberapa celah nyata:
+- Endpoint `/api/vehicles` (POST/PUT/DELETE) sebelumnya cuma wajib login (bukan wajib admin) — Driver bisa bikin/ubah/hapus data motor. **Sudah diperbaiki.**
+- `/api/bookings` & `/api/contracts` sebelumnya mengembalikan SEMUA baris ke siapa pun yang login, disaring cuma di tampilan (client) — Driver yang memanggil API langsung bisa lihat data booking & kontrak (termasuk No. KTP, foto, tanda tangan) milik driver/customer lain. **Sudah diperbaiki**, di-scope server-side.
+- Beberapa RLS policy "admin only" ternyata cuma cek "sudah login", bukan cek role admin — celah bypass lewat Supabase client langsung. **Sudah diperketat**, kecuali di tempat yang memang butuh akses Driver terbatas (expenses milik sendiri).
+- Halaman `/attributes` & `/driver-income` sempat tidak masuk daftar proteksi middleware (bisa dibuka tanpa login walau datanya sendiri tetap aman lewat RLS/API). **Sudah ditambahkan.**
+- VIEW `vehicles_public` sempat ke-grant izin tulis (insert/update/delete) ke publik padahal read-only. **Sudah dicabut**, sisa SELECT saja.
 
 ---
 
 ## 🛠️ STRUKTUR DATABASE SUPABASE (`schema.sql`)
 
-Seluruh skema database tersimpan pada file **`supabase/schema.sql`** (Master Schema v5) yang mencakup tabel `vehicles`, `transactions`, `expenses`, `bookings`, `staff_profiles`, `contracts`, index performa, serta aturan **Row Level Security (RLS)**.
+Seluruh skema database tersimpan pada file **`supabase/schema.sql`** (Master Schema v5) yang mencakup tabel `vehicles`, `transactions`, `expenses`, `bookings`, `staff_profiles`, `contracts`, `vehicle_attributes`, VIEW `vehicles_public`, index performa, serta aturan **Row Level Security (RLS)**.
 
 ---
 
