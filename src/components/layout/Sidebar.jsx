@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useLanguage } from '@/lib/LanguageContext';
 
 // Kecil, dipisah biar useSearchParams() (butuh Suspense boundary) nggak
 // nge-block render Sidebar utama. Dipakai buat bedain link yang share base
@@ -22,65 +23,65 @@ function SearchParamsWatcher({ onChange }) {
 // Item tanpa flag ini otomatis disembunyikan dari Driver (khusus Admin).
 const NAV_SECTIONS = [
   {
-    label: 'Operasional',
+    label: 'sidebar.groupOperational',
     items: [
-      { href: '/dashboard', iconClass: 'fa-solid fa-chart-pie', label: 'Dashboard', driverAllowed: true },
+      { href: '/dashboard', iconClass: 'fa-solid fa-chart-pie', label: 'sidebar.dashboard', driverAllowed: true },
       {
         href: '/bookings',
         iconClass: 'fa-solid fa-clipboard-list',
-        label: 'Layanan Admin',
+        label: 'sidebar.groupAdminServices',
         isGroup: true,
         children: [
-          { href: '/bookings',      iconClass: 'fa-solid fa-inbox',            label: 'Booking', badge: 'bookings' },
-          { href: '/transactions',  iconClass: 'fa-solid fa-file-invoice-dollar', label: 'Transaksi' },
-          { href: '/tracking',      iconClass: 'fa-solid fa-clock-rotate-left', label: 'Tracking Sewa', badge: 'tracking' },
-          { href: '/availability',  iconClass: 'fa-solid fa-circle-half-stroke', label: 'Ketersediaan', badge: 'availability' },
-          { href: '/expenses',      iconClass: 'fa-solid fa-wallet',           label: 'Keuangan' },
+          { href: '/bookings',      iconClass: 'fa-solid fa-inbox',            label: 'sidebar.booking', badge: 'bookings' },
+          { href: '/transactions',  iconClass: 'fa-solid fa-file-invoice-dollar', label: 'sidebar.transactions' },
+          { href: '/tracking',      iconClass: 'fa-solid fa-clock-rotate-left', label: 'sidebar.tracking', badge: 'tracking' },
+          { href: '/availability',  iconClass: 'fa-solid fa-circle-half-stroke', label: 'sidebar.availability', badge: 'availability' },
+          { href: '/expenses',      iconClass: 'fa-solid fa-wallet',           label: 'sidebar.finance' },
         ],
       },
       {
         href: '/customers',
         iconClass: 'fa-solid fa-database',
-        label: 'Data Master',
+        label: 'sidebar.groupMasterData',
         isGroup: true,
         children: [
-          { href: '/customers',            iconClass: 'fa-solid fa-users',       label: 'Data Customer' },
-          { href: '/vehicles',             iconClass: 'fa-solid fa-motorcycle',  label: 'Data Motor' },
-          { href: '/attributes',           iconClass: 'fa-solid fa-layer-group', label: 'Atribut Motor' },
-          { href: '/settings?tab=storage', iconClass: 'fa-solid fa-database',    label: 'Database & Storage' },
+          { href: '/customers',            iconClass: 'fa-solid fa-users',       label: 'sidebar.customerData' },
+          { href: '/vehicles',             iconClass: 'fa-solid fa-motorcycle',  label: 'sidebar.vehicleData' },
+          { href: '/attributes',           iconClass: 'fa-solid fa-layer-group', label: 'sidebar.vehicleAttributes' },
+          { href: '/settings?tab=storage', iconClass: 'fa-solid fa-database',    label: 'sidebar.databaseStorage' },
         ],
       },
       {
         href: '/reports',
         iconClass: 'fa-solid fa-chart-line',
-        label: 'Laporan',
+        label: 'sidebar.groupReports',
         isGroup: true,
         children: [
-          { href: '/contracts', iconClass: 'fa-solid fa-file-signature', label: 'Laporan Kontrak' },
-          { href: '/reports',   iconClass: 'fa-solid fa-chart-line',     label: 'Laporan Keuangan' },
+          { href: '/contracts', iconClass: 'fa-solid fa-file-signature', label: 'sidebar.contractReports' },
+          { href: '/reports',   iconClass: 'fa-solid fa-chart-line',     label: 'sidebar.financeReports' },
         ],
       },
       {
         href: '/settings?tab=staff',
         iconClass: 'fa-solid fa-user-tie',
-        label: 'Employee',
+        label: 'sidebar.groupEmployee',
         isGroup: true,
         children: [
-          { href: '/settings?tab=staff',        iconClass: 'fa-solid fa-user-tie',           label: 'Akun Staff' },
-          { href: '/contracts/new',             iconClass: 'fa-solid fa-file-pen',            label: 'Kontrak', badge: 'kontrak' },
-          { href: '/settings?tab=staff-income', iconClass: 'fa-solid fa-sack-dollar',         label: 'Input Pendapatan' },
-          { href: '/settings?tab=staff-payout', iconClass: 'fa-solid fa-hand-holding-dollar', label: 'Konfirmasi Pembayaran', badge: 'employee' },
+          { href: '/settings?tab=staff',        iconClass: 'fa-solid fa-user-tie',           label: 'sidebar.staffAccounts' },
+          { href: '/contracts/new',             iconClass: 'fa-solid fa-file-pen',            label: 'sidebar.contract', badge: 'kontrak' },
+          { href: '/settings?tab=staff-income', iconClass: 'fa-solid fa-sack-dollar',         label: 'sidebar.incomeEntry' },
+          { href: '/settings?tab=staff-payout', iconClass: 'fa-solid fa-hand-holding-dollar', label: 'sidebar.paymentConfirmation', badge: 'employee' },
         ],
       },
     ],
   },
   {
-    label: 'Lainnya',
+    label: 'sidebar.groupOther',
     items: [
-      { href: '/maintenance',          iconClass: 'fa-solid fa-robot',  label: 'AI Diagnostic' },
-      { href: '/gallery',              iconClass: 'fa-solid fa-images', label: 'Galeri Foto' },
-      { href: '/settings?tab=payment', iconClass: 'fa-solid fa-gear',   label: 'Pengaturan' },
-      { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'Website Publik', driverAllowed: true },
+      { href: '/maintenance',          iconClass: 'fa-solid fa-robot',  label: 'sidebar.aiDiagnostic' },
+      { href: '/gallery',              iconClass: 'fa-solid fa-images', label: 'sidebar.photoGallery' },
+      { href: '/settings?tab=payment', iconClass: 'fa-solid fa-gear',   label: 'sidebar.settings' },
+      { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'sidebar.publicWebsite', driverAllowed: true },
     ],
   },
 ];
@@ -90,28 +91,28 @@ const NAV_SECTIONS = [
 // nyaring item admin.
 const DRIVER_NAV_SECTIONS = [
   {
-    label: 'Operasional',
+    label: 'sidebar.groupOperational',
     items: [
-      { href: '/dashboard', iconClass: 'fa-solid fa-chart-pie', label: 'Dashboard' },
+      { href: '/dashboard', iconClass: 'fa-solid fa-chart-pie', label: 'sidebar.dashboard' },
       {
         href: '/bookings',
         iconClass: 'fa-solid fa-user-tie',
-        label: 'Layanan Driver',
+        label: 'sidebar.groupDriverServices',
         badge: 'bookings',
         isDropdown: true,
         children: [
-          { href: '/bookings',      iconClass: 'fa-solid fa-inbox',           label: 'Booking' },
-          { href: '/contracts/new', iconClass: 'fa-solid fa-file-signature',  label: 'Kontrak', badge: 'kontrak' },
-          { href: '/driver-income', iconClass: 'fa-solid fa-sack-dollar',     label: 'History Pendapatan' },
-          { href: '/tracking',      iconClass: 'fa-solid fa-clock-rotate-left', label: 'Tracking Sewa' },
+          { href: '/bookings',      iconClass: 'fa-solid fa-inbox',           label: 'sidebar.booking' },
+          { href: '/contracts/new', iconClass: 'fa-solid fa-file-signature',  label: 'sidebar.contract', badge: 'kontrak' },
+          { href: '/driver-income', iconClass: 'fa-solid fa-sack-dollar',     label: 'sidebar.incomeHistory' },
+          { href: '/tracking',      iconClass: 'fa-solid fa-clock-rotate-left', label: 'sidebar.tracking' },
         ],
       },
     ],
   },
   {
-    label: 'Lainnya',
+    label: 'sidebar.groupOther',
     items: [
-      { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'Website Publik' },
+      { href: '/fleet', iconClass: 'fa-solid fa-globe', label: 'sidebar.publicWebsite' },
     ],
   },
 ];
@@ -125,6 +126,7 @@ function getDaysLeft(endDate) {
 }
 
 export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
+  const { t } = useLanguage();
   const pathname = usePathname();
   const router = useRouter();
   const [alertCounts, setAlertCounts] = useState({ tracking: 0, availability: 0, bookings: 0, kontrak: 0, employee: 0 });
@@ -274,7 +276,7 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
             className={`sidebar-nav-item sidebar-dropdown-trigger ${isGroupActive ? 'active' : ''}`}
           >
             <span className="nav-icon"><i className={item.iconClass}></i></span>
-            <span style={{ flex: 1 }}>{item.label}</span>
+            <span style={{ flex: 1 }}>{t(item.label)}</span>
             {badgeCount > 0 && (
               <span className="sidebar-alert-badge" style={{ marginRight: '4px' }}>
                 {badgeCount > 9 ? '9+' : badgeCount}
@@ -315,7 +317,7 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
             style={indent ? { paddingLeft: `${16 + indent}px` } : undefined}
           >
             <span className="nav-icon"><i className={item.iconClass}></i></span>
-            <span style={{ flex: 1, fontSize: indent ? '13px' : undefined }}>{item.label}</span>
+            <span style={{ flex: 1, fontSize: indent ? '13px' : undefined }}>{t(item.label)}</span>
             {badgeCount > 0 && (
               <span className="sidebar-alert-badge" style={{ marginRight: '4px' }}>
                 {badgeCount > 9 ? '9+' : badgeCount}
@@ -347,7 +349,7 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
                 <span className="nav-icon" style={{ fontSize: '12px', width: '16px' }}>
                   <i className={child.iconClass}></i>
                 </span>
-                <span style={{ fontSize: '12px' }}>{child.label}</span>
+                <span style={{ fontSize: '12px' }}>{t(child.label)}</span>
               </Link>
             ))}
           </div>
@@ -365,7 +367,7 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
         style={indent ? { paddingLeft: `${16 + indent}px`, fontSize: '13px' } : undefined}
       >
         <span className="nav-icon"><i className={item.iconClass}></i></span>
-        {item.label}
+        {t(item.label)}
         {badgeCount > 0 && (
           <span className="sidebar-alert-badge">
             {badgeCount > 9 ? '9+' : badgeCount}
@@ -410,7 +412,7 @@ export default function Sidebar({ user, role = 'admin', mobileOpen, onClose }) {
 
           return (
           <div key={section.label} className="sidebar-section">
-            <div className="sidebar-section-label">{section.label}</div>
+            <div className="sidebar-section-label">{t(section.label)}</div>
 
             {visibleItems.map((item) => renderNavItem(item, 0))}
           </div>

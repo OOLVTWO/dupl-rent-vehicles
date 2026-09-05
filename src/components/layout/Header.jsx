@@ -7,34 +7,34 @@ import VuiVoiceControl from '@/components/dashboard/VuiVoiceControl';
 import { useLanguage } from '@/lib/LanguageContext';
 
 const pageMeta = {
-  '/dashboard':   { title: 'Dashboard',       subtitle: 'Ringkasan statistik usaha rental' },
-  '/bookings':    { title: 'Booking',         subtitle: 'Booking masuk dari website publik' },
-  '/contracts/new': { title: 'Kontrak',       subtitle: 'Data diri, foto, dan tanda tangan customer' },
-  '/contracts':   { title: 'Laporan Kontrak', subtitle: 'Kontrak sewa yang sudah ditandatangani' },
-  '/transactions':{ title: 'Transaksi',        subtitle: 'Kelola pencatatan sewa motor' },
-  '/vehicles':    { title: 'Data Motor',       subtitle: 'Manajemen armada kendaraan' },
-  '/tracking':    { title: 'Tracking Sewa',    subtitle: 'Monitoring durasi sewa & pengingat WA' },
-  '/availability':{ title: 'Ketersediaan',     subtitle: 'Ketersediaan armada motor real-time' },
-  '/expenses':    { title: 'Keuangan',         subtitle: 'Catat pemasukan, pengeluaran & saldo bersih' },
-  '/maintenance': { title: 'AI Diagnostic',    subtitle: 'Deteksi dini kesehatan motor' },
-  '/gallery':     { title: 'Galeri Foto',      subtitle: 'Arsip foto identitas & kendaraan' },
-  '/driver-income': { title: 'History Pendapatan', subtitle: 'Riwayat pendapatan kamu' },
-  '/reports':     { title: 'Laporan Keuangan', subtitle: 'Export dan analisis pendapatan' },
-  '/fleet':       { title: 'Website Publik',   subtitle: 'Katalog sewa motor publik (/fleet)' },
-  '/customers':   { title: 'Data Customer',    subtitle: 'Kelola data penyewa & riwayat' },
+  '/dashboard':   { title: 'sidebar.dashboard',       subtitle: 'pageMeta.dashboardSub' },
+  '/bookings':    { title: 'sidebar.booking',         subtitle: 'pageMeta.bookingsSub' },
+  '/contracts/new': { title: 'sidebar.contract',       subtitle: 'pageMeta.contractsNewSub' },
+  '/contracts':   { title: 'sidebar.contractReports', subtitle: 'pageMeta.contractsSub' },
+  '/transactions':{ title: 'sidebar.transactions',        subtitle: 'pageMeta.transactionsSub' },
+  '/vehicles':    { title: 'sidebar.vehicleData',       subtitle: 'pageMeta.vehiclesSub' },
+  '/tracking':    { title: 'sidebar.tracking',    subtitle: 'pageMeta.trackingSub' },
+  '/availability':{ title: 'sidebar.availability',     subtitle: 'pageMeta.availabilitySub' },
+  '/expenses':    { title: 'sidebar.finance',         subtitle: 'pageMeta.expensesSub' },
+  '/maintenance': { title: 'sidebar.aiDiagnostic',    subtitle: 'pageMeta.maintenanceSub' },
+  '/gallery':     { title: 'sidebar.photoGallery',      subtitle: 'pageMeta.gallerySub' },
+  '/driver-income': { title: 'sidebar.incomeHistory', subtitle: 'pageMeta.driverIncomeSub' },
+  '/reports':     { title: 'sidebar.financeReports', subtitle: 'pageMeta.reportsSub' },
+  '/fleet':       { title: 'sidebar.publicWebsite',   subtitle: 'pageMeta.fleetSub' },
+  '/customers':   { title: 'sidebar.customerData',    subtitle: 'pageMeta.customersSub' },
 };
 
 // /settings kepakai dari 3 grup sidebar yang beda (Data Master, Employee,
 // Lainnya) — judulnya harus ngikutin ?tab= biar nggak selalu bilang
 // "Pengaturan" padahal lagi buka Employee atau Database & Storage.
 const settingsTabMeta = {
-  storage:  { title: 'Database & Storage', subtitle: 'Koneksi database & backup data' },
-  staff:    { title: 'Employee',           subtitle: 'Kelola akun admin & driver' },
-  payment:  { title: 'Pengaturan',         subtitle: 'Metode pembayaran & konfigurasi rental' },
-  wacustom: { title: 'Pengaturan',         subtitle: 'Template invoice WhatsApp' },
-  security: { title: 'Pengaturan',         subtitle: 'Keamanan akun & password' },
-  business: { title: 'Pengaturan',         subtitle: 'Operasional rental' },
-  delivery: { title: 'Pengaturan',         subtitle: 'Zona & ongkos delivery' },
+  storage:  { title: 'sidebar.databaseStorage', subtitle: 'pageMeta.settingsStorageSub' },
+  staff:    { title: 'sidebar.groupEmployee',           subtitle: 'pageMeta.settingsStaffSub' },
+  payment:  { title: 'sidebar.settings',         subtitle: 'pageMeta.settingsPaymentSub' },
+  wacustom: { title: 'sidebar.settings',         subtitle: 'pageMeta.settingsWacustomSub' },
+  security: { title: 'sidebar.settings',         subtitle: 'pageMeta.settingsSecuritySub' },
+  business: { title: 'sidebar.settings',         subtitle: 'pageMeta.settingsBusinessSub' },
+  delivery: { title: 'sidebar.settings',         subtitle: 'pageMeta.settingsDeliverySub' },
 };
 
 function SettingsTabWatcher({ onChange }) {
@@ -44,13 +44,13 @@ function SettingsTabWatcher({ onChange }) {
 }
 
 export default function Header({ onToggleMobile, theme, onToggleTheme }) {
-  const { lang, setLang } = useLanguage();
+  const { lang, setLang, t } = useLanguage();
   const pathname = usePathname();
   const [settingsTab, setSettingsTab] = useState('');
   const matchedKey = Object.keys(pageMeta).find(key => pathname.startsWith(key));
   const meta = pathname.startsWith('/settings')
-    ? (settingsTabMeta[settingsTab] || { title: 'Pengaturan', subtitle: 'Koneksi database & template WA' })
-    : (pageMeta[matchedKey] || { title: 'Demo Rental Preview', subtitle: 'Admin Panel' });
+    ? (settingsTabMeta[settingsTab] || { title: 'sidebar.settings', subtitle: 'pageMeta.settingsDefaultSub' })
+    : (pageMeta[matchedKey] || { title: 'Demo Rental Preview', subtitle: 'pageMeta.adminPanel' });
   const [logoUrl, setLogoUrl] = useState('/images/logoCompany.png');
   const [themeDropOpen, setThemeDropOpen] = useState(false);
   const themeRef = useRef(null);
@@ -103,8 +103,8 @@ export default function Header({ onToggleMobile, theme, onToggleTheme }) {
           <i className="fa-solid fa-bars"></i>
         </button>
         <div className="header-title-box">
-          <h2>{meta.title}</h2>
-          <p className="header-subtitle">{meta.subtitle}</p>
+          <h2>{t(meta.title)}</h2>
+          <p className="header-subtitle">{t(meta.subtitle)}</p>
         </div>
       </div>
 
