@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import { useLanguage } from '@/lib/LanguageContext';
 import { useSearchParams } from 'next/navigation';
 import { compressImage } from '@/lib/imageCompressor';
 import { createClient } from '@/lib/supabase/client';
@@ -813,7 +814,7 @@ function VehicleModal({ isOpen, onClose, onSubmit, editData, onOpenAdjuster }) {
               <i className="fa-solid fa-list-check" style={{ marginRight: '6px' }}></i> Status Kendaraan
             </label>
             <select id="v-status" name="status" className="form-control" value={form.status} onChange={handleChange}>
-              <option value="available">Tersedia</option>
+              <option value="available">{t('vehiclesPage.statusAvailable')}</option>
               <option value="rented">Sedang Disewa</option>
               <option value="maintenance">Dalam Perawatan (Bengkel)</option>
             </select>
@@ -834,7 +835,7 @@ function VehicleModal({ isOpen, onClose, onSubmit, editData, onOpenAdjuster }) {
               ) : editData ? (
                 <><i className="fa-solid fa-floppy-disk" style={{ marginRight: '6px' }}></i> Simpan</>
               ) : (
-                <><i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Tambah Motor</>
+                <><i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> {t('vehiclesPage.addVehicle')}</>
               )}
             </button>
           </div>
@@ -915,6 +916,7 @@ function ConfirmModal({ isOpen, onClose, onConfirm, onForceDelete, onSetMaintena
 
 // ===== MAIN PAGE =====
 export default function VehiclesPage() {
+  const { t } = useLanguage();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -1082,30 +1084,30 @@ export default function VehiclesPage() {
       </Suspense>
 
       <div className="page-header">
-        <h2><i className="fa-solid fa-motorcycle" style={{ marginRight: '8px' }}></i> Data Motor</h2>
-        <p>Kelola armada kendaraan rental Demo Rental Preview</p>
+        <h2><i className="fa-solid fa-motorcycle" style={{ marginRight: '8px' }}></i> {t('vehiclesPage.title')}</h2>
+        <p>{t('vehiclesPage.subtitle')}</p>
       </div>
 
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
         {[
-          { key: 'all',             label: `Semua Unit Armada (${safeVehicles.length})`,     icon: 'fa-solid fa-motorcycle' },
-          { key: 'internal',        label: `Milik Internal (${internalVehicles.length})`,     icon: 'fa-solid fa-building' },
-          { key: 'investor',        label: `Milik Investor (${investorVehicles.length})`,     icon: 'fa-solid fa-crown' },
-          { key: 'investor_recap',  label: `Directory & Rekap Investor (${investorList.length})`, icon: 'fa-solid fa-address-card' },
-        ].map(t => (
+          { key: 'all',             label: `${t('vehiclesPage.tabAll')} (${safeVehicles.length})`,     icon: 'fa-solid fa-motorcycle' },
+          { key: 'internal',        label: `${t('vehiclesPage.tabInternal')} (${internalVehicles.length})`,     icon: 'fa-solid fa-building' },
+          { key: 'investor',        label: `${t('vehiclesPage.tabInvestor')} (${investorVehicles.length})`,     icon: 'fa-solid fa-crown' },
+          { key: 'investor_recap',  label: `${t('vehiclesPage.tabInvestorRecap')} (${investorList.length})`, icon: 'fa-solid fa-address-card' },
+        ].map(tabItem => (
           <button
-            key={t.key}
+            key={tabItem.key}
             type="button"
-            onClick={() => setOwnershipFilter(t.key)}
+            onClick={() => setOwnershipFilter(tabItem.key)}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: '6px',
               padding: '6px 14px', borderRadius: 'var(--radius-full, 999px)', fontSize: '12.5px', fontWeight: 600, cursor: 'pointer',
-              border: ownershipFilter === t.key ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
-              background: ownershipFilter === t.key ? 'var(--bg-elevated)' : 'transparent',
-              color: ownershipFilter === t.key ? 'var(--brand-primary)' : 'var(--text-muted)',
+              border: ownershipFilter === tabItem.key ? '1.5px solid var(--brand-primary)' : '1px solid var(--bg-border)',
+              background: ownershipFilter === tabItem.key ? 'var(--bg-elevated)' : 'transparent',
+              color: ownershipFilter === tabItem.key ? 'var(--brand-primary)' : 'var(--text-muted)',
             }}
           >
-            <i className={t.icon}></i>{t.label}
+            <i className={tabItem.icon}></i>{tabItem.label}
           </button>
         ))}
       </div>
@@ -1120,7 +1122,7 @@ export default function VehiclesPage() {
               id="vehicle-search"
               type="text"
               className="form-control"
-              placeholder="Cari motor, plat, nama investor..."
+              placeholder={t('vehiclesPage.searchPlaceholder')}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
@@ -1131,10 +1133,10 @@ export default function VehiclesPage() {
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
           >
-            <option value="all">Semua Status</option>
-            <option value="available">Tersedia</option>
-            <option value="rented">Disewa</option>
-            <option value="maintenance">Perawatan</option>
+            <option value="all">{t('vehiclesPage.allStatus')}</option>
+            <option value="available">{t('vehiclesPage.statusAvailable')}</option>
+            <option value="rented">{t('vehiclesPage.statusRented')}</option>
+            <option value="maintenance">{t('vehiclesPage.statusMaintenance')}</option>
           </select>
         </div>
         <button
@@ -1142,12 +1144,12 @@ export default function VehiclesPage() {
           className="btn btn-primary"
           onClick={() => { setEditData(null); setShowModal(true); }}
         >
-          <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Tambah Motor
+          <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> {t('vehiclesPage.addVehicle')}
         </button>
       </div>
 
       {loading ? (
-        <div className="table-empty card"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> Memuat data motor...</div>
+        <div className="table-empty card"><i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> {t('vehiclesPage.loadingData')}</div>
       ) : ownershipFilter === 'investor_recap' ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Investor Summary Cards */}
